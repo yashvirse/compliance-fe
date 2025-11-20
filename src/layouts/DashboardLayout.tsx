@@ -128,7 +128,7 @@ const DashboardLayout: React.FC = () => {
       >
         {sidebarOpen && (
           <Typography variant="h5" fontWeight={700} sx={{ letterSpacing: 1 }}>
-            ComplianceFE
+            OcmsPro
           </Typography>
         )}
         <IconButton onClick={handleSidebarToggle} sx={{ color: 'white' }}>

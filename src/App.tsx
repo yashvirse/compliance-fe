@@ -8,6 +8,7 @@ import DashboardHome from './pages/DashboardHome.tsx';
 import FormPage from './pages/FormPage.tsx';
 import UserPage from './pages/master/UserPage.tsx';
 import CompanyPage from './pages/master/CompanyPage.tsx';
+import AddCompanyPage from './pages/master/AddCompanyPage.tsx';
 import CountryPage from './pages/master/CountryPage.tsx';
 import ComponentDemoPage from './pages/ComponentDemoPage.tsx';
 
@@ -55,6 +56,7 @@ function App() {
               <Route path="components" element={<ComponentDemoPage />} />
               <Route path="master/user" element={<UserPage />} />
               <Route path="master/company" element={<CompanyPage />} />
+              <Route path="master/company/add" element={<AddCompanyPage />} />
               <Route path="master/country" element={<CountryPage />} />
               <Route path="reports" element={<DashboardHome />} />
               <Route path="settings" element={<DashboardHome />} />

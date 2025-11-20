@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   Box,
   Button,
@@ -28,6 +29,7 @@ interface Company {
 
 const CompanyPage: React.FC = () => {
   const theme = useTheme();
+  const navigate = useNavigate();
   const [rows] = useState<Company[]>([
     { id: 1, name: 'Tech Corp', industry: 'Technology', location: 'USA', employees: 500, status: 'Active' },
     { id: 2, name: 'Finance Ltd', industry: 'Finance', location: 'UK', employees: 250, status: 'Active' },
@@ -37,7 +39,7 @@ const CompanyPage: React.FC = () => {
   ]);
 
   const handleAdd = () => {
-    console.log('Add Company');
+    navigate('/dashboard/master/company/add');
   };
 
   const handleEdit = (id: number) => {

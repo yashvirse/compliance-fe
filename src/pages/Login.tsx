@@ -55,27 +55,15 @@ const Login: React.FC = () => {
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        background: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.secondary.main} 100%)`,
-        position: 'relative',
-        '&::before': {
-          content: '""',
-          position: 'absolute',
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          background: 'radial-gradient(circle at 20% 50%, rgba(255,255,255,0.1) 0%, transparent 50%)',
-        }
+        backgroundColor: theme.palette.grey[100],
       }}
     >
       <Container maxWidth="sm">
         <Card
-          elevation={24}
+          elevation={3}
           sx={{
             borderRadius: 4,
-            backdropFilter: 'blur(10px)',
-            backgroundColor: alpha(theme.palette.background.paper, 0.95),
-            overflow: 'visible'
+            backgroundColor: theme.palette.background.paper,
           }}
         >
           <CardContent sx={{ p: 5 }}>
@@ -93,7 +81,6 @@ const Login: React.FC = () => {
                   height: 70,
                   mb: 2,
                   bgcolor: theme.palette.primary.main,
-                  boxShadow: `0 4px 20px ${alpha(theme.palette.primary.main, 0.4)}`
                 }}
               >
                 <LockOutlined sx={{ fontSize: 40 }} />
@@ -103,13 +90,9 @@ const Login: React.FC = () => {
                 variant="h4"
                 fontWeight={700}
                 gutterBottom
-                sx={{
-                  background: `linear-gradient(135deg, ${theme.palette.primary.main}, ${theme.palette.secondary.main})`,
-                  WebkitBackgroundClip: 'text',
-                  WebkitTextFillColor: 'transparent'
-                }}
+                color="primary"
               >
-                Welcome Back
+                Welcome to OcmsPro
               </Typography>
               <Typography variant="body2" color="text.secondary" textAlign="center">
                 Sign in to access your dashboard
@@ -183,10 +166,6 @@ const Login: React.FC = () => {
                   textTransform: 'none',
                   fontSize: '1.1rem',
                   fontWeight: 600,
-                  boxShadow: `0 4px 15px ${alpha(theme.palette.primary.main, 0.4)}`,
-                  '&:hover': {
-                    boxShadow: `0 6px 20px ${alpha(theme.palette.primary.main, 0.5)}`,
-                  }
                 }}
               >
                 {loading ? 'Signing in...' : 'Sign In'}
