@@ -21,7 +21,7 @@ import {
   LockOutlined,
   EmailOutlined
 } from '@mui/icons-material';
-import { useAuth } from '../context/AuthContext.tsx';
+import { useAuth } from '../../context/AuthContext.tsx';
 
 const Login: React.FC = () => {
   const [email, setEmail] = useState('');

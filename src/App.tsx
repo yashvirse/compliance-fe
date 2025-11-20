@@ -2,14 +2,14 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import { ThemeProvider, createTheme, CssBaseline } from '@mui/material';
 import { AuthProvider } from './context/AuthContext.tsx';
 import ProtectedRoute from './components/ProtectedRoute.tsx';
-import Login from './pages/Login.tsx';
+import Login from './pages/login/Login.tsx';
 import DashboardLayout from './layouts/DashboardLayout.tsx';
 import DashboardHome from './pages/DashboardHome.tsx';
 import FormPage from './pages/FormPage.tsx';
 import UserPage from './pages/master/UserPage.tsx';
-import CompanyPage from './pages/master/CompanyPage.tsx';
-import AddCompanyPage from './pages/master/AddCompanyPage.tsx';
-import CountryPage from './pages/master/CountryPage.tsx';
+import CompanyPage from './pages/master/company/CompanyPage.tsx';
+import AddCompanyPage from './pages/master/company/AddCompanyPage.tsx';
+import CountryPage from './pages/master/country/CountryPage.tsx';
 import ComponentDemoPage from './pages/ComponentDemoPage.tsx';
 
 const theme = createTheme({

@@ -24,7 +24,7 @@ import {
   CustomTextField,
   CustomDropdown,
   CustomDatePicker
-} from '../../components/common';
+} from '../../../components/common';
 import { type Dayjs } from 'dayjs';
 
 type TabType = 'company' | 'user' | 'domain' | 'account' | 'subscription';
