@@ -27,5 +27,14 @@ export const selectCompanyDeleteError = (state: RootState) => state.company?.del
 // Selector to get delete success state
 export const selectCompanyDeleteSuccess = (state: RootState) => state.company?.deleteSuccess || false;
 
+// Selector to get current company (for editing)
+export const selectCurrentCompany = (state: RootState) => state.company?.currentCompany || null;
+
+// Selector to get fetch by ID loading state
+export const selectFetchByIdLoading = (state: RootState) => state.company?.fetchByIdLoading || false;
+
+// Selector to get fetch by ID error state
+export const selectFetchByIdError = (state: RootState) => state.company?.fetchByIdError || null;
+
 // Selector to get entire company state
 export const selectCompanyState = (state: RootState) => state.company;

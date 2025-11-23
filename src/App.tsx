@@ -145,6 +145,14 @@ function App() {
                 } 
               />
               <Route 
+                path="master/company/edit/:id" 
+                element={
+                  <RoleBasedRoute path="/dashboard/master/company">
+                    <AddCompanyPage />
+                  </RoleBasedRoute>
+                } 
+              />
+              <Route 
                 path="master/country" 
                 element={
                   <RoleBasedRoute path="/dashboard/master/country">

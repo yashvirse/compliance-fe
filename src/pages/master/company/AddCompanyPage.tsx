@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import type { AppDispatch } from '../../../app/store';
 import {
@@ -12,9 +12,9 @@ import {
   Grid,
   useTheme,
   alpha,
-  Divider,
   Alert,
-  Snackbar
+  Snackbar,
+  CircularProgress
 } from '@mui/material';
 import {
   Business as CompanyIcon,
@@ -30,11 +30,13 @@ import {
   CustomCheckbox
 } from '../../../components/common';
 import { CloudUpload as UploadIcon } from '@mui/icons-material';
-import { addCompany, clearError, clearSuccess } from './slice/Company.Slice';
+import { addCompany, clearError, clearSuccess, fetchCompanyById, clearCurrentCompany } from './slice/Company.Slice';
 import {
   selectCompanyLoading,
   selectCompanyError,
-  selectCompanySuccess
+  selectCompanySuccess,
+  selectCurrentCompany,
+  selectFetchByIdLoading
 } from './slice/Company.Selector';
 import type { AddCompanyRequest } from './slice/Company.Type';
 
@@ -44,12 +46,16 @@ const AddCompanyPage: React.FC = () => {
   const theme = useTheme();
   const navigate = useNavigate();
   const dispatch = useDispatch<AppDispatch>();
+  const { id } = useParams();
   
   // Redux selectors
   const loading = useSelector(selectCompanyLoading);
   const error = useSelector(selectCompanyError);
   const success = useSelector(selectCompanySuccess);
+  const currentCompany = useSelector(selectCurrentCompany);
+  const fetchByIdLoading = useSelector(selectFetchByIdLoading);
   
+  const isEditMode = !!id;
   const [activeTab, setActiveTab] = useState<TabType>('company');
   const [showSnackbar, setShowSnackbar] = useState(false);
 
@@ -96,15 +102,6 @@ const AddCompanyPage: React.FC = () => {
     planRate: '',
   });
 
-  const industryOptions = [
-    { label: 'Technology', value: 'technology' },
-    { label: 'Finance', value: 'finance' },
-    { label: 'Healthcare', value: 'healthcare' },
-    { label: 'Retail', value: 'retail' },
-    { label: 'Education', value: 'education' },
-    { label: 'Manufacturing', value: 'manufacturing' },
-  ];
-
   const companyTypeOptions = [
     { label: 'Private Limited', value: 'private_limited' },
     { label: 'Public Limited', value: 'public_limited' },
@@ -113,11 +110,6 @@ const AddCompanyPage: React.FC = () => {
     { label: 'LLP', value: 'llp' },
   ];
 
-  const statusOptions = [
-    { label: 'Active', value: 'active' },
-    { label: 'Inactive', value: 'inactive' },
-    { label: 'Pending', value: 'pending' },
-  ];
 
   const countryOptions = [
     { label: 'United States', value: 'us' },
@@ -175,32 +167,11 @@ const AddCompanyPage: React.FC = () => {
     { label: 'CAD - Canadian Dollar', value: 'CAD' },
   ];
 
-  const roleOptions = [
-    { label: 'Super Admin', value: 'superadmin' },
-    { label: 'Customer Admin', value: 'customeradmin' },
-    { label: 'Maker', value: 'maker' },
-    { label: 'Checker', value: 'checker' },
-    { label: 'Reviewer', value: 'reviewer' },
-    { label: 'Viewer', value: 'viewer' },
-  ];
-
-  const accountTypeOptions = [
-    { label: 'Savings', value: 'savings' },
-    { label: 'Current', value: 'current' },
-    { label: 'Business', value: 'business' },
-  ];
-
   const planTypeOptions = [
     { label: 'Basic', value: 'basic' },
     { label: 'Professional', value: 'professional' },
     { label: 'Enterprise', value: 'enterprise' },
     { label: 'Custom', value: 'custom' },
-  ];
-
-  const billingCycleOptions = [
-    { label: 'Monthly', value: 'monthly' },
-    { label: 'Quarterly', value: 'quarterly' },
-    { label: 'Yearly', value: 'yearly' },
   ];
 
   const handleFileUpload = (
@@ -236,6 +207,69 @@ const AddCompanyPage: React.FC = () => {
     { id: 'account', label: 'Account Details', icon: <AccountIcon /> },
     { id: 'subscription', label: 'Subscription', icon: <SubscriptionIcon /> },
   ];
+
+  // Fetch company data in edit mode
+  useEffect(() => {
+    if (isEditMode && id) {
+      dispatch(fetchCompanyById(id));
+    }
+    
+    return () => {
+      dispatch(clearCurrentCompany());
+    };
+  }, [dispatch, id, isEditMode]);
+
+  // Populate form when company data is loaded
+  useEffect(() => {
+    if (isEditMode && currentCompany) {
+      // Populate company data
+      setCompanyData({
+        name: currentCompany.companyName || '',
+        companyLogo: null,
+        companyLogoPreview: currentCompany.companyLogo || '',
+        companyType: currentCompany.companyType || '',
+        country: currentCompany.companyAddress?.companyCountry || '',
+        state: currentCompany.companyAddress?.companyState || '',
+        city: currentCompany.companyAddress?.companyCity || '',
+        buildingNo: currentCompany.companyAddress?.buildingNumber || '',
+        zip: currentCompany.companyAddress?.companyZIP || '',
+        address: currentCompany.companyAddress?.detailAdddress || '',
+        currency: currentCompany.companyCurrency || '',
+        isActive: currentCompany.companyIsActive ?? true,
+      });
+
+      // Populate user data
+      setUserData({
+        name: currentCompany.user?.userName || '',
+        email: currentCompany.user?.userEmail || '',
+        password: '', // Don't populate password for security
+        mobile: currentCompany.user?.userMobile || '',
+        userImage: null,
+        userImagePreview: currentCompany.user?.userImg || '',
+        isActive: currentCompany.user?.isActive ?? true,
+      });
+
+      // Populate domain data
+      setDomainData({
+        domain: currentCompany.companyDomain || '',
+        externalDomain: currentCompany.user?.companyDomain || '',
+      });
+
+      // Populate account data
+      setAccountData({
+        ifscCode: currentCompany.ifsC_Code || '',
+        panNo: currentCompany.paN_No || '',
+        gstNo: currentCompany.gsT_NO || '',
+        cinNo: currentCompany.ciN_NO || '',
+      });
+
+      // Populate subscription data
+      setSubscriptionData({
+        planType: currentCompany.plan_type || '',
+        planRate: currentCompany.plan_rate || '',
+      });
+    }
+  }, [isEditMode, currentCompany]);
 
   // Handle success/error
   useEffect(() => {
@@ -708,17 +742,6 @@ const AddCompanyPage: React.FC = () => {
     </Grid>
   );
 
-  const renderPlaceholder = (title: string) => (
-    <Box sx={{ textAlign: 'center', py: 8 }}>
-      <Typography variant="h6" color="text.secondary" gutterBottom>
-        {title} Form
-      </Typography>
-      <Typography variant="body2" color="text.secondary">
-        Form content will be added here
-      </Typography>
-    </Box>
-  );
-
   const renderContent = () => {
     switch (activeTab) {
       case 'company':
@@ -739,6 +762,27 @@ const AddCompanyPage: React.FC = () => {
   const isLastTab = activeTab === 'subscription';
   const isFirstTab = activeTab === 'company';
 
+  // Show loading spinner when fetching company data in edit mode
+  if (isEditMode && fetchByIdLoading) {
+    return (
+      <Box 
+        sx={{ 
+          display: 'flex', 
+          justifyContent: 'center', 
+          alignItems: 'center', 
+          minHeight: '60vh',
+          flexDirection: 'column',
+          gap: 2 
+        }}
+      >
+        <CircularProgress size={50} />
+        <Typography variant="body1" color="text.secondary">
+          Loading company data...
+        </Typography>
+      </Box>
+    );
+  }
+
   return (
     <Box>
       {/* Header */}
@@ -758,10 +802,10 @@ const AddCompanyPage: React.FC = () => {
           Back to Company List
         </Button>
         <Typography variant="h4" fontWeight={700} gutterBottom>
-          Add New Company
+          {isEditMode ? 'Edit Company' : 'Add New Company'}
         </Typography>
         <Typography variant="body1" color="text.secondary">
-          Fill in the information to create a new company
+          {isEditMode ? 'Update the company information' : 'Fill in the information to create a new company'}
         </Typography>
       </Box>
 
@@ -877,7 +921,7 @@ const AddCompanyPage: React.FC = () => {
                         type="submit"
                         variant="contained"
                         size="large"
-                        disabled={loading}
+                        disabled={loading || fetchByIdLoading}
                         sx={{
                           borderRadius: 2,
                           textTransform: 'none',
@@ -890,7 +934,7 @@ const AddCompanyPage: React.FC = () => {
                           }
                         }}
                       >
-                        {loading ? 'Saving...' : 'Submit & Save'}
+                        {loading ? 'Saving...' : isEditMode ? 'Update Company' : 'Submit & Save'}
                       </Button>
                     )}
                   </Box>

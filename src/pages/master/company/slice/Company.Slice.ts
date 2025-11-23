@@ -5,7 +5,8 @@ import type {
   AddCompanyResponse, 
   CompanyState,
   GetCompanyListResponse,
-  DeleteCompanyResponse
+  DeleteCompanyResponse,
+  GetCompanyByIdResponse
 } from './Company.Type';
 
 // Initial state
@@ -19,6 +20,9 @@ const initialState: CompanyState = {
   deleteLoading: false,
   deleteError: null,
   deleteSuccess: false,
+  currentCompany: null,
+  fetchByIdLoading: false,
+  fetchByIdError: null,
 };
 
 // Async thunk for adding company
@@ -202,6 +206,34 @@ export const deleteCompany = createAsyncThunk<
   }
 );
 
+// Async thunk for fetching company by ID
+export const fetchCompanyById = createAsyncThunk<
+  GetCompanyByIdResponse,
+  string,
+  { rejectValue: string }
+>(
+  'company/fetchCompanyById',
+  async (companyId: string, { rejectWithValue }) => {
+    try {
+      const response = await apiService.get<GetCompanyByIdResponse>(
+        `CompanyMaster/getCompByID/${companyId}`
+      );
+
+      // Check if fetch was successful
+      if (!response.isSuccess) {
+        return rejectWithValue(response.message || 'Failed to fetch company details');
+      }
+
+      return response;
+    } catch (error: any) {
+      const errorMessage = error?.response?.data?.message || 
+                          error?.message || 
+                          'Failed to fetch company details. Please try again.';
+      return rejectWithValue(errorMessage);
+    }
+  }
+);
+
 // Company slice
 const companySlice = createSlice({
   name: 'company',
@@ -226,6 +258,16 @@ const companySlice = createSlice({
       state.deleteLoading = false;
       state.deleteError = null;
       state.deleteSuccess = false;
+      state.currentCompany = null;
+      state.fetchByIdLoading = false;
+      state.fetchByIdError = null;
+    },
+    
+    // Clear current company
+    clearCurrentCompany: (state) => {
+      state.currentCompany = null;
+      state.fetchByIdLoading = false;
+      state.fetchByIdError = null;
     },
   },
   extraReducers: (builder) => {
@@ -285,12 +327,30 @@ const companySlice = createSlice({
         state.deleteLoading = false;
         state.deleteError = action.payload || 'An error occurred while deleting company';
         state.deleteSuccess = false;
+      })
+      // Fetch Company By ID pending
+      .addCase(fetchCompanyById.pending, (state) => {
+        state.fetchByIdLoading = true;
+        state.fetchByIdError = null;
+        state.currentCompany = null;
+      })
+      // Fetch Company By ID fulfilled
+      .addCase(fetchCompanyById.fulfilled, (state, action) => {
+        state.fetchByIdLoading = false;
+        state.fetchByIdError = null;
+        state.currentCompany = action.payload.result;
+      })
+      // Fetch Company By ID rejected
+      .addCase(fetchCompanyById.rejected, (state, action) => {
+        state.fetchByIdLoading = false;
+        state.fetchByIdError = action.payload || 'An error occurred while fetching company details';
+        state.currentCompany = null;
       });
   },
 });
 
 // Export actions
-export const { clearError, clearSuccess, resetCompanyState } = companySlice.actions;
+export const { clearError, clearSuccess, resetCompanyState, clearCurrentCompany } = companySlice.actions;
 
 // Export reducer
 export default companySlice.reducer;

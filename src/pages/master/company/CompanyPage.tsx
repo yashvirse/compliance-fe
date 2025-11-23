@@ -85,7 +85,7 @@ const CompanyPage: React.FC = () => {
   };
 
   const handleEdit = (id: string) => {
-    console.log('Edit Company:', id);
+    navigate(`/dashboard/master/company/edit/${id}`);
   };
 
   const handleDeleteClick = (id: string, name: string) => {

@@ -94,6 +94,12 @@ export interface DeleteCompanyResponse {
   result?: any;
 }
 
+export interface GetCompanyByIdResponse {
+  isSuccess: boolean;
+  message: string;
+  result: Company;
+}
+
 export interface CompanyState {
   loading: boolean;
   error: string | null;
@@ -104,4 +110,7 @@ export interface CompanyState {
   deleteLoading: boolean;
   deleteError: string | null;
   deleteSuccess: boolean;
+  currentCompany: Company | null;
+  fetchByIdLoading: boolean;
+  fetchByIdError: string | null;
 }
