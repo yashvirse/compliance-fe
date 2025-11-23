@@ -54,9 +54,54 @@ export interface AddCompanyResponse {
   result?: any;
 }
 
+export interface CompanyAddressResponse {
+  buildingNumber?: string;
+  detailAdddress: string;
+  companyCountry: string;
+  companyState: string;
+  companyCity: string;
+  companyZIP: string;
+}
+
+export interface Company {
+  cid: string;
+  companyName: string;
+  companyType: string;
+  companyLogo: string;
+  companyDomain: string;
+  companyCurrency: string;
+  ifsC_Code: string;
+  paN_No: string;
+  gsT_NO: string;
+  ciN_NO: string;
+  companyIsActive: boolean;
+  plan_type: string;
+  plan_rate: string;
+  createdBy: string;
+  companyAddress: CompanyAddressResponse;
+  user: any;
+}
+
+export interface GetCompanyListResponse {
+  isSuccess: boolean;
+  message: string;
+  result: Company[];
+}
+
+export interface DeleteCompanyResponse {
+  isSuccess: boolean;
+  message: string;
+  result?: any;
+}
+
 export interface CompanyState {
   loading: boolean;
   error: string | null;
   success: boolean;
-  companies: any[];
+  companies: Company[];
+  fetchLoading: boolean;
+  fetchError: string | null;
+  deleteLoading: boolean;
+  deleteError: string | null;
+  deleteSuccess: boolean;
 }

@@ -3,7 +3,9 @@ import { apiService } from '../../../../services/api';
 import type { 
   AddCompanyRequest, 
   AddCompanyResponse, 
-  CompanyState 
+  CompanyState,
+  GetCompanyListResponse,
+  DeleteCompanyResponse
 } from './Company.Type';
 
 // Initial state
@@ -12,6 +14,11 @@ const initialState: CompanyState = {
   error: null,
   success: false,
   companies: [],
+  fetchLoading: false,
+  fetchError: null,
+  deleteLoading: false,
+  deleteError: null,
+  deleteSuccess: false,
 };
 
 // Async thunk for adding company
@@ -139,6 +146,62 @@ export const addCompany = createAsyncThunk<
   }
 );
 
+// Async thunk for fetching company list
+export const fetchCompanyList = createAsyncThunk<
+  GetCompanyListResponse,
+  void,
+  { rejectValue: string }
+>(
+  'company/fetchCompanyList',
+  async (_, { rejectWithValue }) => {
+    try {
+      const response = await apiService.get<GetCompanyListResponse>(
+        'CompanyMaster/getCompList'
+      );
+
+      // Check if fetch was successful
+      if (!response.isSuccess) {
+        return rejectWithValue(response.message || 'Failed to fetch companies');
+      }
+
+      return response;
+    } catch (error: any) {
+      const errorMessage = error?.response?.data?.message || 
+                          error?.message || 
+                          'Failed to fetch companies. Please try again.';
+      return rejectWithValue(errorMessage);
+    }
+  }
+);
+
+// Async thunk for deleting company
+export const deleteCompany = createAsyncThunk<
+  DeleteCompanyResponse,
+  string,
+  { rejectValue: string }
+>(
+  'company/deleteCompany',
+  async (companyId: string, { rejectWithValue }) => {
+    try {
+      const response = await apiService.delete<DeleteCompanyResponse>(
+        `CompanyMaster/deleteComp/${companyId}`
+      );
+
+      // Check if delete was successful
+      if (!response.isSuccess) {
+        return rejectWithValue(response.message || 'Failed to delete company');
+      }
+
+      return response;
+    } catch (error: any) {
+      const errorMessage = error?.response?.data?.message || 
+                          error?.message || 
+                          'Failed to delete company. Please try again.';
+      return rejectWithValue(errorMessage);
+    }
+  }
+);
+
 // Company slice
 const companySlice = createSlice({
   name: 'company',
@@ -152,6 +215,7 @@ const companySlice = createSlice({
     // Clear success
     clearSuccess: (state) => {
       state.success = false;
+      state.deleteSuccess = false;
     },
     
     // Reset state
@@ -159,6 +223,9 @@ const companySlice = createSlice({
       state.loading = false;
       state.error = null;
       state.success = false;
+      state.deleteLoading = false;
+      state.deleteError = null;
+      state.deleteSuccess = false;
     },
   },
   extraReducers: (builder) => {
@@ -180,6 +247,44 @@ const companySlice = createSlice({
         state.loading = false;
         state.error = action.payload || 'An error occurred while adding company';
         state.success = false;
+      })
+      // Fetch Company List pending
+      .addCase(fetchCompanyList.pending, (state) => {
+        state.fetchLoading = true;
+        state.fetchError = null;
+      })
+      // Fetch Company List fulfilled
+      .addCase(fetchCompanyList.fulfilled, (state, action) => {
+        state.fetchLoading = false;
+        state.fetchError = null;
+        state.companies = action.payload.result;
+      })
+      // Fetch Company List rejected
+      .addCase(fetchCompanyList.rejected, (state, action) => {
+        state.fetchLoading = false;
+        state.fetchError = action.payload || 'An error occurred while fetching companies';
+      })
+      // Delete Company pending
+      .addCase(deleteCompany.pending, (state) => {
+        state.deleteLoading = true;
+        state.deleteError = null;
+        state.deleteSuccess = false;
+      })
+      // Delete Company fulfilled
+      .addCase(deleteCompany.fulfilled, (state, action) => {
+        state.deleteLoading = false;
+        state.deleteError = null;
+        state.deleteSuccess = true;
+        // Remove deleted company from the list
+        state.companies = state.companies.filter(
+          (company) => company.cid !== action.meta.arg
+        );
+      })
+      // Delete Company rejected
+      .addCase(deleteCompany.rejected, (state, action) => {
+        state.deleteLoading = false;
+        state.deleteError = action.payload || 'An error occurred while deleting company';
+        state.deleteSuccess = false;
       });
   },
 });
