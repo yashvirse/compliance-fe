@@ -1,5 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useDispatch, useSelector } from 'react-redux';
+import type { AppDispatch } from '../../../app/store';
 import {
   Box,
   Button,
@@ -10,7 +12,9 @@ import {
   Grid,
   useTheme,
   alpha,
-  Divider
+  Divider,
+  Alert,
+  Snackbar
 } from '@mui/material';
 import {
   Business as CompanyIcon,
@@ -23,33 +27,73 @@ import {
 import {
   CustomTextField,
   CustomDropdown,
-  CustomDatePicker
+  CustomCheckbox
 } from '../../../components/common';
-import { type Dayjs } from 'dayjs';
+import { CloudUpload as UploadIcon } from '@mui/icons-material';
+import { addCompany, clearError, clearSuccess } from './slice/Company.Slice';
+import {
+  selectCompanyLoading,
+  selectCompanyError,
+  selectCompanySuccess
+} from './slice/Company.Selector';
+import type { AddCompanyRequest } from './slice/Company.Type';
 
 type TabType = 'company' | 'user' | 'domain' | 'account' | 'subscription';
 
 const AddCompanyPage: React.FC = () => {
   const theme = useTheme();
   const navigate = useNavigate();
+  const dispatch = useDispatch<AppDispatch>();
+  
+  // Redux selectors
+  const loading = useSelector(selectCompanyLoading);
+  const error = useSelector(selectCompanyError);
+  const success = useSelector(selectCompanySuccess);
+  
   const [activeTab, setActiveTab] = useState<TabType>('company');
+  const [showSnackbar, setShowSnackbar] = useState(false);
 
-  // Company form state
+  // Form state for all sections
   const [companyData, setCompanyData] = useState({
     name: '',
-    industry: '',
-    location: '',
-    email: '',
-    phone: '',
-    website: '',
-    employees: '',
-    registrationDate: null as Dayjs | null,
-    status: 'active',
-    address: '',
-    city: '',
-    state: '',
-    zipCode: '',
+    companyLogo: null as File | null,
+    companyLogoPreview: '',
+    companyType: '',
     country: '',
+    state: '',
+    city: '',
+    buildingNo: '',
+    zip: '',
+    address: '',
+    currency: '',
+    isActive: true,
+  });
+
+  const [userData, setUserData] = useState({
+    name: '',
+    email: '',
+    password: '',
+    mobile: '',
+    userImage: null as File | null,
+    userImagePreview: '',
+    isActive: true,
+  });
+
+  const [domainData, setDomainData] = useState({
+    domain: '',
+    externalDomain: '',
+  });
+
+  const [accountData, setAccountData] = useState({
+    ifscCode: '',
+    panNo: '',
+    gstNo: '',
+    cinNo: '',
+  });
+
+  const [subscriptionData, setSubscriptionData] = useState({
+    planType: '',
+    planRate: '',
   });
 
   const industryOptions = [
@@ -59,6 +103,14 @@ const AddCompanyPage: React.FC = () => {
     { label: 'Retail', value: 'retail' },
     { label: 'Education', value: 'education' },
     { label: 'Manufacturing', value: 'manufacturing' },
+  ];
+
+  const companyTypeOptions = [
+    { label: 'Private Limited', value: 'private_limited' },
+    { label: 'Public Limited', value: 'public_limited' },
+    { label: 'Partnership', value: 'partnership' },
+    { label: 'Sole Proprietorship', value: 'sole_proprietorship' },
+    { label: 'LLP', value: 'llp' },
   ];
 
   const statusOptions = [
@@ -75,6 +127,108 @@ const AddCompanyPage: React.FC = () => {
     { label: 'India', value: 'in' },
   ];
 
+  const stateOptions = [
+    { label: 'Andhra Pradesh', value: 'andhra_pradesh' },
+    { label: 'Arunachal Pradesh', value: 'arunachal_pradesh' },
+    { label: 'Assam', value: 'assam' },
+    { label: 'Bihar', value: 'bihar' },
+    { label: 'Chhattisgarh', value: 'chhattisgarh' },
+    { label: 'Goa', value: 'goa' },
+    { label: 'Gujarat', value: 'gujarat' },
+    { label: 'Haryana', value: 'haryana' },
+    { label: 'Himachal Pradesh', value: 'himachal_pradesh' },
+    { label: 'Jharkhand', value: 'jharkhand' },
+    { label: 'Karnataka', value: 'karnataka' },
+    { label: 'Kerala', value: 'kerala' },
+    { label: 'Madhya Pradesh', value: 'madhya_pradesh' },
+    { label: 'Maharashtra', value: 'maharashtra' },
+    { label: 'Manipur', value: 'manipur' },
+    { label: 'Meghalaya', value: 'meghalaya' },
+    { label: 'Mizoram', value: 'mizoram' },
+    { label: 'Nagaland', value: 'nagaland' },
+    { label: 'Odisha', value: 'odisha' },
+    { label: 'Punjab', value: 'punjab' },
+    { label: 'Rajasthan', value: 'rajasthan' },
+    { label: 'Sikkim', value: 'sikkim' },
+    { label: 'Tamil Nadu', value: 'tamil_nadu' },
+    { label: 'Telangana', value: 'telangana' },
+    { label: 'Tripura', value: 'tripura' },
+    { label: 'Uttar Pradesh', value: 'uttar_pradesh' },
+    { label: 'Uttarakhand', value: 'uttarakhand' },
+    { label: 'West Bengal', value: 'west_bengal' },
+    { label: 'Andaman and Nicobar Islands', value: 'andaman_nicobar' },
+    { label: 'Chandigarh', value: 'chandigarh' },
+    { label: 'Dadra & Nagar Haveli and Daman & Diu', value: 'dadra_nagar_haveli_daman_diu' },
+    { label: 'Delhi', value: 'delhi' },
+    { label: 'Jammu & Kashmir', value: 'jammu_kashmir' },
+    { label: 'Ladakh', value: 'ladakh' },
+    { label: 'Lakshadweep', value: 'lakshadweep' },
+    { label: 'Puducherry', value: 'puducherry' },
+  ];
+
+  const currencyOptions = [
+    { label: 'USD - US Dollar', value: 'USD' },
+    { label: 'EUR - Euro', value: 'EUR' },
+    { label: 'GBP - British Pound', value: 'GBP' },
+    { label: 'INR - Indian Rupee', value: 'INR' },
+    { label: 'AUD - Australian Dollar', value: 'AUD' },
+    { label: 'CAD - Canadian Dollar', value: 'CAD' },
+  ];
+
+  const roleOptions = [
+    { label: 'Super Admin', value: 'superadmin' },
+    { label: 'Customer Admin', value: 'customeradmin' },
+    { label: 'Maker', value: 'maker' },
+    { label: 'Checker', value: 'checker' },
+    { label: 'Reviewer', value: 'reviewer' },
+    { label: 'Viewer', value: 'viewer' },
+  ];
+
+  const accountTypeOptions = [
+    { label: 'Savings', value: 'savings' },
+    { label: 'Current', value: 'current' },
+    { label: 'Business', value: 'business' },
+  ];
+
+  const planTypeOptions = [
+    { label: 'Basic', value: 'basic' },
+    { label: 'Professional', value: 'professional' },
+    { label: 'Enterprise', value: 'enterprise' },
+    { label: 'Custom', value: 'custom' },
+  ];
+
+  const billingCycleOptions = [
+    { label: 'Monthly', value: 'monthly' },
+    { label: 'Quarterly', value: 'quarterly' },
+    { label: 'Yearly', value: 'yearly' },
+  ];
+
+  const handleFileUpload = (
+    e: React.ChangeEvent<HTMLInputElement>,
+    type: 'companyLogo' | 'userImage'
+  ) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        if (type === 'companyLogo') {
+          setCompanyData({
+            ...companyData,
+            companyLogo: file,
+            companyLogoPreview: reader.result as string,
+          });
+        } else {
+          setUserData({
+            ...userData,
+            userImage: file,
+            userImagePreview: reader.result as string,
+          });
+        }
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
   const tabs = [
     { id: 'company', label: 'Company', icon: <CompanyIcon /> },
     { id: 'user', label: 'User', icon: <UserIcon /> },
@@ -83,198 +237,475 @@ const AddCompanyPage: React.FC = () => {
     { id: 'subscription', label: 'Subscription', icon: <SubscriptionIcon /> },
   ];
 
-  const handleSubmit = (e: React.FormEvent) => {
+  // Handle success/error
+  useEffect(() => {
+    if (success) {
+      setShowSnackbar(true);
+      setTimeout(() => {
+        dispatch(clearSuccess());
+        navigate('/dashboard/master/company');
+      }, 2000);
+    }
+  }, [success, navigate, dispatch]);
+
+  useEffect(() => {
+    if (error) {
+      setShowSnackbar(true);
+    }
+  }, [error]);
+
+  const handleSnackbarClose = () => {
+    setShowSnackbar(false);
+    if (error) {
+      dispatch(clearError());
+    }
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('Company Data:', companyData);
-    // Add API call here
+    
+    // Prepare data according to API structure
+    const requestData: AddCompanyRequest = {
+      CompanyName: companyData.name,
+      CompanyType: companyData.companyType,
+      CompanyCurrency: companyData.currency,
+      CompanyIsActive: companyData.isActive,
+      CompanyDomain: domainData.domain,
+      PAN_No: accountData.panNo,
+      GST_NO: accountData.gstNo,
+      CIN_NO: accountData.cinNo,
+      IFSC_Code: accountData.ifscCode,
+      plan_type: subscriptionData.planType,
+      plan_rate: subscriptionData.planRate,
+      companyLogo: companyData.companyLogo,
+      CompanyAddress: {
+        CompanyState: companyData.state,
+        CompanyCountry: companyData.country,
+        CompanyCity: companyData.city,
+        buildingNumber: companyData.buildingNo,
+        CompanyZIP: companyData.zip,
+        detailAdddress: companyData.address,
+      },
+      user: {
+        userName: userData.name,
+        userEmail: userData.email,
+        userPassword: userData.password,
+        userMobile: userData.mobile,
+        IsActive: userData.isActive,
+        companyDomain: domainData.externalDomain,
+      },
+      userImg: userData.userImage,
+    };
+
+    // Dispatch the action
+    await dispatch(addCompany(requestData));
+  };
+
+  const handleNext = () => {
+    const tabIndex = tabs.findIndex((tab) => tab.id === activeTab);
+    if (tabIndex < tabs.length - 1) {
+      setActiveTab(tabs[tabIndex + 1].id as TabType);
+    }
+  };
+
+  const handlePrevious = () => {
+    const tabIndex = tabs.findIndex((tab) => tab.id === activeTab);
+    if (tabIndex > 0) {
+      setActiveTab(tabs[tabIndex - 1].id as TabType);
+    }
   };
 
   const renderCompanyForm = () => (
-    <Box component="form" onSubmit={handleSubmit}>
-      <Grid container spacing={3}>
-        <Grid size={{ xs: 12 }}>
-          <Typography variant="h6" fontWeight={600} gutterBottom>
-            Company Information
-          </Typography>
-        </Grid>
-
-        <Grid size={{ xs: 12, sm: 6 }}>
-          <CustomTextField
-            label="Company Name"
-            name="name"
-            value={companyData.name}
-            onChange={(e) => setCompanyData({ ...companyData, name: e.target.value })}
-            required
-            placeholder="Enter company name"
-          />
-        </Grid>
-
-        <Grid size={{ xs: 12, sm: 6 }}>
-          <CustomDropdown
-            label="Industry"
-            name="industry"
-            value={companyData.industry}
-            onChange={(e) => setCompanyData({ ...companyData, industry: e.target.value as string })}
-            options={industryOptions}
-            required
-          />
-        </Grid>
-
-        <Grid size={{ xs: 12, sm: 6 }}>
-          <CustomTextField
-            label="Email"
-            name="email"
-            type="email"
-            value={companyData.email}
-            onChange={(e) => setCompanyData({ ...companyData, email: e.target.value })}
-            required
-            placeholder="company@example.com"
-          />
-        </Grid>
-
-        <Grid size={{ xs: 12, sm: 6 }}>
-          <CustomTextField
-            label="Phone"
-            name="phone"
-            value={companyData.phone}
-            onChange={(e) => setCompanyData({ ...companyData, phone: e.target.value })}
-            placeholder="+1 (555) 000-0000"
-          />
-        </Grid>
-
-        <Grid size={{ xs: 12, sm: 6 }}>
-          <CustomTextField
-            label="Website"
-            name="website"
-            value={companyData.website}
-            onChange={(e) => setCompanyData({ ...companyData, website: e.target.value })}
-            placeholder="https://www.example.com"
-          />
-        </Grid>
-
-        <Grid size={{ xs: 12, sm: 6 }}>
-          <CustomTextField
-            label="Number of Employees"
-            name="employees"
-            type="number"
-            value={companyData.employees}
-            onChange={(e) => setCompanyData({ ...companyData, employees: e.target.value })}
-            placeholder="100"
-          />
-        </Grid>
-
-        <Grid size={{ xs: 12, sm: 6 }}>
-          <CustomDatePicker
-            label="Registration Date"
-            value={companyData.registrationDate}
-            onChange={(date) => setCompanyData({ ...companyData, registrationDate: date })}
-          />
-        </Grid>
-
-        <Grid size={{ xs: 12, sm: 6 }}>
-          <CustomDropdown
-            label="Status"
-            name="status"
-            value={companyData.status}
-            onChange={(e) => setCompanyData({ ...companyData, status: e.target.value as string })}
-            options={statusOptions}
-            required
-          />
-        </Grid>
-
-        <Grid size={{ xs: 12 }}>
-          <Divider sx={{ my: 2 }} />
-          <Typography variant="h6" fontWeight={600} gutterBottom>
-            Address Information
-          </Typography>
-        </Grid>
-
-        <Grid size={{ xs: 12 }}>
-          <CustomTextField
-            label="Address"
-            name="address"
-            value={companyData.address}
-            onChange={(e) => setCompanyData({ ...companyData, address: e.target.value })}
-            placeholder="Street address"
-            multiline
-            rows={2}
-          />
-        </Grid>
-
-        <Grid size={{ xs: 12, sm: 6 }}>
-          <CustomTextField
-            label="City"
-            name="city"
-            value={companyData.city}
-            onChange={(e) => setCompanyData({ ...companyData, city: e.target.value })}
-            placeholder="City"
-          />
-        </Grid>
-
-        <Grid size={{ xs: 12, sm: 6 }}>
-          <CustomTextField
-            label="State/Province"
-            name="state"
-            value={companyData.state}
-            onChange={(e) => setCompanyData({ ...companyData, state: e.target.value })}
-            placeholder="State"
-          />
-        </Grid>
-
-        <Grid size={{ xs: 12, sm: 6 }}>
-          <CustomTextField
-            label="ZIP/Postal Code"
-            name="zipCode"
-            value={companyData.zipCode}
-            onChange={(e) => setCompanyData({ ...companyData, zipCode: e.target.value })}
-            placeholder="12345"
-          />
-        </Grid>
-
-        <Grid size={{ xs: 12, sm: 6 }}>
-          <CustomDropdown
-            label="Country"
-            name="country"
-            value={companyData.country}
-            onChange={(e) => setCompanyData({ ...companyData, country: e.target.value as string })}
-            options={countryOptions}
-          />
-        </Grid>
-
-        <Grid size={{ xs: 12 }}>
-          <Box sx={{ display: 'flex', gap: 2, justifyContent: 'flex-end', mt: 3 }}>
-            <Button
-              variant="outlined"
-              size="large"
-              onClick={() => navigate('/dashboard/master/company')}
-              sx={{
-                borderRadius: 2,
-                textTransform: 'none',
-                px: 4
-              }}
-            >
-              Cancel
-            </Button>
-            <Button
-              type="submit"
-              variant="contained"
-              size="large"
-              sx={{
-                borderRadius: 2,
-                textTransform: 'none',
-                px: 4,
-                boxShadow: `0 4px 15px ${alpha(theme.palette.primary.main, 0.4)}`,
-                '&:hover': {
-                  boxShadow: `0 6px 20px ${alpha(theme.palette.primary.main, 0.5)}`
-                }
-              }}
-            >
-              Save Company
-            </Button>
-          </Box>
-        </Grid>
+    <Grid container spacing={3}>
+      <Grid size={{ xs: 12 }}>
+        <Typography variant="h6" fontWeight={600} gutterBottom>
+          Company Information
+        </Typography>
+        <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+          Enter basic company details
+        </Typography>
       </Grid>
-    </Box>
+
+      <Grid size={{ xs: 12, sm: 6 }}>
+        <CustomTextField
+          label="Company Name"
+          name="name"
+          value={companyData.name}
+          onChange={(e) => setCompanyData({ ...companyData, name: e.target.value })}
+          required
+          placeholder="Enter company name"
+        />
+      </Grid>
+
+      <Grid size={{ xs: 12, sm: 6 }}>
+        <Box>
+          <Typography variant="body2" fontWeight={500} sx={{ mb: 1 }}>
+            Company Logo
+          </Typography>
+          <Button
+            component="label"
+            variant="outlined"
+            startIcon={<UploadIcon />}
+            fullWidth
+            sx={{
+              py: 1.5,
+              borderRadius: 2,
+              textTransform: 'none',
+              justifyContent: 'flex-start',
+            }}
+          >
+            {companyData.companyLogo ? companyData.companyLogo.name : 'Upload Logo'}
+            <input
+              type="file"
+              hidden
+              accept="image/*"
+              onChange={(e) => handleFileUpload(e, 'companyLogo')}
+            />
+          </Button>
+          {companyData.companyLogoPreview && (
+            <Box sx={{ mt: 2, textAlign: 'center' }}>
+              <img
+                src={companyData.companyLogoPreview}
+                alt="Company Logo Preview"
+                style={{ maxWidth: '150px', maxHeight: '150px', borderRadius: '8px' }}
+              />
+            </Box>
+          )}
+        </Box>
+      </Grid>
+
+      <Grid size={{ xs: 12, sm: 6 }}>
+        <CustomDropdown
+          label="Company Type"
+          name="companyType"
+          value={companyData.companyType}
+          onChange={(e) => setCompanyData({ ...companyData, companyType: e.target.value as string })}
+          options={companyTypeOptions}
+          required
+        />
+      </Grid>
+
+      <Grid size={{ xs: 12, sm: 6 }}>
+        <CustomDropdown
+          label="Country"
+          name="country"
+          value={companyData.country}
+          onChange={(e) => setCompanyData({ ...companyData, country: e.target.value as string })}
+          options={countryOptions}
+          required
+        />
+      </Grid>
+
+      <Grid size={{ xs: 12, sm: 6 }}>
+        <CustomDropdown
+          label="State"
+          name="state"
+          value={companyData.state}
+          onChange={(e) => setCompanyData({ ...companyData, state: e.target.value as string })}
+          options={stateOptions}
+          required
+        />
+      </Grid>
+
+      <Grid size={{ xs: 12, sm: 6 }}>
+        <CustomTextField
+          label="City"
+          name="city"
+          value={companyData.city}
+          onChange={(e) => setCompanyData({ ...companyData, city: e.target.value })}
+          placeholder="Enter city"
+          required
+        />
+      </Grid>
+
+      <Grid size={{ xs: 12, sm: 6 }}>
+        <CustomTextField
+          label="Building No"
+          name="buildingNo"
+          value={companyData.buildingNo}
+          onChange={(e) => setCompanyData({ ...companyData, buildingNo: e.target.value })}
+          placeholder="Building/Floor number"
+        />
+      </Grid>
+
+      <Grid size={{ xs: 12, sm: 6 }}>
+        <CustomTextField
+          label="ZIP Code"
+          name="zip"
+          value={companyData.zip}
+          onChange={(e) => setCompanyData({ ...companyData, zip: e.target.value })}
+          placeholder="Enter ZIP code"
+          required
+        />
+      </Grid>
+
+      <Grid size={{ xs: 12 }}>
+        <CustomTextField
+          label="Address"
+          name="address"
+          value={companyData.address}
+          onChange={(e) => setCompanyData({ ...companyData, address: e.target.value })}
+          placeholder="Enter complete address"
+          multiline
+          rows={3}
+          required
+        />
+      </Grid>
+
+      <Grid size={{ xs: 12, sm: 6 }}>
+        <CustomDropdown
+          label="Currency"
+          name="currency"
+          value={companyData.currency}
+          onChange={(e) => setCompanyData({ ...companyData, currency: e.target.value as string })}
+          options={currencyOptions}
+          required
+        />
+      </Grid>
+
+      <Grid size={{ xs: 12, sm: 6 }}>
+        <Box sx={{ pt: 3 }}>
+          <CustomCheckbox
+            singleLabel="Is Active"
+            checked={companyData.isActive}
+            onSingleChange={(checked) => setCompanyData({ ...companyData, isActive: checked })}
+          />
+        </Box>
+      </Grid>
+    </Grid>
+  );
+
+  const renderUserForm = () => (
+    <Grid container spacing={3}>
+      <Grid size={{ xs: 12 }}>
+        <Typography variant="h6" fontWeight={600} gutterBottom>
+          User Information
+        </Typography>
+        <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+          Add primary user details for the company
+        </Typography>
+      </Grid>
+
+      <Grid size={{ xs: 12, sm: 6 }}>
+        <CustomTextField
+          label="Name"
+          name="name"
+          value={userData.name}
+          onChange={(e) => setUserData({ ...userData, name: e.target.value })}
+          required
+          placeholder="Enter full name"
+        />
+      </Grid>
+
+      <Grid size={{ xs: 12, sm: 6 }}>
+        <CustomTextField
+          label="Email Address"
+          name="email"
+          type="email"
+          value={userData.email}
+          onChange={(e) => setUserData({ ...userData, email: e.target.value })}
+          required
+          placeholder="user@example.com"
+        />
+      </Grid>
+
+      <Grid size={{ xs: 12, sm: 6 }}>
+        <CustomTextField
+          label="Password"
+          name="password"
+          type="password"
+          value={userData.password}
+          onChange={(e) => setUserData({ ...userData, password: e.target.value })}
+          required
+          placeholder="Enter password"
+        />
+      </Grid>
+
+      <Grid size={{ xs: 12, sm: 6 }}>
+        <CustomTextField
+          label="Mobile"
+          name="mobile"
+          value={userData.mobile}
+          onChange={(e) => setUserData({ ...userData, mobile: e.target.value })}
+          required
+          placeholder="+1 (555) 000-0000"
+        />
+      </Grid>
+
+      <Grid size={{ xs: 12, sm: 6 }}>
+        <Box>
+          <Typography variant="body2" fontWeight={500} sx={{ mb: 1 }}>
+            User Image
+          </Typography>
+          <Button
+            component="label"
+            variant="outlined"
+            startIcon={<UploadIcon />}
+            fullWidth
+            sx={{
+              py: 1.5,
+              borderRadius: 2,
+              textTransform: 'none',
+              justifyContent: 'flex-start',
+            }}
+          >
+            {userData.userImage ? userData.userImage.name : 'Upload Image'}
+            <input
+              type="file"
+              hidden
+              accept="image/*"
+              onChange={(e) => handleFileUpload(e, 'userImage')}
+            />
+          </Button>
+          {userData.userImagePreview && (
+            <Box sx={{ mt: 2, textAlign: 'center' }}>
+              <img
+                src={userData.userImagePreview}
+                alt="User Image Preview"
+                style={{ maxWidth: '150px', maxHeight: '150px', borderRadius: '8px' }}
+              />
+            </Box>
+          )}
+        </Box>
+      </Grid>
+
+      <Grid size={{ xs: 12, sm: 6 }}>
+        <Box sx={{ pt: 3 }}>
+          <CustomCheckbox
+            singleLabel="Is Active"
+            checked={userData.isActive}
+            onSingleChange={(checked) => setUserData({ ...userData, isActive: checked })}
+          />
+        </Box>
+      </Grid>
+    </Grid>
+  );
+
+  const renderDomainForm = () => (
+    <Grid container spacing={3}>
+      <Grid size={{ xs: 12 }}>
+        <Typography variant="h6" fontWeight={600} gutterBottom>
+          Domain Configuration
+        </Typography>
+        <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+          Configure domain settings for the company
+        </Typography>
+      </Grid>
+
+      <Grid size={{ xs: 12, sm: 6 }}>
+        <CustomTextField
+          label="Domain"
+          name="domain"
+          value={domainData.domain}
+          onChange={(e) => setDomainData({ ...domainData, domain: e.target.value })}
+          required
+          placeholder="company.com"
+        />
+      </Grid>
+
+      <Grid size={{ xs: 12, sm: 6 }}>
+        <CustomTextField
+          label="External Domain"
+          name="externalDomain"
+          value={domainData.externalDomain}
+          onChange={(e) => setDomainData({ ...domainData, externalDomain: e.target.value })}
+          placeholder="external.company.com"
+        />
+      </Grid>
+    </Grid>
+  );
+
+  const renderAccountForm = () => (
+    <Grid container spacing={3}>
+      <Grid size={{ xs: 12 }}>
+        <Typography variant="h6" fontWeight={600} gutterBottom>
+          Account Details
+        </Typography>
+        <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+          Add company registration and tax information
+        </Typography>
+      </Grid>
+
+      <Grid size={{ xs: 12, sm: 6 }}>
+        <CustomTextField
+          label="IFSC Code"
+          name="ifscCode"
+          value={accountData.ifscCode}
+          onChange={(e) => setAccountData({ ...accountData, ifscCode: e.target.value })}
+          required
+          placeholder="IFSC0001234"
+        />
+      </Grid>
+
+      <Grid size={{ xs: 12, sm: 6 }}>
+        <CustomTextField
+          label="PAN No"
+          name="panNo"
+          value={accountData.panNo}
+          onChange={(e) => setAccountData({ ...accountData, panNo: e.target.value })}
+          required
+          placeholder="ABCDE1234F"
+        />
+      </Grid>
+
+      <Grid size={{ xs: 12, sm: 6 }}>
+        <CustomTextField
+          label="GST No"
+          name="gstNo"
+          value={accountData.gstNo}
+          onChange={(e) => setAccountData({ ...accountData, gstNo: e.target.value })}
+          required
+          placeholder="22AAAAA0000A1Z5"
+        />
+      </Grid>
+
+      <Grid size={{ xs: 12, sm: 6 }}>
+        <CustomTextField
+          label="CIN No"
+          name="cinNo"
+          value={accountData.cinNo}
+          onChange={(e) => setAccountData({ ...accountData, cinNo: e.target.value })}
+          required
+          placeholder="U12345AB2020PTC123456"
+        />
+      </Grid>
+    </Grid>
+  );
+
+  const renderSubscriptionForm = () => (
+    <Grid container spacing={3}>
+      <Grid size={{ xs: 12 }}>
+        <Typography variant="h6" fontWeight={600} gutterBottom>
+          Subscription Plan
+        </Typography>
+        <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+          Configure subscription and pricing details
+        </Typography>
+      </Grid>
+
+      <Grid size={{ xs: 12, sm: 6 }}>
+        <CustomDropdown
+          label="Plan Type"
+          name="planType"
+          value={subscriptionData.planType}
+          onChange={(e) => setSubscriptionData({ ...subscriptionData, planType: e.target.value as string })}
+          options={planTypeOptions}
+          required
+        />
+      </Grid>
+
+      <Grid size={{ xs: 12, sm: 6 }}>
+        <CustomTextField
+          label="Plan Rate"
+          name="planRate"
+          type="number"
+          value={subscriptionData.planRate}
+          onChange={(e) => setSubscriptionData({ ...subscriptionData, planRate: e.target.value })}
+          required
+          placeholder="Enter plan rate"
+        />
+      </Grid>
+    </Grid>
   );
 
   const renderPlaceholder = (title: string) => (
@@ -293,17 +724,20 @@ const AddCompanyPage: React.FC = () => {
       case 'company':
         return renderCompanyForm();
       case 'user':
-        return renderPlaceholder('User');
+        return renderUserForm();
       case 'domain':
-        return renderPlaceholder('Domain');
+        return renderDomainForm();
       case 'account':
-        return renderPlaceholder('Account Details');
+        return renderAccountForm();
       case 'subscription':
-        return renderPlaceholder('Subscription');
+        return renderSubscriptionForm();
       default:
         return renderCompanyForm();
     }
   };
+
+  const isLastTab = activeTab === 'subscription';
+  const isFirstTab = activeTab === 'company';
 
   return (
     <Box>
@@ -333,7 +767,7 @@ const AddCompanyPage: React.FC = () => {
 
       {/* Main Content */}
       <Grid container spacing={3}>
-        {/* Right Side - Tab Buttons */}
+        {/* Left Side - Tab Buttons */}
         <Grid size={{ xs: 12, md: 3 }}>
           <Paper
             sx={{
@@ -378,7 +812,7 @@ const AddCompanyPage: React.FC = () => {
           </Paper>
         </Grid>
 
-        {/* Left Side - Form Content */}
+        {/* Right Side - Form Content */}
         <Grid size={{ xs: 12, md: 9 }}>
           <Card
             sx={{
@@ -387,11 +821,101 @@ const AddCompanyPage: React.FC = () => {
             }}
           >
             <CardContent sx={{ p: 4 }}>
-              {renderContent()}
+              <Box component="form" onSubmit={handleSubmit}>
+                {renderContent()}
+
+                {/* Navigation Buttons */}
+                <Box sx={{ display: 'flex', gap: 2, justifyContent: 'space-between', mt: 4, pt: 3, borderTop: `1px solid ${theme.palette.divider}` }}>
+                  <Box sx={{ display: 'flex', gap: 2 }}>
+                    <Button
+                      variant="outlined"
+                      size="large"
+                      onClick={() => navigate('/dashboard/master/company')}
+                      sx={{
+                        borderRadius: 2,
+                        textTransform: 'none',
+                        px: 4
+                      }}
+                    >
+                      Cancel
+                    </Button>
+                    {!isFirstTab && (
+                      <Button
+                        variant="outlined"
+                        size="large"
+                        onClick={handlePrevious}
+                        sx={{
+                          borderRadius: 2,
+                          textTransform: 'none',
+                          px: 4
+                        }}
+                      >
+                        Previous
+                      </Button>
+                    )}
+                  </Box>
+                  <Box>
+                    {!isLastTab ? (
+                      <Button
+                        variant="contained"
+                        size="large"
+                        onClick={handleNext}
+                        sx={{
+                          borderRadius: 2,
+                          textTransform: 'none',
+                          px: 4,
+                          boxShadow: `0 4px 15px ${alpha(theme.palette.primary.main, 0.4)}`,
+                          '&:hover': {
+                            boxShadow: `0 6px 20px ${alpha(theme.palette.primary.main, 0.5)}`
+                          }
+                        }}
+                      >
+                        Next
+                      </Button>
+                    ) : (
+                      <Button
+                        type="submit"
+                        variant="contained"
+                        size="large"
+                        disabled={loading}
+                        sx={{
+                          borderRadius: 2,
+                          textTransform: 'none',
+                          px: 4,
+                          boxShadow: `0 4px 15px ${alpha(theme.palette.success.main, 0.4)}`,
+                          bgcolor: theme.palette.success.main,
+                          '&:hover': {
+                            bgcolor: theme.palette.success.dark,
+                            boxShadow: `0 6px 20px ${alpha(theme.palette.success.main, 0.5)}`
+                          }
+                        }}
+                      >
+                        {loading ? 'Saving...' : 'Submit & Save'}
+                      </Button>
+                    )}
+                  </Box>
+                </Box>
+              </Box>
             </CardContent>
           </Card>
         </Grid>
       </Grid>
+
+      {/* Success/Error Snackbar */}
+      <Snackbar
+        open={showSnackbar}
+        autoHideDuration={6000}
+        onClose={handleSnackbarClose}
+        anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
+      >
+        <Alert 
+          onClose={handleSnackbarClose} 
+          severity={error ? 'error' : 'success'}
+          sx={{ width: '100%' }}
+        >
+          {error || 'Company added successfully!'}
+        </Alert>
+      </Snackbar>
     </Box>
   );
 };

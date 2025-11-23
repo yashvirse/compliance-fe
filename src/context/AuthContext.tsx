@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import type { User, AuthContextType } from '../types/index';
+import { UserRole } from '../config/roleConfig';
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
@@ -10,7 +11,23 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     // Check if user is stored in localStorage
     const storedUser = localStorage.getItem('user');
     if (storedUser) {
-      setUser(JSON.parse(storedUser));
+      try {
+        const parsedUser = JSON.parse(storedUser);
+        // Map API role string to UserRole enum
+        const roleMapping: Record<string, UserRole> = {
+          'SuperAdmin': UserRole.SUPER_ADMIN,
+          'CustomerAdmin': UserRole.CUSTOMER_ADMIN,
+          'Maker': UserRole.MAKER,
+          'Checker': UserRole.CHECKER,
+          'Reviewer': UserRole.REVIEWER,
+          'Viewer': UserRole.VIEWER,
+        };
+        parsedUser.role = roleMapping[parsedUser.role] || UserRole.VIEWER;
+        setUser(parsedUser);
+      } catch (error) {
+        console.error('Error parsing user from localStorage:', error);
+        localStorage.removeItem('user');
+      }
     }
   }, []);
 
@@ -18,12 +35,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     // Simulate API call
     await new Promise(resolve => setTimeout(resolve, 1000));
     
+    // Assign role based on email for demo purposes
+    let role: UserRole = UserRole.VIEWER;
+    if (email.includes('superadmin')) role = UserRole.SUPER_ADMIN;
+    else if (email.includes('admin')) role = UserRole.CUSTOMER_ADMIN;
+    else if (email.includes('maker')) role = UserRole.MAKER;
+    else if (email.includes('checker')) role = UserRole.CHECKER;
+    else if (email.includes('reviewer')) role = UserRole.REVIEWER;
+    
     // Mock user data
     const userData: User = {
       id: '1',
-      name: 'John Doe',
+      name: email.split('@')[0].replace(/[^a-zA-Z]/g, ' ').trim() || 'User',
       email: email,
-      role: 'Admin'
+      role: role
     };
     
     setUser(userData);
@@ -33,6 +58,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const logout = () => {
     setUser(null);
     localStorage.removeItem('user');
+    localStorage.removeItem('authToken');
   };
 
   return (

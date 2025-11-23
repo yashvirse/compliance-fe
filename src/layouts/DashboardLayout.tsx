@@ -1,84 +1,54 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import {
   Box,
   Drawer,
   AppBar,
   Toolbar,
-  List,
   Typography,
   Divider,
   IconButton,
-  ListItem,
-  ListItemButton,
-  ListItemIcon,
-  ListItemText,
   Avatar,
   Menu,
   MenuItem,
   useTheme,
   alpha,
   Badge,
-  Collapse,
-  Tooltip
+  ListItemIcon
 } from '@mui/material';
 import {
-  Dashboard as DashboardIcon,
-  Description as DescriptionIcon,
-  Assessment as AssessmentIcon,
-  Settings as SettingsIcon,
   Notifications as NotificationsIcon,
   Menu as MenuIcon,
   Logout,
   AccountCircle,
   ChevronLeft,
-  ChevronRight,
-  ExpandLess,
-  ExpandMore,
-  Folder,
-  People,
-  Business,
-  Public
+  ChevronRight
 } from '@mui/icons-material';
 import { useAuth } from '../context/AuthContext.tsx';
 import Breadcrumb from '../components/Breadcrumb.tsx';
+import RoleBasedSidebar from '../components/RoleBasedSidebar.tsx';
+import { getDashboardPathForRole, UserRole } from '../config/roleConfig.tsx';
 
 const drawerWidth = 280;
 const drawerWidthCollapsed = 65;
-
-interface MenuItemType {
-  text: string;
-  icon: React.ReactElement;
-  path?: string;
-  children?: MenuItemType[];
-}
-
-const menuItems: MenuItemType[] = [
-  { text: 'Dashboard', icon: <DashboardIcon />, path: '/dashboard' },
-  { 
-    text: 'Master', 
-    icon: <Folder />, 
-    children: [
-      { text: 'User', icon: <People />, path: '/dashboard/master/user' },
-      { text: 'Company', icon: <Business />, path: '/dashboard/master/company' },
-      { text: 'Country', icon: <Public />, path: '/dashboard/master/country' },
-    ]
-  },
-  { text: 'Form', icon: <DescriptionIcon />, path: '/dashboard/form' },
-  { text: 'Components', icon: <SettingsIcon />, path: '/dashboard/components' },
-  { text: 'Reports', icon: <AssessmentIcon />, path: '/dashboard/reports' },
-  { text: 'Settings', icon: <SettingsIcon />, path: '/dashboard/settings' },
-];
 
 const DashboardLayout: React.FC = () => {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [sidebarOpen, setSidebarOpen] = useState(true);
-  const [masterOpen, setMasterOpen] = useState(false);
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const theme = useTheme();
+
+  // Redirect to role-specific dashboard if on generic /dashboard route
+  useEffect(() => {
+    if (location.pathname === '/dashboard' && user) {
+      const userRole = user.role as UserRole;
+      const dashboardPath = getDashboardPathForRole(userRole);
+      navigate(dashboardPath, { replace: true });
+    }
+  }, [location.pathname, user, navigate]);
 
   const handleDrawerToggle = () => {
     setMobileOpen(!mobileOpen);
@@ -99,10 +69,6 @@ const DashboardLayout: React.FC = () => {
 
   const handleSidebarToggle = () => {
     setSidebarOpen(!sidebarOpen);
-  };
-
-  const handleMasterClick = () => {
-    setMasterOpen(!masterOpen);
   };
 
   const currentDrawerWidth = sidebarOpen ? drawerWidth : drawerWidthCollapsed;
@@ -138,127 +104,7 @@ const DashboardLayout: React.FC = () => {
       
       <Divider sx={{ bgcolor: alpha('#fff', 0.2), my: 2 }} />
       
-      <List sx={{ px: 2, flex: 1, overflowY: 'auto' }}>
-        {menuItems.map((item) => (
-          <React.Fragment key={item.text}>
-            {item.children ? (
-              <>
-                <ListItem disablePadding sx={{ mb: 1 }}>
-                  <Tooltip title={!sidebarOpen ? item.text : ''} placement="right">
-                    <ListItemButton
-                      onClick={handleMasterClick}
-                      sx={{
-                        borderRadius: 2,
-                        justifyContent: sidebarOpen ? 'initial' : 'center',
-                        '&:hover': {
-                          bgcolor: alpha('#fff', 0.15),
-                        }
-                      }}
-                    >
-                      <ListItemIcon sx={{ 
-                        color: 'white', 
-                        minWidth: sidebarOpen ? 40 : 'auto',
-                        mr: sidebarOpen ? 0 : 0,
-                        justifyContent: 'center'
-                      }}>
-                        {item.icon}
-                      </ListItemIcon>
-                      {sidebarOpen && (
-                        <>
-                          <ListItemText 
-                            primary={item.text}
-                            primaryTypographyProps={{
-                              fontWeight: 500,
-                              fontSize: '0.95rem'
-                            }}
-                          />
-                          {masterOpen ? <ExpandLess /> : <ExpandMore />}
-                        </>
-                      )}
-                    </ListItemButton>
-                  </Tooltip>
-                </ListItem>
-                <Collapse in={masterOpen && sidebarOpen} timeout="auto" unmountOnExit>
-                  <List component="div" disablePadding>
-                    {item.children.map((child) => (
-                      <ListItem key={child.text} disablePadding sx={{ mb: 0.5 }}>
-                        <ListItemButton
-                          onClick={() => navigate(child.path!)}
-                          selected={location.pathname === child.path}
-                          sx={{
-                            pl: 4,
-                            borderRadius: 2,
-                            '&:hover': {
-                              bgcolor: alpha('#fff', 0.15),
-                            },
-                            '&.Mui-selected': {
-                              bgcolor: alpha('#fff', 0.2),
-                              '&:hover': {
-                                bgcolor: alpha('#fff', 0.25),
-                              }
-                            }
-                          }}
-                        >
-                          <ListItemIcon sx={{ color: 'white', minWidth: 40 }}>
-                            {child.icon}
-                          </ListItemIcon>
-                          <ListItemText 
-                            primary={child.text}
-                            primaryTypographyProps={{
-                              fontWeight: 500,
-                              fontSize: '0.9rem'
-                            }}
-                          />
-                        </ListItemButton>
-                      </ListItem>
-                    ))}
-                  </List>
-                </Collapse>
-              </>
-            ) : (
-              <ListItem disablePadding sx={{ mb: 1 }}>
-                <Tooltip title={!sidebarOpen ? item.text : ''} placement="right">
-                  <ListItemButton
-                    onClick={() => navigate(item.path!)}
-                    selected={location.pathname === item.path}
-                    sx={{
-                      borderRadius: 2,
-                      justifyContent: sidebarOpen ? 'initial' : 'center',
-                      '&:hover': {
-                        bgcolor: alpha('#fff', 0.15),
-                      },
-                      '&.Mui-selected': {
-                        bgcolor: alpha('#fff', 0.2),
-                        '&:hover': {
-                          bgcolor: alpha('#fff', 0.25),
-                        }
-                      }
-                    }}
-                  >
-                    <ListItemIcon sx={{ 
-                      color: 'white', 
-                      minWidth: sidebarOpen ? 40 : 'auto',
-                      mr: sidebarOpen ? 0 : 0,
-                      justifyContent: 'center'
-                    }}>
-                      {item.icon}
-                    </ListItemIcon>
-                    {sidebarOpen && (
-                      <ListItemText 
-                        primary={item.text}
-                        primaryTypographyProps={{
-                          fontWeight: 500,
-                          fontSize: '0.95rem'
-                        }}
-                      />
-                    )}
-                  </ListItemButton>
-                </Tooltip>
-              </ListItem>
-            )}
-          </React.Fragment>
-        ))}
-      </List>
+      <RoleBasedSidebar sidebarOpen={sidebarOpen} />
 
       {sidebarOpen && (
         <Box sx={{ p: 3 }}>

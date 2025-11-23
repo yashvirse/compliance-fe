@@ -1,0 +1,62 @@
+// Company Types and Interfaces
+
+export interface CompanyAddress {
+  latitude?: string;
+  longitude?: string;
+  CompanyState: string;
+  CompanyCountry: string;
+  CompanyCity: string;
+  buildingNumber?: string;
+  CompanyZIP: string;
+  detailAdddress: string;
+}
+
+export interface UserData {
+  userName: string;
+  userEmail: string;
+  userPassword: string;
+  userMobile: string;
+  userImage?: string;
+  userRole?: string;
+  userID?: string;
+  companyId?: string;
+  companyDomain?: string;
+  companyType?: string;
+  IsActive: boolean;
+  createdBy?: string;
+  createdOn?: string;
+}
+
+export interface AddCompanyRequest {
+  CompanyName: string;
+  CompanyLogo?: string;
+  CompanyType: string;
+  CompanyCurrency: string;
+  CompanyIsActive: boolean;
+  CompanyDomain: string;
+  PAN_No: string;
+  GST_NO: string;
+  CIN_NO: string;
+  IFSC_Code: string;
+  plan_type: string;
+  plan_rate: string;
+  CID?: string;
+  CreatedBy?: string;
+  CompanyAddress: CompanyAddress;
+  user: UserData;
+  companyLogo?: File | null;
+  userImg?: File | null;
+}
+
+export interface AddCompanyResponse {
+  isSuccess: boolean;
+  message: string;
+  result?: any;
+}
+
+export interface CompanyState {
+  loading: boolean;
+  error: string | null;
+  success: boolean;
+  companies: any[];
+}

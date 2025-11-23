@@ -1,7 +1,7 @@
 import axios, { type AxiosInstance, type AxiosRequestConfig, type AxiosResponse } from 'axios';
 
 // API Configuration
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000/api';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://122.180.254.137:8099/api';
 const API_TIMEOUT = 30000; // 30 seconds
 
 // Create axios instance with default config
@@ -11,6 +11,7 @@ const apiClient: AxiosInstance = axios.create({
   headers: {
     'Content-Type': 'application/json',
   },
+  withCredentials: true, // IMPORTANT: Enable sending cookies/session tokens with requests
 });
 
 // Request interceptor - Add auth token to requests
@@ -20,6 +21,13 @@ apiClient.interceptors.request.use(
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
+    
+    // Debug logging
+    console.log(`📤 ${config.method?.toUpperCase()} ${config.url}`, {
+      withCredentials: config.withCredentials,
+      headers: config.headers,
+    });
+    
     return config;
   },
   (error) => {
@@ -29,9 +37,21 @@ apiClient.interceptors.request.use(
 
 // Response interceptor - Handle common errors
 apiClient.interceptors.response.use(
-  (response) => response,
+  (response) => {
+    // Debug logging
+    console.log(`📥 ${response.config.method?.toUpperCase()} ${response.config.url} - ${response.status}`, {
+      setCookie: response.headers['set-cookie'],
+      data: response.data,
+    });
+    return response;
+  },
   (error) => {
     if (error.response) {
+      console.error(`❌ ${error.config?.method?.toUpperCase()} ${error.config?.url} - ${error.response.status}`, {
+        data: error.response.data,
+        headers: error.response.headers,
+      });
+      
       // Handle specific error codes
       switch (error.response.status) {
         case 401:

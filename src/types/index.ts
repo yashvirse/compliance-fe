@@ -1,8 +1,15 @@
+import { UserRole } from '../config/roleConfig';
+
 export interface User {
   id: string;
+  companyID: string;
+  companyType: string;
   name: string;
   email: string;
-  role: string;
+  role: UserRole;
+  domain: string;
+  isActive: boolean;
+  token: string;
 }
 
 export interface AuthContextType {
