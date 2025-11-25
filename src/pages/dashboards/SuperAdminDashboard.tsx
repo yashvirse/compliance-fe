@@ -4,7 +4,6 @@ import {
   SupervisorAccount,
   Business,
   People,
-  Assessment,
   TrendingUp,
   Security,
 } from '@mui/icons-material';

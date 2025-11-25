@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { useSelector } from 'react-redux';
 import {
   Box,
   List,
@@ -27,7 +28,7 @@ import {
   Settings,
   Widgets,
 } from '@mui/icons-material';
-import { useAuth } from '../context/AuthContext.tsx';
+import { selectUser } from '../pages/login/slice/Login.selector';
 import { getMenuItemsForRole, type MenuItem, UserRole } from '../config/roleConfig.tsx';
 
 interface RoleBasedSidebarProps {
@@ -58,7 +59,7 @@ const iconMap: Record<string, React.ReactElement> = {
 const RoleBasedSidebar: React.FC<RoleBasedSidebarProps> = ({ sidebarOpen }) => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { user } = useAuth();
+  const user = useSelector(selectUser);
   const [openMenus, setOpenMenus] = useState<Record<string, boolean>>({});
 
   // Get menu items based on user role

@@ -3,7 +3,7 @@ import { ThemeProvider, createTheme, CssBaseline, Box, CircularProgress } from '
 import { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import type { AppDispatch } from './app/store';
-import { restoreUser } from './pages/login/slice/Login.slice';
+import { restoreUser } from './pages/login/slice/Login.Slice';
 import { selectIsInitializing, selectIsAuthenticated, selectUser } from './pages/login/slice/Login.selector';
 import { getDashboardPathForRole, UserRole } from './config/roleConfig.tsx';
 import { AuthProvider } from './context/AuthContext.tsx';

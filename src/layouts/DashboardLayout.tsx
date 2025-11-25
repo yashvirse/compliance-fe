@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import type { AppDispatch } from '../app/store';
-import { logout } from '../pages/login/slice/Login.slice';
+import { logout } from '../pages/login/slice/Login.Slice';
 import { selectUser } from '../pages/login/slice/Login.selector';
 import {
   Box,

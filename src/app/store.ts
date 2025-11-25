@@ -1,5 +1,5 @@
 import { configureStore } from "@reduxjs/toolkit";
-import loginReducer from "../pages/login/slice/Login.slice";
+import loginReducer from "../pages/login/slice/Login.Slice";
 import companyReducer from "../pages/master/company/slice/Company.Slice";
 import actMasterReducer from "../pages/master/act/slice/Act.Slice";
 import departmentMasterReducer from "../pages/master/department/slice/Department.Slice";

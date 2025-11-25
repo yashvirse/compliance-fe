@@ -48,7 +48,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       id: '1',
       name: email.split('@')[0].replace(/[^a-zA-Z]/g, ' ').trim() || 'User',
       email: email,
-      role: role
+      role: role,
+      companyID: '',
+      companyType: '',
+      domain: '',
+      isActive: false,
+      token: ''
     };
     
     setUser(userData);

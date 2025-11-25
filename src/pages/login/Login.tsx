@@ -18,12 +18,10 @@ import {
   EmailOutlined,
   LockOutlined
 } from '@mui/icons-material';
-import { loginUser, clearError } from './slice/Login.slice';
+import { loginUser, clearError } from './slice/Login.Slice';
 import { 
   selectLoginLoading, 
-  selectLoginError, 
-  selectIsAuthenticated,
-  selectUser
+  selectLoginError
 } from './slice/Login.selector';
 import { getDashboardPathForRole, UserRole } from '../../config/roleConfig';
 
@@ -37,22 +35,11 @@ const Login: React.FC = () => {
   // Redux selectors
   const loading = useSelector(selectLoginLoading);
   const loginError = useSelector(selectLoginError);
-  const isAuthenticated = useSelector(selectIsAuthenticated);
-  const user = useSelector(selectUser);
   
   // Local state
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-
-  // Redirect if authenticated
-  useEffect(() => {
-    if (isAuthenticated && user) {
-      // Redirect to role-specific dashboard
-      const dashboardPath = getDashboardPathForRole(user.role as UserRole);
-      navigate(dashboardPath, { replace: true });
-    }
-  }, [isAuthenticated, user, navigate]);
 
   // Clear error when component unmounts
   useEffect(() => {
@@ -64,13 +51,37 @@ const Login: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    // Dispatch login action
-    await dispatch(
+    // Dispatch login action and wait for result
+    const result = await dispatch(
       loginUser({
         userEmail: email,
         password: password,
       })
     );
+
+    // Check if login was successful
+    if (loginUser.fulfilled.match(result)) {
+      // Get the user role from the result
+      const userRole = result.payload.result.role;
+      
+      // Role mapping from API string to UserRole enum
+      const roleMapping: Record<string, UserRole> = {
+        'SuperAdmin': UserRole.SUPER_ADMIN,
+        'CustomerAdmin': UserRole.CUSTOMER_ADMIN,
+        'Maker': UserRole.MAKER,
+        'Checker': UserRole.CHECKER,
+        'Reviewer': UserRole.REVIEWER,
+        'Viewer': UserRole.VIEWER,
+      };
+      
+      const mappedRole = roleMapping[userRole] || UserRole.VIEWER;
+      
+      // Get the dashboard path for the role
+      const dashboardPath = getDashboardPathForRole(mappedRole);
+      
+      // Navigate immediately after successful login
+      navigate(dashboardPath, { replace: true });
+    }
   };
 
   const handleForgotPassword = () => {
