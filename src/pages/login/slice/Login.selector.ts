@@ -15,5 +15,8 @@ export const selectToken = (state: RootState) => state.login.token;
 // Select authentication status
 export const selectIsAuthenticated = (state: RootState) => state.login.isAuthenticated;
 
+// Select initializing status
+export const selectIsInitializing = (state: RootState) => state.login.isInitializing;
+
 // Select complete login state
 export const selectLoginState = (state: RootState) => state.login;

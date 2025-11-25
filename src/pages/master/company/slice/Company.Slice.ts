@@ -6,7 +6,9 @@ import type {
   CompanyState,
   GetCompanyListResponse,
   DeleteCompanyResponse,
-  GetCompanyByIdResponse
+  GetCompanyByIdResponse,
+  UpdateCompanyRequest,
+  UpdateCompanyResponse
 } from './Company.Type';
 
 // Initial state
@@ -89,6 +91,7 @@ export const addCompany = createAsyncThunk<
       formData.append('CID', 'CID');
       formData.append('CreatedBy', 'CreatedBy');
       
+
 
       // User Image (file)
       if (companyData.userImg) {
@@ -234,6 +237,115 @@ export const fetchCompanyById = createAsyncThunk<
   }
 );
 
+// Async thunk for updating company
+export const updateCompany = createAsyncThunk<
+  UpdateCompanyResponse,
+  UpdateCompanyRequest,
+  { rejectValue: string }
+>(
+  'company/updateCompany',
+  async (companyData: UpdateCompanyRequest, { rejectWithValue }) => {
+    try {
+      // Create FormData for multipart/form-data
+      const formData = new FormData();
+
+      // Required fields
+      formData.append('CID', companyData.CID);
+      formData.append('CompanyName', companyData.CompanyName);
+      formData.append('CompanyType', companyData.CompanyType);
+      formData.append('CompanyCurrency', companyData.CompanyCurrency);
+      formData.append('CompanyIsActive', String(companyData.CompanyIsActive));
+      formData.append('CompanyDomain', companyData.CompanyDomain);
+      
+      // Financial details
+      formData.append('PAN_No', companyData.PAN_No);
+      formData.append('GST_NO', companyData.GST_NO);
+      formData.append('CIN_NO', companyData.CIN_NO);
+      formData.append('IFSC_Code', companyData.IFSC_Code);
+      
+      // Subscription
+      formData.append('plan_type', companyData.plan_type);
+      formData.append('plan_rate', companyData.plan_rate);
+
+      // Company Logo (file or string)
+      if (companyData.companyLogo instanceof File) {
+        formData.append('companyLogo', companyData.companyLogo);
+      } else if (companyData.CompanyLogo) {
+        formData.append('CompanyLogo', companyData.CompanyLogo);
+      }
+
+      // Company Address
+      formData.append('CompanyAddress.CompanyState', companyData.CompanyAddress.CompanyState);
+      formData.append('CompanyAddress.CompanyCountry', companyData.CompanyAddress.CompanyCountry);
+      formData.append('CompanyAddress.CompanyCity', companyData.CompanyAddress.CompanyCity);
+      formData.append('CompanyAddress.CompanyZIP', companyData.CompanyAddress.CompanyZIP);
+      formData.append('CompanyAddress.detailAdddress', companyData.CompanyAddress.detailAdddress);
+      
+      if (companyData.CompanyAddress.buildingNumber) {
+        formData.append('CompanyAddress.buildingNumber', companyData.CompanyAddress.buildingNumber);
+      }
+
+      // User Data - Required fields
+      formData.append('user.userID', companyData.user.userID);
+      formData.append('user.userName', companyData.user.userName);
+      formData.append('user.userEmail', companyData.user.userEmail);
+      formData.append('user.userPassword', companyData.user.userPassword);
+      formData.append('user.userMobile', companyData.user.userMobile);
+      formData.append('user.IsActive', String(companyData.user.IsActive));
+      
+      // User Image (file or string)
+      if (companyData.userImg instanceof File) {
+        formData.append('userImage', companyData.userImg);
+      } else if (companyData.user.userImage) {
+        formData.append('user.userImage', companyData.user.userImage);
+      }
+
+      // Optional user fields
+      if (companyData.user.userRole) {
+        formData.append('user.userRole', companyData.user.userRole);
+      }
+      if (companyData.user.companyId) {
+        formData.append('user.companyId', companyData.user.companyId);
+      }
+      if (companyData.user.companyDomain) {
+        formData.append('user.companyDomain', companyData.user.companyDomain);
+      }
+      if (companyData.user.companyType) {
+        formData.append('user.companyType', companyData.user.companyType);
+      }
+      if (companyData.user.createdBy) {
+        formData.append('user.createdBy', companyData.user.createdBy);
+      }
+      if (companyData.user.createdOn) {
+        formData.append('user.createdOn', companyData.user.createdOn);
+      }
+
+      // Optional company fields
+      if (companyData.CreatedBy) {
+        formData.append('CreatedBy', companyData.CreatedBy);
+      }
+
+      // Make API call
+      const response = await apiService.upload<UpdateCompanyResponse>(
+        'CompanyMaster/editComp',
+        formData
+      );
+
+      // Check if company update was successful
+      if (!response.isSuccess) {
+        return rejectWithValue(response.message || 'Failed to update company');
+      }
+
+      return response;
+    } catch (error: any) {
+      const errorMessage = error?.response?.data?.message || 
+                          error?.message || 
+                          'Failed to update company. Please try again.';
+      return rejectWithValue(errorMessage);
+    }
+  }
+);
+
 // Company slice
 const companySlice = createSlice({
   name: 'company',
@@ -345,6 +457,31 @@ const companySlice = createSlice({
         state.fetchByIdLoading = false;
         state.fetchByIdError = action.payload || 'An error occurred while fetching company details';
         state.currentCompany = null;
+      })
+      // Update Company pending
+      .addCase(updateCompany.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+        state.success = false;
+      })
+      // Update Company fulfilled
+      .addCase(updateCompany.fulfilled, (state, action) => {
+        state.loading = false;
+        state.error = null;
+        state.success = true;
+        // Update the company in the list if it exists
+        const updatedCompanyIndex = state.companies.findIndex(
+          (company) => company.cid === action.meta.arg.CID
+        );
+        if (updatedCompanyIndex !== -1 && action.payload.result) {
+          state.companies[updatedCompanyIndex] = action.payload.result;
+        }
+      })
+      // Update Company rejected
+      .addCase(updateCompany.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload || 'An error occurred while updating company';
+        state.success = false;
       });
   },
 });

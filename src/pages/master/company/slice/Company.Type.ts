@@ -48,6 +48,13 @@ export interface AddCompanyRequest {
   userImg?: File | null;
 }
 
+export interface UpdateCompanyRequest extends AddCompanyRequest {
+  CID: string; // CID is required for update
+  user: UserData & {
+    userID: string; // userID is required for update
+  };
+}
+
 export interface AddCompanyResponse {
   isSuccess: boolean;
   message: string;
@@ -98,6 +105,12 @@ export interface GetCompanyByIdResponse {
   isSuccess: boolean;
   message: string;
   result: Company;
+}
+
+export interface UpdateCompanyResponse {
+  isSuccess: boolean;
+  message: string;
+  result?: any;
 }
 
 export interface CompanyState {

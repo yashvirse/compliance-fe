@@ -1,0 +1,329 @@
+import React, { useState, useEffect } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
+import { useDispatch, useSelector } from 'react-redux';
+import type { AppDispatch } from '../../../app/store';
+import {
+  Box,
+  Button,
+  Typography,
+  Card,
+  CardContent,
+  useTheme,
+  alpha,
+  Alert,
+  Snackbar,
+  CircularProgress
+} from '@mui/material';
+import { ArrowBack } from '@mui/icons-material';
+import { CustomTextField } from '../../../components/common';
+import { addActMaster, updateActMaster, clearError, clearSuccess, fetchActMasterById, clearCurrentActMaster } from './slice/Act.Slice';
+import {
+  selectActMasterLoading,
+  selectActMasterError,
+  selectActMasterSuccess,
+  selectCurrentActMaster,
+  selectFetchByIdLoading
+} from './slice/Act.Selector';
+import type { UpdateActMasterRequest } from './slice/Act.Type';
+
+const AddActMasterPage: React.FC = () => {
+  const theme = useTheme();
+  const navigate = useNavigate();
+  const dispatch = useDispatch<AppDispatch>();
+  const { id } = useParams();
+
+  const loading = useSelector(selectActMasterLoading);
+  const error = useSelector(selectActMasterError);
+  const success = useSelector(selectActMasterSuccess);
+  const currentActMaster = useSelector(selectCurrentActMaster);
+  const fetchByIdLoading = useSelector(selectFetchByIdLoading);
+
+  const isEditMode = !!id;
+  const [showSnackbar, setShowSnackbar] = useState(false);
+  const [formData, setFormData] = useState({
+    actCode: '',
+    actName: '',
+    actCategoryId: '',
+    description: '',
+    companyDomain: '',
+  });
+
+  // Fetch act master data in edit mode
+  useEffect(() => {
+    if (isEditMode && id) {
+      dispatch(fetchActMasterById(id));
+    }
+  }, [dispatch, id, isEditMode]);
+
+  // Populate form when act master data is loaded
+  useEffect(() => {
+    if (isEditMode && currentActMaster) {
+      setFormData({
+        actCode: currentActMaster.actCode || '',
+        actName: currentActMaster.actName || '',
+        actCategoryId: currentActMaster.actCategoryId || '',
+        description: currentActMaster.description || '',
+        companyDomain: currentActMaster.companyDomain || '',
+      });
+    }
+  }, [isEditMode, currentActMaster]);
+
+  useEffect(() => {
+    if (success) {
+      setShowSnackbar(true);
+      setTimeout(() => {
+        dispatch(clearSuccess());
+        navigate('/dashboard/master/act');
+      }, 1500);
+    }
+  }, [success, navigate, dispatch]);
+
+  useEffect(() => {
+    if (error) {
+      setShowSnackbar(true);
+    }
+  }, [error]);
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      dispatch(clearCurrentActMaster());
+      dispatch(clearSuccess());
+      dispatch(clearError());
+    };
+  }, [dispatch]);
+
+  const handleCloseSnackbar = () => {
+    setShowSnackbar(false);
+    if (error) {
+      dispatch(clearError());
+    }
+  };
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setFormData({
+      ...formData,
+      [e.target.name]: e.target.value
+    });
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (isEditMode && currentActMaster) {
+      // Update existing act master
+      const updateData: UpdateActMasterRequest = {
+        id: currentActMaster.id,
+        actCode: formData.actCode,
+        actName: formData.actName,
+        actCategoryId: formData.actCategoryId,
+        description: formData.description,
+        companyId: currentActMaster.companyId,
+        companyDomain: formData.companyDomain,
+        createdBy: currentActMaster.createdBy,
+        createdDate: currentActMaster.createdDate,
+      };
+
+      await dispatch(updateActMaster(updateData));
+    } else {
+      // Add new act master
+      const requestData = {
+        actCode: formData.actCode,
+        actName: formData.actName,
+        actCategoryId: formData.actCategoryId,
+        description: formData.description,
+        companyId: localStorage.getItem('userId') || '',
+        companyDomain: formData.companyDomain,
+        createdBy: 'admin',
+        createdDate: new Date().toISOString(),
+        id: ''
+      };
+
+      await dispatch(addActMaster(requestData));
+    }
+  };
+
+  // Show loading spinner when fetching act master data in edit mode
+  if (isEditMode && fetchByIdLoading) {
+    return (
+      <Box 
+        sx={{ 
+          display: 'flex', 
+          justifyContent: 'center', 
+          alignItems: 'center', 
+          minHeight: '60vh',
+          flexDirection: 'column',
+          gap: 2 
+        }}
+      >
+        <CircularProgress size={50} />
+        <Typography variant="body1" color="text.secondary">
+          Loading act master data...
+        </Typography>
+      </Box>
+    );
+  }
+
+  return (
+    <Box>
+      {/* Header */}
+      <Box sx={{ mb: 3 }}>
+        <Button
+          startIcon={<ArrowBack />}
+          onClick={() => navigate('/dashboard/master/act')}
+          sx={{
+            textTransform: 'none',
+            mb: 2,
+            color: theme.palette.text.secondary,
+            '&:hover': {
+              bgcolor: alpha(theme.palette.primary.main, 0.1),
+            }
+          }}
+        >
+          Back to Act Master List
+        </Button>
+        <Typography variant="h4" fontWeight={700} gutterBottom>
+          {isEditMode ? 'Edit Act Master' : 'Add Act Master'}
+        </Typography>
+        <Typography variant="body1" color="text.secondary">
+          {isEditMode ? 'Update act master information' : 'Create a new act master entry'}
+        </Typography>
+      </Box>
+
+      {/* Form */}
+      <Card
+        sx={{
+          borderRadius: 3,
+          boxShadow: `0 4px 20px ${alpha(theme.palette.common.black, 0.08)}`
+        }}
+      >
+        <CardContent sx={{ p: 4 }}>
+          <Box component="form" onSubmit={handleSubmit}>
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+              <Box sx={{ display: 'flex', gap: 3, flexWrap: 'wrap' }}>
+                <Box sx={{ flex: '1 1 calc(50% - 12px)', minWidth: '250px' }}>
+                  <CustomTextField
+                    label="Act Code"
+                    name="actCode"
+                    value={formData.actCode}
+                    onChange={handleChange}
+                    required
+                    placeholder="Enter act code"
+                  />
+                </Box>
+
+                <Box sx={{ flex: '1 1 calc(50% - 12px)', minWidth: '250px' }}>
+                  <CustomTextField
+                    label="Act Name"
+                    name="actName"
+                    value={formData.actName}
+                    onChange={handleChange}
+                    required
+                    placeholder="Enter act name"
+                  />
+                </Box>
+              </Box>
+
+              <Box sx={{ display: 'flex', gap: 3, flexWrap: 'wrap' }}>
+                <Box sx={{ flex: '1 1 calc(50% - 12px)', minWidth: '250px' }}>
+                  <CustomTextField
+                    label="Act Category ID"
+                    name="actCategoryId"
+                    value={formData.actCategoryId}
+                    onChange={handleChange}
+                    required
+                    placeholder="Enter category ID"
+                  />
+                </Box>
+
+                <Box sx={{ flex: '1 1 calc(50% - 12px)', minWidth: '250px' }}>
+                  <CustomTextField
+                    label="Company Domain"
+                    name="companyDomain"
+                    value={formData.companyDomain}
+                    onChange={handleChange}
+                    required
+                    placeholder="Enter company domain"
+                  />
+                </Box>
+              </Box>
+
+              <Box>
+                <CustomTextField
+                  label="Description"
+                  name="description"
+                  value={formData.description}
+                  onChange={handleChange}
+                  required
+                  placeholder="Enter description"
+                  multiline
+                  rows={4}
+                />
+              </Box>
+            </Box>
+
+            {/* Action Buttons */}
+            <Box sx={{ 
+              display: 'flex', 
+              gap: 2, 
+              justifyContent: 'flex-end', 
+              mt: 4, 
+              pt: 3, 
+              borderTop: `1px solid ${theme.palette.divider}` 
+            }}>
+              <Button
+                variant="outlined"
+                size="large"
+                onClick={() => navigate('/dashboard/master/act')}
+                sx={{
+                  borderRadius: 2,
+                  textTransform: 'none',
+                  px: 4
+                }}
+              >
+                Cancel
+              </Button>
+              <Button
+                type="submit"
+                variant="contained"
+                size="large"
+                disabled={loading || fetchByIdLoading}
+                sx={{
+                  borderRadius: 2,
+                  textTransform: 'none',
+                  px: 4,
+                  boxShadow: `0 4px 15px ${alpha(theme.palette.success.main, 0.4)}`,
+                  bgcolor: theme.palette.success.main,
+                  '&:hover': {
+                    bgcolor: theme.palette.success.dark,
+                    boxShadow: `0 6px 20px ${alpha(theme.palette.success.main, 0.5)}`
+                  }
+                }}
+              >
+                {loading ? 'Saving...' : isEditMode ? 'Update Act Master' : 'Submit & Save'}
+              </Button>
+            </Box>
+          </Box>
+        </CardContent>
+      </Card>
+
+      {/* Success/Error Snackbar */}
+      <Snackbar
+        open={showSnackbar}
+        autoHideDuration={6000}
+        onClose={handleCloseSnackbar}
+        anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
+      >
+        <Alert 
+          onClose={handleCloseSnackbar} 
+          severity={success ? "success" : "error"}
+          sx={{ width: '100%' }}
+        >
+          {success ? (isEditMode ? 'Act Master updated successfully!' : 'Act Master added successfully!') : error}
+        </Alert>
+      </Snackbar>
+    </Box>
+  );
+};
+
+export default AddActMasterPage;

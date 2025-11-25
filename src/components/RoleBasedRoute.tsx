@@ -1,6 +1,8 @@
 import React from 'react';
 import { Navigate } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext.tsx';
+import { useSelector } from 'react-redux';
+import { Box, CircularProgress } from '@mui/material';
+import { selectUser, selectIsAuthenticated, selectIsInitializing } from '../pages/login/slice/Login.selector';
 import { hasAccessToRoute, UserRole } from '../config/roleConfig.tsx';
 
 interface RoleBasedRouteProps {
@@ -14,10 +16,29 @@ const RoleBasedRoute: React.FC<RoleBasedRouteProps> = ({
   allowedRoles,
   path 
 }) => {
-  const { user } = useAuth();
+  const user = useSelector(selectUser);
+  const isAuthenticated = useSelector(selectIsAuthenticated);
+  const isInitializing = useSelector(selectIsInitializing);
+
+  // Show loading while checking authentication status
+  if (isInitializing) {
+    return (
+      <Box
+        sx={{
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          minHeight: '100vh',
+          backgroundColor: '#f5f5f5',
+        }}
+      >
+        <CircularProgress size={60} />
+      </Box>
+    );
+  }
 
   // If not logged in, redirect to login
-  if (!user) {
+  if (!isAuthenticated || !user) {
     return <Navigate to="/login" replace />;
   }
 

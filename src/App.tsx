@@ -1,5 +1,11 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import { ThemeProvider, createTheme, CssBaseline } from '@mui/material';
+import { ThemeProvider, createTheme, CssBaseline, Box, CircularProgress } from '@mui/material';
+import { useEffect } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import type { AppDispatch } from './app/store';
+import { restoreUser } from './pages/login/slice/Login.slice';
+import { selectIsInitializing, selectIsAuthenticated, selectUser } from './pages/login/slice/Login.selector';
+import { getDashboardPathForRole, UserRole } from './config/roleConfig.tsx';
 import { AuthProvider } from './context/AuthContext.tsx';
 import ProtectedRoute from './components/ProtectedRoute.tsx';
 import RoleBasedRoute from './components/RoleBasedRoute.tsx';
@@ -21,9 +27,11 @@ import UserPage from './pages/master/UserPage.tsx';
 import CompanyPage from './pages/master/company/CompanyPage.tsx';
 import AddCompanyPage from './pages/master/company/AddCompanyPage.tsx';
 import CountryPage from './pages/master/country/CountryPage.tsx';
+import ActMasterPage from './pages/master/act/ActMasterPage.tsx';
+import AddActMasterPage from './pages/master/act/AddActMasterPage.tsx';
+import DepartmentMasterPage from './pages/master/department/DepartmentMasterPage.tsx';
+import AddDepartmentMasterPage from './pages/master/department/AddDepartmentMasterPage.tsx';
 import ComponentDemoPage from './pages/ComponentDemoPage.tsx';
-
-import { UserRole } from './config/roleConfig.tsx';
 
 const theme = createTheme({
   palette: {
@@ -49,6 +57,36 @@ const theme = createTheme({
 });
 
 function App() {
+  const dispatch = useDispatch<AppDispatch>();
+  const isInitializing = useSelector(selectIsInitializing);
+  const isAuthenticated = useSelector(selectIsAuthenticated);
+  const user = useSelector(selectUser);
+
+  // Restore user session from localStorage on app load
+  useEffect(() => {
+    dispatch(restoreUser());
+  }, [dispatch]);
+
+  // Show loading screen while checking authentication
+  if (isInitializing) {
+    return (
+      <ThemeProvider theme={theme}>
+        <CssBaseline />
+        <Box
+          sx={{
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            minHeight: '100vh',
+            backgroundColor: '#f5f5f5',
+          }}
+        >
+          <CircularProgress size={60} />
+        </Box>
+      </ThemeProvider>
+    );
+  }
+
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
@@ -160,6 +198,54 @@ function App() {
                   </RoleBasedRoute>
                 } 
               />
+              <Route 
+                path="master/act" 
+                element={
+                  <RoleBasedRoute path="/dashboard/master/act">
+                    <ActMasterPage />
+                  </RoleBasedRoute>
+                } 
+              />
+              <Route 
+                path="master/act/add" 
+                element={
+                  <RoleBasedRoute path="/dashboard/master/act">
+                    <AddActMasterPage />
+                  </RoleBasedRoute>
+                } 
+              />
+              <Route 
+                path="master/act/edit/:id" 
+                element={
+                  <RoleBasedRoute path="/dashboard/master/act">
+                    <AddActMasterPage />
+                  </RoleBasedRoute>
+                } 
+              />
+              <Route 
+                path="master/department" 
+                element={
+                  <RoleBasedRoute path="/dashboard/master/department">
+                    <DepartmentMasterPage />
+                  </RoleBasedRoute>
+                } 
+              />
+              <Route 
+                path="master/department/add" 
+                element={
+                  <RoleBasedRoute path="/dashboard/master/department">
+                    <AddDepartmentMasterPage />
+                  </RoleBasedRoute>
+                } 
+              />
+              <Route 
+                path="master/department/edit/:id" 
+                element={
+                  <RoleBasedRoute path="/dashboard/master/department">
+                    <AddDepartmentMasterPage />
+                  </RoleBasedRoute>
+                } 
+              />
 
               {/* Other routes */}
               <Route path="form" element={<FormPage />} />
@@ -182,7 +268,13 @@ function App() {
               />
             </Route>
             
-            <Route path="/" element={<Navigate to="/login" replace />} />
+            <Route path="/" element={
+              isAuthenticated && user ? (
+                <Navigate to={getDashboardPathForRole(user.role as UserRole)} replace />
+              ) : (
+                <Navigate to="/login" replace />
+              )
+            } />
           </Routes>
         </Router>
       </AuthProvider>

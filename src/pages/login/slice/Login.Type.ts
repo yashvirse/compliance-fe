@@ -30,4 +30,5 @@ export interface LoginState {
   user: UserData | null;
   token: string | null;
   isAuthenticated: boolean;
+  isInitializing: boolean;
 }

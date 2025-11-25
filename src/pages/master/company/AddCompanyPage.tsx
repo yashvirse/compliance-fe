@@ -30,7 +30,7 @@ import {
   CustomCheckbox
 } from '../../../components/common';
 import { CloudUpload as UploadIcon } from '@mui/icons-material';
-import { addCompany, clearError, clearSuccess, fetchCompanyById, clearCurrentCompany } from './slice/Company.Slice';
+import { addCompany, updateCompany, clearError, clearSuccess, fetchCompanyById, clearCurrentCompany } from './slice/Company.Slice';
 import {
   selectCompanyLoading,
   selectCompanyError,
@@ -38,7 +38,6 @@ import {
   selectCurrentCompany,
   selectFetchByIdLoading
 } from './slice/Company.Selector';
-import type { AddCompanyRequest } from './slice/Company.Type';
 
 type TabType = 'company' | 'user' | 'domain' | 'account' | 'subscription';
 
@@ -298,41 +297,87 @@ const AddCompanyPage: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Prepare data according to API structure
-    const requestData: AddCompanyRequest = {
-      CompanyName: companyData.name,
-      CompanyType: companyData.companyType,
-      CompanyCurrency: companyData.currency,
-      CompanyIsActive: companyData.isActive,
-      CompanyDomain: domainData.domain,
-      PAN_No: accountData.panNo,
-      GST_NO: accountData.gstNo,
-      CIN_NO: accountData.cinNo,
-      IFSC_Code: accountData.ifscCode,
-      plan_type: subscriptionData.planType,
-      plan_rate: subscriptionData.planRate,
-      companyLogo: companyData.companyLogo,
-      CompanyAddress: {
-        CompanyState: companyData.state,
-        CompanyCountry: companyData.country,
-        CompanyCity: companyData.city,
-        buildingNumber: companyData.buildingNo,
-        CompanyZIP: companyData.zip,
-        detailAdddress: companyData.address,
-      },
-      user: {
-        userName: userData.name,
-        userEmail: userData.email,
-        userPassword: userData.password,
-        userMobile: userData.mobile,
-        IsActive: userData.isActive,
-        companyDomain: domainData.externalDomain,
-      },
-      userImg: userData.userImage,
-    };
-
-    // Dispatch the action
-    await dispatch(addCompany(requestData));
+    if (isEditMode && currentCompany) {
+      // Update existing company
+      const updateData = {
+        CID: currentCompany.cid,
+        CompanyName: companyData.name,
+        CompanyType: companyData.companyType,
+        CompanyCurrency: companyData.currency,
+        CompanyIsActive: companyData.isActive,
+        CompanyDomain: domainData.domain,
+        PAN_No: accountData.panNo,
+        GST_NO: accountData.gstNo,
+        CIN_NO: accountData.cinNo,
+        IFSC_Code: accountData.ifscCode,
+        plan_type: subscriptionData.planType,
+        plan_rate: subscriptionData.planRate,
+        CompanyLogo: companyData.companyLogoPreview, // Existing logo URL
+        companyLogo: companyData.companyLogo, // New logo file if uploaded
+        CompanyAddress: {
+          CompanyState: companyData.state,
+          CompanyCountry: companyData.country,
+          CompanyCity: companyData.city,
+          buildingNumber: companyData.buildingNo,
+          CompanyZIP: companyData.zip,
+          detailAdddress: companyData.address,
+        },
+        user: {
+          userID: currentCompany.user?.userID || '',
+          userName: userData.name,
+          userEmail: userData.email,
+          userPassword: userData.password,
+          userMobile: userData.mobile,
+          IsActive: userData.isActive,
+          companyDomain: domainData.externalDomain,
+          userImage: userData.userImagePreview, // Existing image URL
+          userRole: currentCompany.user?.userRole,
+          companyId: currentCompany.cid,
+          companyType: currentCompany.companyType,
+          createdBy: currentCompany.user?.createdBy,
+          createdOn: currentCompany.user?.createdOn,
+        },
+        userImg: userData.userImage, // New image file if uploaded
+        CreatedBy: currentCompany.createdBy,
+      };
+      
+      await dispatch(updateCompany(updateData));
+    } else {
+      // Add new company
+      const requestData = {
+        CompanyName: companyData.name,
+        CompanyType: companyData.companyType,
+        CompanyCurrency: companyData.currency,
+        CompanyIsActive: companyData.isActive,
+        CompanyDomain: domainData.domain,
+        PAN_No: accountData.panNo,
+        GST_NO: accountData.gstNo,
+        CIN_NO: accountData.cinNo,
+        IFSC_Code: accountData.ifscCode,
+        plan_type: subscriptionData.planType,
+        plan_rate: subscriptionData.planRate,
+        companyLogo: companyData.companyLogo,
+        CompanyAddress: {
+          CompanyState: companyData.state,
+          CompanyCountry: companyData.country,
+          CompanyCity: companyData.city,
+          buildingNumber: companyData.buildingNo,
+          CompanyZIP: companyData.zip,
+          detailAdddress: companyData.address,
+        },
+        user: {
+          userName: userData.name,
+          userEmail: userData.email,
+          userPassword: userData.password,
+          userMobile: userData.mobile,
+          IsActive: userData.isActive,
+          companyDomain: domainData.externalDomain,
+        },
+        userImg: userData.userImage,
+      };
+      
+      await dispatch(addCompany(requestData));
+    }
   };
 
   const handleNext = () => {
@@ -636,6 +681,7 @@ const AddCompanyPage: React.FC = () => {
           placeholder="company.com"
         />
       </Grid>
+      <h1>.ocmspro.com</h1>
 
       <Grid size={{ xs: 12, sm: 6 }}>
         <CustomTextField

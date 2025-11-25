@@ -1,5 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
+import { useDispatch, useSelector } from 'react-redux';
+import type { AppDispatch } from '../app/store';
+import { logout } from '../pages/login/slice/Login.slice';
+import { selectUser } from '../pages/login/slice/Login.selector';
 import {
   Box,
   Drawer,
@@ -24,7 +28,6 @@ import {
   ChevronLeft,
   ChevronRight
 } from '@mui/icons-material';
-import { useAuth } from '../context/AuthContext.tsx';
 import Breadcrumb from '../components/Breadcrumb.tsx';
 import RoleBasedSidebar from '../components/RoleBasedSidebar.tsx';
 import { getDashboardPathForRole, UserRole } from '../config/roleConfig.tsx';
@@ -36,7 +39,8 @@ const DashboardLayout: React.FC = () => {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [sidebarOpen, setSidebarOpen] = useState(true);
-  const { user, logout } = useAuth();
+  const dispatch = useDispatch<AppDispatch>();
+  const user = useSelector(selectUser);
   const navigate = useNavigate();
   const location = useLocation();
   const theme = useTheme();
@@ -63,8 +67,9 @@ const DashboardLayout: React.FC = () => {
   };
 
   const handleLogout = () => {
-    logout();
-    navigate('/login');
+    dispatch(logout());
+    handleMenuClose();
+    navigate('/login', { replace: true });
   };
 
   const handleSidebarToggle = () => {

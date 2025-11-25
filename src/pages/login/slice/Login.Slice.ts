@@ -23,6 +23,7 @@ const initialState: LoginState = {
   user: null,
   token: null,
   isAuthenticated: false,
+  isInitializing: true,
 };
 
 // Async thunk for login
@@ -100,6 +101,7 @@ const loginSlice = createSlice({
           localStorage.removeItem('user');
         }
       }
+      state.isInitializing = false;
     },
   },
   extraReducers: (builder) => {
@@ -123,6 +125,12 @@ const loginSlice = createSlice({
         state.user = userData as any;
         state.token = action.payload.result.token;
         state.isAuthenticated = true;
+
+        // save user data in localStorage so we can use some api call
+        localStorage.setItem('user', JSON.stringify(userData));
+        localStorage.setItem('authToken', action.payload.result.token);
+        localStorage.setItem('userRole', userData.role);
+        localStorage.setItem('userId', userData.id);
       })
       // Login rejected
       .addCase(loginUser.rejected, (state, action) => {

@@ -1,26 +1,24 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import type { AppDispatch } from '../../app/store';
 import {
   Box,
-  Card,
-  CardContent,
   TextField,
   Button,
   Typography,
-  Container,
   InputAdornment,
   IconButton,
   Alert,
-  Avatar,
-  useTheme
+  useTheme,
+  alpha,
+  Grid
 } from '@mui/material';
 import {
   Visibility,
   VisibilityOff,
-  LockOutlined,
-  EmailOutlined
+  EmailOutlined,
+  LockOutlined
 } from '@mui/icons-material';
 import { loginUser, clearError } from './slice/Login.slice';
 import { 
@@ -77,73 +75,143 @@ const Login: React.FC = () => {
     );
   };
 
+  const handleForgotPassword = () => {
+    // Navigate to forgot password page or show dialog
+    console.log('Forgot password clicked');
+    // You can implement this later: navigate('/forgot-password');
+  };
+
   return (
     <Box
       sx={{
         minHeight: '100vh',
         display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        backgroundColor: theme.palette.grey[100],
+        backgroundColor: '#f5f5f5',
       }}
     >
-      <Container maxWidth="sm">
-        <Card
-          elevation={3}
+      {/* Left Side - Image */}
+      <Box
+        sx={{
+          flex: 1,
+          display: { xs: 'none', md: 'flex' },
+          alignItems: 'center',
+          justifyContent: 'center',
+          background: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.primary.dark} 100%)`,
+          position: 'relative',
+          overflow: 'hidden',
+        }}
+      >
+        {/* Decorative Circles */}
+        <Box
           sx={{
-            borderRadius: 4,
-            backgroundColor: theme.palette.background.paper,
+            position: 'absolute',
+            width: 400,
+            height: 400,
+            borderRadius: '50%',
+            background: 'rgba(255, 255, 255, 0.1)',
+            top: -100,
+            right: -100,
+          }}
+        />
+        <Box
+          sx={{
+            position: 'absolute',
+            width: 300,
+            height: 300,
+            borderRadius: '50%',
+            background: 'rgba(255, 255, 255, 0.1)',
+            bottom: -50,
+            left: -50,
+          }}
+        />
+
+        {/* Content */}
+        <Box
+          sx={{
+            zIndex: 1,
+            textAlign: 'center',
+            color: 'white',
+            p: 4,
           }}
         >
-          <CardContent sx={{ p: 5 }}>
+          <Typography variant="h3" fontWeight={700} gutterBottom>
+            Compliance Management
+          </Typography>
+          <Typography variant="h6" sx={{ opacity: 0.9, mt: 2, maxWidth: 500 }}>
+            Streamline your compliance processes with our comprehensive management system
+          </Typography>
+          
+          {/* You can replace this with an actual image */}
+          <Box
+            sx={{
+              mt: 4,
+              display: 'flex',
+              justifyContent: 'center',
+              alignItems: 'center',
+            }}
+          >
             <Box
+              component="img"
+              src="https://images.unsplash.com/photo-1551434678-e076c223a692?w=600"
+              alt="Compliance"
               sx={{
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-                mb: 3
+                maxWidth: '80%',
+                height: 'auto',
+                borderRadius: 4,
+                boxShadow: '0 20px 60px rgba(0,0,0,0.3)',
               }}
+            />
+          </Box>
+        </Box>
+      </Box>
+
+      {/* Right Side - Login Form */}
+      <Box
+        sx={{
+          flex: 1,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          p: 4,
+        }}
+      >
+        <Box sx={{ width: '100%', maxWidth: 450 }}>
+          {/* Logo/Header */}
+          <Box sx={{ mb: 4 }}>
+            <Typography
+              variant="h3"
+              fontWeight={700}
+              color="primary"
+              gutterBottom
             >
-              <Avatar
-                sx={{
-                  width: 70,
-                  height: 70,
-                  mb: 2,
-                  bgcolor: theme.palette.primary.main,
-                }}
-              >
-                <LockOutlined sx={{ fontSize: 40 }} />
-              </Avatar>
-              <Typography
-                component="h1"
-                variant="h4"
-                fontWeight={700}
-                gutterBottom
-                color="primary"
-              >
-                Welcome to OcmsPro
-              </Typography>
-              <Typography variant="body2" color="text.secondary" textAlign="center">
-                Sign in to access your dashboard
-              </Typography>
-            </Box>
+              OcmsPro
+            </Typography>
+            <Typography variant="h5" fontWeight={600} gutterBottom>
+              Welcome Back!
+            </Typography>
+            <Typography variant="body1" color="text.secondary">
+              Sign in to access your dashboard
+            </Typography>
+          </Box>
 
-            {loginError && (
-              <Alert severity="error" sx={{ mb: 3, borderRadius: 2 }}>
-                {loginError}
-              </Alert>
-            )}
+          {loginError && (
+            <Alert severity="error" sx={{ mb: 3, borderRadius: 2 }}>
+              {loginError}
+            </Alert>
+          )}
 
-            <form onSubmit={handleSubmit}>
+          <form onSubmit={handleSubmit}>
+            <Box sx={{ mb: 3 }}>
+              <Typography variant="body2" fontWeight={600} sx={{ mb: 1 }}>
+                Email Address
+              </Typography>
               <TextField
                 fullWidth
-                label="Email Address"
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
-                margin="normal"
-                sx={{ mb: 2 }}
+                placeholder="Enter your email"
                 InputProps={{
                   startAdornment: (
                     <InputAdornment position="start">
@@ -151,17 +219,25 @@ const Login: React.FC = () => {
                     </InputAdornment>
                   ),
                 }}
+                sx={{
+                  '& .MuiOutlinedInput-root': {
+                    borderRadius: 2,
+                  }
+                }}
               />
+            </Box>
 
+            <Box sx={{ mb: 2 }}>
+              <Typography variant="body2" fontWeight={600} sx={{ mb: 1 }}>
+                Password
+              </Typography>
               <TextField
                 fullWidth
-                label="Password"
                 type={showPassword ? 'text' : 'password'}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
-                margin="normal"
-                sx={{ mb: 3 }}
+                placeholder="Enter your password"
                 InputProps={{
                   startAdornment: (
                     <InputAdornment position="start">
@@ -179,36 +255,57 @@ const Login: React.FC = () => {
                     </InputAdornment>
                   ),
                 }}
-              />
-
-              <Button
-                fullWidth
-                type="submit"
-                variant="contained"
-                size="large"
-                disabled={loading}
                 sx={{
-                  py: 1.5,
-                  mt: 2,
-                  mb: 2,
-                  borderRadius: 2,
+                  '& .MuiOutlinedInput-root': {
+                    borderRadius: 2,
+                  }
+                }}
+              />
+            </Box>
+
+            <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 3 }}>
+              <Button
+                onClick={handleForgotPassword}
+                sx={{
                   textTransform: 'none',
-                  fontSize: '1.1rem',
+                  color: theme.palette.primary.main,
                   fontWeight: 600,
+                  '&:hover': {
+                    backgroundColor: 'transparent',
+                    textDecoration: 'underline',
+                  }
                 }}
               >
-                {loading ? 'Signing in...' : 'Sign In'}
+                Forgot Password?
               </Button>
+            </Box>
 
-              <Box sx={{ textAlign: 'center', mt: 2 }}>
-                <Typography variant="body2" color="text.secondary">
-                  Demo credentials: any email and password
-                </Typography>
-              </Box>
-            </form>
-          </CardContent>
-        </Card>
-      </Container>
+            <Button
+              fullWidth
+              type="submit"
+              variant="contained"
+              size="large"
+              disabled={loading}
+              sx={{
+                py: 1.5,
+                borderRadius: 2,
+                textTransform: 'none',
+                fontSize: '1.1rem',
+                fontWeight: 600,
+                boxShadow: `0 4px 15px ${theme.palette.primary.main}40`,
+              }}
+            >
+              {loading ? 'Signing in...' : 'Sign In'}
+            </Button>
+          </form>
+
+          <Box sx={{ mt: 3, textAlign: 'center' }}>
+            <Typography variant="body2" color="text.secondary">
+              Demo credentials: any email and password
+            </Typography>
+          </Box>
+        </Box>
+      </Box>
     </Box>
   );
 };
