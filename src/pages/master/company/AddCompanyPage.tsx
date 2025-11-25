@@ -418,9 +418,6 @@ const AddCompanyPage: React.FC = () => {
 
       <Grid size={{ xs: 12, sm: 6 }}>
         <Box>
-          <Typography variant="body2" fontWeight={500} sx={{ mb: 1 }}>
-            Company Logo
-          </Typography>
           <Button
             component="label"
             variant="outlined"

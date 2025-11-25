@@ -31,6 +31,8 @@ import ActMasterPage from './pages/master/act/ActMasterPage.tsx';
 import AddActMasterPage from './pages/master/act/AddActMasterPage.tsx';
 import DepartmentMasterPage from './pages/master/department/DepartmentMasterPage.tsx';
 import AddDepartmentMasterPage from './pages/master/department/AddDepartmentMasterPage.tsx';
+import ActivityMasterPage from './pages/master/activity/ActivityMasterPage.tsx';
+import AddActivityMasterPage from './pages/master/activity/AddActivityMasterPage.tsx';
 import ComponentDemoPage from './pages/ComponentDemoPage.tsx';
 
 const theme = createTheme({
@@ -243,6 +245,30 @@ function App() {
                 element={
                   <RoleBasedRoute path="/dashboard/master/department">
                     <AddDepartmentMasterPage />
+                  </RoleBasedRoute>
+                } 
+              />
+              <Route 
+                path="master/activity" 
+                element={
+                  <RoleBasedRoute path="/dashboard/master/activity">
+                    <ActivityMasterPage />
+                  </RoleBasedRoute>
+                } 
+              />
+              <Route 
+                path="master/activity/add" 
+                element={
+                  <RoleBasedRoute path="/dashboard/master/activity">
+                    <AddActivityMasterPage />
+                  </RoleBasedRoute>
+                } 
+              />
+              <Route 
+                path="master/activity/edit/:id" 
+                element={
+                  <RoleBasedRoute path="/dashboard/master/activity">
+                    <AddActivityMasterPage />
                   </RoleBasedRoute>
                 } 
               />

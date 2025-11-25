@@ -72,6 +72,12 @@ export const menuConfig: MenuItem[] = [
         path: '/dashboard/master/department',
         allowedRoles: [UserRole.SUPER_ADMIN],
       },
+      {
+        id: 'activity',
+        label: 'Activity Master',
+        path: '/dashboard/master/activity',
+        allowedRoles: [UserRole.SUPER_ADMIN],
+      },
     ],
   },
   {
