@@ -253,7 +253,7 @@ const actMasterSlice = createSlice({
         state.deleteSuccess = true;
         // Remove deleted act master from the list
         state.actMasters = state.actMasters.filter(
-          (actMaster) => actMaster.id !== action.meta.arg
+          (actMaster) => actMaster.actId !== action.meta.arg
         );
       })
       // Delete Act Master rejected

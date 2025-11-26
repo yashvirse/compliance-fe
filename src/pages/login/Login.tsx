@@ -144,9 +144,15 @@ const Login: React.FC = () => {
           }}
         >
           <Typography variant="h3" fontWeight={700} gutterBottom>
+            Orchidea
+          </Typography>
+          <Typography variant="h3" fontWeight={700} gutterBottom>
             Compliance Management
           </Typography>
-          <Typography variant="h6" sx={{ opacity: 0.9, mt: 2, maxWidth: 500 }}>
+          <Typography variant="h3" fontWeight={700} gutterBottom>
+            System
+          </Typography>
+          <Typography variant="h6" sx={{ opacity: 0.9, mt: 2, maxWidth: 500, mx: 'auto' }}>
             Streamline your compliance processes with our comprehensive management system
           </Typography>
           

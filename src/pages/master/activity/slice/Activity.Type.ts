@@ -13,15 +13,17 @@ export const FrequencyType = {
 export type FrequencyTypeValue = typeof FrequencyType[keyof typeof FrequencyType];
 
 export interface ActivityMaster {
-  id: string;
-  actId: string;
-  actName?: string; // For display purposes
+  activityId: string;
+  actID: string;
+  departmentID: string;
   activityName: string;
   description: string;
   frequency: FrequencyTypeValue;
   dueDay: number;
-  gracePeriodDays: number;
-  reminderDays: number;
+  gracePeriodDay: number;
+  reminderDay: string;
+  actName?: string; // For display purposes
+  departmentName?: string; // For display purposes
   createdBy?: string;
   createdDate?: string;
   updatedAt?: string;
@@ -44,16 +46,15 @@ export const FREQUENCY_OPTIONS: FrequencyOption[] = [
 ];
 
 export interface AddActivityMasterRequest {
-  id?: string;
-  actId: string;
+  activityId: string;
+  actID: string;
+  departmentID: string;
   activityName: string;
   description: string;
-  frequency: FrequencyTypeValue;
+  frequency: string;
   dueDay: number;
-  gracePeriodDays: number;
-  reminderDays: number;
-  createdBy?: string;
-  createdDate?: string;
+  gracePeriodDay: number;
+  reminderDay: string;
 }
 
 export interface AddActivityMasterResponse {
@@ -63,16 +64,15 @@ export interface AddActivityMasterResponse {
 }
 
 export interface UpdateActivityMasterRequest {
-  id: string;
-  actId: string;
+  activityId: string;
+  actID: string;
+  departmentID: string;
   activityName: string;
   description: string;
-  frequency: FrequencyTypeValue;
+  frequency: string;
   dueDay: number;
-  gracePeriodDays: number;
-  reminderDays: number;
-  createdBy?: string;
-  createdDate?: string;
+  gracePeriodDay: number;
+  reminderDay: string;
 }
 
 export interface UpdateActivityMasterResponse {
@@ -99,6 +99,12 @@ export interface DeleteActivityMasterResponse {
   result?: any;
 }
 
+export interface DepartmentDropdownResponse {
+  isSuccess: boolean;
+  message: string;
+  result: Record<string, string>; // { "id": "name" }
+}
+
 export interface ActivityMasterState {
   loading: boolean;
   error: string | null;
@@ -110,4 +116,6 @@ export interface ActivityMasterState {
   currentActivityMaster: ActivityMaster | null;
   fetchByIdLoading: boolean;
   fetchByIdError: string | null;
+  departmentDropdown: Record<string, string>;
+  departmentDropdownLoading: boolean;
 }

@@ -19,13 +19,14 @@ import {
 } from '@mui/material';
 import { ArrowBack } from '@mui/icons-material';
 import { CustomTextField, CustomDropdown } from '../../../components/common';
-import { addActivityMaster, updateActivityMaster, clearError, clearSuccess, fetchActivityMasterById, clearCurrentActivityMaster } from './slice/Activity.Slice';
+import { addActivityMaster, updateActivityMaster, clearError, clearSuccess, fetchActivityMasterById, clearCurrentActivityMaster, fetchDepartmentDropdown } from './slice/Activity.Slice';
 import {
   selectActivityMasterLoading,
   selectActivityMasterError,
   selectActivityMasterSuccess,
   selectCurrentActivityMaster,
-  selectFetchByIdLoading
+  selectFetchByIdLoading,
+  selectDepartmentDropdown
 } from './slice/Activity.Selector';
 import { selectActMasters } from '../act/slice/Act.Selector';
 import { fetchActMasterList } from '../act/slice/Act.Slice';
@@ -44,17 +45,19 @@ const AddActivityMasterPage: React.FC = () => {
   const currentActivityMaster = useSelector(selectCurrentActivityMaster);
   const fetchByIdLoading = useSelector(selectFetchByIdLoading);
   const actMasters = useSelector(selectActMasters);
+  const departmentDropdown = useSelector(selectDepartmentDropdown);
 
   const isEditMode = !!id;
   const [showSnackbar, setShowSnackbar] = useState(false);
   const [formData, setFormData] = useState({
-    actId: '',
+    actID: '',
+    departmentID: '',
     activityName: '',
     description: '',
     frequency: '' as FrequencyTypeValue | '',
     dueDay: '',
-    gracePeriodDays: '',
-    reminderDays: '',
+    gracePeriodDay: '',
+    reminderDay: '',
   });
 
   const [dueDayError, setDueDayError] = useState('');
@@ -65,6 +68,7 @@ const AddActivityMasterPage: React.FC = () => {
 
   useEffect(() => {
     dispatch(fetchActMasterList());
+    dispatch(fetchDepartmentDropdown());
   }, [dispatch]);
 
   useEffect(() => {
@@ -76,13 +80,14 @@ const AddActivityMasterPage: React.FC = () => {
   useEffect(() => {
     if (isEditMode && currentActivityMaster) {
       setFormData({
-        actId: currentActivityMaster.actId || '',
+        actID: currentActivityMaster.actID || '',
+        departmentID: currentActivityMaster.departmentID || '',
         activityName: currentActivityMaster.activityName || '',
         description: currentActivityMaster.description || '',
         frequency: currentActivityMaster.frequency || '',
         dueDay: currentActivityMaster.dueDay?.toString() || '',
-        gracePeriodDays: currentActivityMaster.gracePeriodDays?.toString() || '',
-        reminderDays: currentActivityMaster.reminderDays?.toString() || '',
+        gracePeriodDay: currentActivityMaster.gracePeriodDay?.toString() || '',
+        reminderDay: currentActivityMaster.reminderDay || '',
       });
     }
   }, [isEditMode, currentActivityMaster]);
@@ -134,18 +139,18 @@ const AddActivityMasterPage: React.FC = () => {
     }
 
     // Validate grace period days
-    if (name === 'gracePeriodDays' || name === 'frequency') {
+    if (name === 'gracePeriodDay' || name === 'frequency') {
       validateGracePeriod(
         formData.frequency,
-        name === 'gracePeriodDays' ? value : formData.gracePeriodDays
+        name === 'gracePeriodDay' ? value : formData.gracePeriodDay
       );
     }
 
     // Validate reminder days
-    if (name === 'reminderDays' || name === 'frequency') {
+    if (name === 'reminderDay' || name === 'frequency') {
       validateReminderDays(
         formData.frequency,
-        name === 'reminderDays' ? value : formData.reminderDays
+        name === 'reminderDay' ? value : formData.reminderDay
       );
     }
   };
@@ -377,40 +382,44 @@ const AddActivityMasterPage: React.FC = () => {
       return;
     }
 
-    if (!validateGracePeriod(formData.frequency, formData.gracePeriodDays)) {
+    if (!validateGracePeriod(formData.frequency, formData.gracePeriodDay)) {
       return;
     }
 
-    if (!validateReminderDays(formData.frequency, formData.reminderDays)) {
+    if (!validateReminderDays(formData.frequency, formData.reminderDay)) {
       return;
     }
+
+    // Calculate reminder date (current date + reminder days)
+    const reminderDate = new Date();
+    reminderDate.setDate(reminderDate.getDate() + parseInt(formData.reminderDay || '0'));
+    const reminderDayISO = reminderDate.toISOString();
 
     if (isEditMode && currentActivityMaster) {
       const updateData: UpdateActivityMasterRequest = {
-        id: currentActivityMaster.id,
-        actId: formData.actId,
+        activityId: currentActivityMaster.activityId,
+        actID: formData.actID,
+        departmentID: formData.departmentID,
         activityName: formData.activityName,
         description: formData.description,
-        frequency: formData.frequency as FrequencyTypeValue,
+        frequency: formData.frequency as string,
         dueDay: parseInt(formData.dueDay),
-        gracePeriodDays: parseInt(formData.gracePeriodDays),
-        reminderDays: parseInt(formData.reminderDays),
-        createdBy: currentActivityMaster.createdBy,
-        createdDate: currentActivityMaster.createdDate,
+        gracePeriodDay: parseInt(formData.gracePeriodDay),
+        reminderDay: reminderDayISO,
       };
 
       await dispatch(updateActivityMaster(updateData));
     } else {
       const requestData = {
-        actId: formData.actId,
+        activityId: '',
+        actID: formData.actID,
+        departmentID: formData.departmentID,
         activityName: formData.activityName,
         description: formData.description,
-        frequency: formData.frequency as FrequencyTypeValue,
+        frequency: formData.frequency as string,
         dueDay: parseInt(formData.dueDay),
-        gracePeriodDays: parseInt(formData.gracePeriodDays),
-        reminderDays: parseInt(formData.reminderDays),
-        createdBy: localStorage.getItem('userId') || 'admin',
-        createdDate: new Date().toISOString(),
+        gracePeriodDay: parseInt(formData.gracePeriodDay),
+        reminderDay: reminderDayISO,
       };
 
       await dispatch(addActivityMaster(requestData));
@@ -438,8 +447,13 @@ const AddActivityMasterPage: React.FC = () => {
   }
 
   const actOptions = actMasters.map(act => ({
-    value: act.id,
-    label: `${act.actCode} - ${act.actName}`
+    value: act.actId,
+    label: act.actName
+  }));
+
+  const departmentOptions = Object.entries(departmentDropdown).map(([id, name]) => ({
+    value: id,
+    label: name
   }));
 
   const frequencyOptions = FREQUENCY_OPTIONS.map(freq => ({
@@ -486,14 +500,26 @@ const AddActivityMasterPage: React.FC = () => {
               <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 3 }}>
                 <CustomDropdown
                   label="Act Name"
-                  name="actId"
-                  value={formData.actId}
+                  name="actID"
+                  value={formData.actID}
                   onChange={handleChange}
                   options={actOptions}
                   required
                   placeholder="Select Act"
                 />
 
+                <CustomDropdown
+                  label="Department"
+                  name="departmentID"
+                  value={formData.departmentID}
+                  onChange={handleChange}
+                  options={departmentOptions}
+                  required
+                  placeholder="Select Department"
+                />
+              </Box>
+
+              <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 3 }}>
                 <CustomTextField
                   label="Activity Name"
                   name="activityName"
@@ -609,9 +635,9 @@ const AddActivityMasterPage: React.FC = () => {
               <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 3 }}>
                 <CustomTextField
                   label="Grace Period Days"
-                  name="gracePeriodDays"
+                  name="gracePeriodDay"
                   type="number"
-                  value={formData.gracePeriodDays}
+                  value={formData.gracePeriodDay}
                   onChange={handleChange}
                   required
                   placeholder="Late submission buffer"
@@ -622,9 +648,9 @@ const AddActivityMasterPage: React.FC = () => {
 
                 <CustomTextField
                   label="Reminder Days"
-                  name="reminderDays"
+                  name="reminderDay"
                   type="number"
-                  value={formData.reminderDays}
+                  value={formData.reminderDay}
                   onChange={handleChange}
                   required
                   placeholder="Days before due date"

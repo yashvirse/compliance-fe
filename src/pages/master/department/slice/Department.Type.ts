@@ -1,27 +1,13 @@
 // Department Master Types and Interfaces
 
 export interface DepartmentMaster {
-  id: string;
+  deptId: string;
   departmentName: string;
-  description: string;
-  createdAt: string;
-  updatedAt: string;
-  companyId: string;
-  companyDomain: string;
-  createdBy: string;
-  createdDate: string;
 }
 
 export interface AddDepartmentMasterRequest {
-  id?: string;
+  deptId: string;
   departmentName: string;
-  description: string;
-  createdAt?: string;
-  updatedAt?: string;
-  companyId: string;
-  companyDomain: string;
-  createdBy: string;
-  createdDate?: string;
 }
 
 export interface AddDepartmentMasterResponse {
@@ -31,15 +17,8 @@ export interface AddDepartmentMasterResponse {
 }
 
 export interface UpdateDepartmentMasterRequest {
-  id: string;
+  deptId: string;
   departmentName: string;
-  description: string;
-  createdAt?: string;
-  updatedAt?: string;
-  companyId: string;
-  companyDomain: string;
-  createdBy: string;
-  createdDate: string;
 }
 
 export interface UpdateDepartmentMasterResponse {

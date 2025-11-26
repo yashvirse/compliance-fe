@@ -26,14 +26,15 @@ import {
   Delete as DeleteIcon,
   Warning as WarningIcon
 } from '@mui/icons-material';
-import { fetchActivityMasterList, deleteActivityMaster, clearError, clearSuccess } from './slice/Activity.Slice';
+import { fetchActivityMasterList, deleteActivityMaster, clearError, clearSuccess, fetchDepartmentDropdown } from './slice/Activity.Slice';
 import {
   selectActivityMasterLoading,
   selectActivityMasterError,
   selectActivityMasters,
   selectActivityMasterDeleteLoading,
   selectActivityMasterDeleteSuccess,
-  selectActivityMasterDeleteError
+  selectActivityMasterDeleteError,
+  selectDepartmentDropdown
 } from './slice/Activity.Selector';
 
 const ActivityMasterPage: React.FC = () => {
@@ -47,6 +48,7 @@ const ActivityMasterPage: React.FC = () => {
   const deleteLoading = useSelector(selectActivityMasterDeleteLoading);
   const deleteSuccess = useSelector(selectActivityMasterDeleteSuccess);
   const deleteError = useSelector(selectActivityMasterDeleteError);
+  const departmentDropdown = useSelector(selectDepartmentDropdown);
 
   const [showSnackbar, setShowSnackbar] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
@@ -54,6 +56,7 @@ const ActivityMasterPage: React.FC = () => {
 
   useEffect(() => {
     dispatch(fetchActivityMasterList());
+    dispatch(fetchDepartmentDropdown());
   }, [dispatch]);
 
   useEffect(() => {
@@ -121,6 +124,16 @@ const ActivityMasterPage: React.FC = () => {
 
   const columns: GridColDef[] = [
     {
+      field: 'serialNumber',
+      headerName: 'Sr. No.',
+      flex: 0.5,
+      minWidth: 80,
+      renderCell: (params: GridRenderCellParams) => {
+        const index = activityMasters.findIndex(row => row.activityId === params.row.activityId);
+        return index + 1;
+      }
+    },
+    {
       field: 'activityName',
       headerName: 'Activity Name',
       flex: 2,
@@ -131,6 +144,15 @@ const ActivityMasterPage: React.FC = () => {
       headerName: 'Act Name',
       flex: 1.5,
       minWidth: 180,
+    },
+    {
+      field: 'departmentID',
+      headerName: 'Department',
+      flex: 1.5,
+      minWidth: 150,
+      renderCell: (params: GridRenderCellParams) => {
+        return departmentDropdown[params.value as string] || params.value;
+      }
     },
     {
       field: 'frequency',
@@ -154,7 +176,7 @@ const ActivityMasterPage: React.FC = () => {
       headerAlign: 'center',
     },
     {
-      field: 'gracePeriodDays',
+      field: 'gracePeriodDay',
       headerName: 'Grace Days',
       flex: 0.8,
       minWidth: 110,
@@ -162,12 +184,17 @@ const ActivityMasterPage: React.FC = () => {
       headerAlign: 'center',
     },
     {
-      field: 'reminderDays',
-      headerName: 'Reminder Days',
-      flex: 1,
-      minWidth: 130,
-      align: 'center',
-      headerAlign: 'center',
+      field: 'reminderDay',
+      headerName: 'Reminder Date',
+      flex: 1.2,
+      minWidth: 150,
+      renderCell: (params: GridRenderCellParams) => {
+        if (params.value) {
+          const date = new Date(params.value as string);
+          return date.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+        }
+        return '-';
+      }
     },
     {
       field: 'description',
@@ -187,7 +214,7 @@ const ActivityMasterPage: React.FC = () => {
         <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', justifyContent: 'center' }}>
           <Button
             size="small"
-            onClick={() => handleEdit(params.row.id)}
+            onClick={() => handleEdit(params.row.activityId)}
             sx={{
               minWidth: 'auto',
               p: 0.5,
@@ -201,7 +228,7 @@ const ActivityMasterPage: React.FC = () => {
           </Button>
           <Button
             size="small"
-            onClick={() => handleDelete(params.row.id, params.row.activityName)}
+            onClick={() => handleDelete(params.row.activityId, params.row.activityName)}
             sx={{
               minWidth: 'auto',
               p: 0.5,
@@ -260,7 +287,7 @@ const ActivityMasterPage: React.FC = () => {
           rows={activityMasters || []}
           columns={columns}
           loading={loading}
-          getRowId={(row) => row.id}
+          getRowId={(row) => row.activityId}
           initialState={{
             pagination: {
               paginationModel: { pageSize: 10, page: 0 }

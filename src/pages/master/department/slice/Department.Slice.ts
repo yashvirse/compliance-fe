@@ -256,7 +256,7 @@ const departmentMasterSlice = createSlice({
         state.deleteSuccess = true;
         // Remove the deleted department master from the list
         state.departmentMasters = state.departmentMasters.filter(
-          (departmentMaster) => departmentMaster.id !== action.meta.arg
+          (departmentMaster) => departmentMaster.deptId !== action.meta.arg
         );
       })
       // Delete Department Master rejected

@@ -1,27 +1,17 @@
 // Act Master Types and Interfaces
 
 export interface ActMaster {
-  id: string;
-  actCode: string;
+  actId: string;
   actName: string;
-  actCategoryId: string;
+  depaermentID: string;
   description: string;
-  companyId: string;
-  companyDomain: string;
-  createdBy: string;
-  createdDate: string;
 }
 
 export interface AddActMasterRequest {
-  id?: string;
-  actCode: string;
+  actId: string;
   actName: string;
-  actCategoryId: string;
+  depaermentID: string;
   description: string;
-  companyId: string;
-  companyDomain: string;
-  createdBy: string;
-  createdDate?: string;
 }
 
 export interface AddActMasterResponse {
@@ -31,15 +21,10 @@ export interface AddActMasterResponse {
 }
 
 export interface UpdateActMasterRequest {
-  id: string;
-  actCode: string;
+  actId: string;
   actName: string;
-  actCategoryId: string;
+  depaermentID: string;
   description: string;
-  companyId: string;
-  companyDomain: string;
-  createdBy: string;
-  createdDate: string;
 }
 
 export interface UpdateActMasterResponse {

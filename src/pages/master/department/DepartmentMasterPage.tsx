@@ -109,36 +109,20 @@ const DepartmentMasterPage: React.FC = () => {
 
   const columns: GridColDef[] = [
     {
+      field: 'serialNumber',
+      headerName: 'Sr. No.',
+      flex: 0.5,
+      minWidth: 80,
+      renderCell: (params: GridRenderCellParams) => {
+        const index = departmentMasters.findIndex(row => row.deptId === params.row.deptId);
+        return index + 1;
+      }
+    },
+    {
       field: 'departmentName',
       headerName: 'Department Name',
-      flex: 1.5,
-      minWidth: 200,
-    },
-    {
-      field: 'description',
-      headerName: 'Description',
       flex: 2,
       minWidth: 250,
-    },
-    {
-      field: 'companyDomain',
-      headerName: 'Company Domain',
-      flex: 1,
-      minWidth: 150,
-    },
-    {
-      field: 'createdDate',
-      headerName: 'Created Date',
-      flex: 1,
-      minWidth: 150,
-      renderCell: (params: GridRenderCellParams) => {
-        const date = new Date(params.value as string);
-        return date.toLocaleDateString('en-IN', {
-          year: 'numeric',
-          month: 'short',
-          day: 'numeric'
-        });
-      }
     },
     {
       field: 'actions',
@@ -152,7 +136,7 @@ const DepartmentMasterPage: React.FC = () => {
         <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', justifyContent: 'center' }}>
           <Button
             size="small"
-            onClick={() => handleEdit(params.row.id)}
+            onClick={() => handleEdit(params.row.deptId)}
             sx={{
               minWidth: 'auto',
               p: 0.5,
@@ -166,7 +150,7 @@ const DepartmentMasterPage: React.FC = () => {
           </Button>
           <Button
             size="small"
-            onClick={() => handleDelete(params.row.id, params.row.departmentName)}
+            onClick={() => handleDelete(params.row.deptId, params.row.departmentName)}
             sx={{
               minWidth: 'auto',
               p: 0.5,
@@ -232,7 +216,7 @@ const DepartmentMasterPage: React.FC = () => {
           rows={departmentMasters || []}
           columns={columns}
           loading={loading}
-          getRowId={(row) => row.id}
+          getRowId={(row) => row.deptId}
           initialState={{
             pagination: {
               paginationModel: { pageSize: 10, page: 0 }

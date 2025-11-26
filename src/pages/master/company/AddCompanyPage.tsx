@@ -669,16 +669,29 @@ const AddCompanyPage: React.FC = () => {
       </Grid>
 
       <Grid size={{ xs: 12, sm: 6 }}>
-        <CustomTextField
-          label="Domain"
-          name="domain"
-          value={domainData.domain}
-          onChange={(e) => setDomainData({ ...domainData, domain: e.target.value })}
-          required
-          placeholder="company.com"
-        />
+        <Box sx={{ display: 'flex', alignItems: 'flex-end', gap: 1 }}>
+          <Box sx={{ flex: 1 }}>
+            <CustomTextField
+              label="Domain"
+              name="domain"
+              value={domainData.domain}
+              onChange={(e) => setDomainData({ ...domainData, domain: e.target.value })}
+              required
+              placeholder="company"
+            />
+          </Box>
+          <Typography 
+            variant="h6" 
+            sx={{ 
+              pb: 1.5, 
+              color: theme.palette.text.secondary,
+              fontWeight: 500 
+            }}
+          >
+            .ocmspro.com
+          </Typography>
+        </Box>
       </Grid>
-      <h1>.ocmspro.com</h1>
 
       <Grid size={{ xs: 12, sm: 6 }}>
         <CustomTextField

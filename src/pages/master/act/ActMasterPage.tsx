@@ -26,6 +26,8 @@ import {
   Warning as WarningIcon
 } from '@mui/icons-material';
 import { fetchActMasterList, deleteActMaster, clearError, clearSuccess } from './slice/Act.Slice';
+import { fetchDepartmentMasterList } from '../department/slice/Department.Slice';
+import { selectDepartmentMasters } from '../department/slice/Department.Selector';
 import {
   selectActMasterLoading,
   selectActMasterError,
@@ -46,6 +48,7 @@ const ActMasterPage: React.FC = () => {
   const deleteLoading = useSelector(selectActMasterDeleteLoading);
   const deleteSuccess = useSelector(selectActMasterDeleteSuccess);
   const deleteError = useSelector(selectActMasterDeleteError);
+  const departments = useSelector(selectDepartmentMasters);
 
   const [showSnackbar, setShowSnackbar] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
@@ -53,6 +56,7 @@ const ActMasterPage: React.FC = () => {
 
   useEffect(() => {
     dispatch(fetchActMasterList());
+    dispatch(fetchDepartmentMasterList());
   }, [dispatch]);
 
   useEffect(() => {
@@ -109,10 +113,14 @@ const ActMasterPage: React.FC = () => {
 
   const columns: GridColDef[] = [
     {
-      field: 'actCode',
-      headerName: 'Act Code',
-      flex: 1,
-      minWidth: 120,
+      field: 'serialNumber',
+      headerName: 'Sr. No.',
+      flex: 0.5,
+      minWidth: 80,
+      renderCell: (params: GridRenderCellParams) => {
+        const index = actMasters.findIndex(row => row.actId === params.row.actId);
+        return index + 1;
+      }
     },
     {
       field: 'actName',
@@ -121,36 +129,20 @@ const ActMasterPage: React.FC = () => {
       minWidth: 200,
     },
     {
-      field: 'actCategoryId',
-      headerName: 'Category ID',
+      field: 'depaermentID',
+      headerName: 'Department',
       flex: 1,
       minWidth: 150,
+      renderCell: (params: GridRenderCellParams) => {
+        const department = departments.find(dept => dept.deptId === params.value);
+        return department?.departmentName || params.value;
+      }
     },
     {
       field: 'description',
       headerName: 'Description',
       flex: 2,
       minWidth: 250,
-    },
-    {
-      field: 'companyDomain',
-      headerName: 'Company Domain',
-      flex: 1,
-      minWidth: 150,
-    },
-    {
-      field: 'createdDate',
-      headerName: 'Created Date',
-      flex: 1,
-      minWidth: 150,
-      renderCell: (params: GridRenderCellParams) => {
-        const date = new Date(params.value as string);
-        return date.toLocaleDateString('en-IN', {
-          year: 'numeric',
-          month: 'short',
-          day: 'numeric'
-        });
-      }
     },
     {
       field: 'actions',
@@ -164,7 +156,7 @@ const ActMasterPage: React.FC = () => {
         <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', justifyContent: 'center' }}>
           <Button
             size="small"
-            onClick={() => handleEdit(params.row.id)}
+            onClick={() => handleEdit(params.row.actId)}
             sx={{
               minWidth: 'auto',
               p: 0.5,
@@ -178,7 +170,7 @@ const ActMasterPage: React.FC = () => {
           </Button>
           <Button
             size="small"
-            onClick={() => handleDelete(params.row.id, params.row.actName)}
+            onClick={() => handleDelete(params.row.actId, params.row.actName)}
             sx={{
               minWidth: 'auto',
               p: 0.5,
@@ -242,7 +234,7 @@ const ActMasterPage: React.FC = () => {
           rows={actMasters || []}
           columns={columns}
           loading={loading}
-          getRowId={(row) => row.id}
+          getRowId={(row) => row.actId}
           initialState={{
             pagination: {
               paginationModel: { pageSize: 10 },

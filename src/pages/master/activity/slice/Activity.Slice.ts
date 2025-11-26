@@ -8,7 +8,8 @@ import type {
   UpdateActivityMasterResponse,
   GetActivityMasterListResponse,
   GetActivityMasterByIdResponse,
-  DeleteActivityMasterResponse
+  DeleteActivityMasterResponse,
+  DepartmentDropdownResponse
 } from './Activity.Type';
 
 // Initial state
@@ -23,6 +24,8 @@ const initialState: ActivityMasterState = {
   currentActivityMaster: null,
   fetchByIdLoading: false,
   fetchByIdError: null,
+  departmentDropdown: {},
+  departmentDropdownLoading: false,
 };
 
 // Async thunk for adding activity master
@@ -35,7 +38,7 @@ export const addActivityMaster = createAsyncThunk<
   async (activityData: AddActivityMasterRequest, { rejectWithValue }) => {
     try {
       const response = await apiService.post<AddActivityMasterResponse>(
-        'Master/addActivityMaster',
+        'Master/addSupAdmActMast',
         activityData
       );
 
@@ -63,7 +66,7 @@ export const fetchActivityMasterList = createAsyncThunk<
   async (_, { rejectWithValue }) => {
     try {
       const response = await apiService.get<GetActivityMasterListResponse>(
-        'Master/getActivityMasterList'
+        'Master/getSupAdmActMastList'
       );
 
       if (!response.isSuccess) {
@@ -75,6 +78,33 @@ export const fetchActivityMasterList = createAsyncThunk<
       const errorMessage = error?.response?.data?.message || 
                           error?.message || 
                           'Failed to fetch activity master list. Please try again.';
+      return rejectWithValue(errorMessage);
+    }
+  }
+);
+
+// Async thunk for fetching department dropdown
+export const fetchDepartmentDropdown = createAsyncThunk<
+  DepartmentDropdownResponse,
+  void,
+  { rejectValue: string }
+>(
+  'activityMaster/fetchDepartmentDropdown',
+  async (_, { rejectWithValue }) => {
+    try {
+      const response = await apiService.get<DepartmentDropdownResponse>(
+        'Master/departmentDropDown'
+      );
+
+      if (!response.isSuccess) {
+        return rejectWithValue(response.message || 'Failed to fetch department dropdown');
+      }
+
+      return response;
+    } catch (error: any) {
+      const errorMessage = error?.response?.data?.message || 
+                          error?.message || 
+                          'Failed to fetch department dropdown. Please try again.';
       return rejectWithValue(errorMessage);
     }
   }
@@ -117,7 +147,7 @@ export const fetchActivityMasterById = createAsyncThunk<
   async (activityMasterId: string, { rejectWithValue }) => {
     try {
       const response = await apiService.get<GetActivityMasterByIdResponse>(
-        `Master/getActivityMasterById/${activityMasterId}`
+        `Master/getSupAdmActMastById/${activityMasterId}`
       );
 
       if (!response.isSuccess) {
@@ -241,7 +271,7 @@ const activityMasterSlice = createSlice({
         state.deleteError = null;
         state.deleteSuccess = true;
         state.activityMasters = state.activityMasters.filter(
-          (activity) => activity.id !== action.meta.arg
+          (activity) => activity.activityId !== action.meta.arg
         );
       })
       .addCase(deleteActivityMaster.rejected, (state, action) => {
@@ -280,6 +310,18 @@ const activityMasterSlice = createSlice({
         state.loading = false;
         state.error = action.payload || 'An error occurred while updating activity master';
         state.success = false;
+      })
+      // Fetch Department Dropdown
+      .addCase(fetchDepartmentDropdown.pending, (state) => {
+        state.departmentDropdownLoading = true;
+      })
+      .addCase(fetchDepartmentDropdown.fulfilled, (state, action) => {
+        state.departmentDropdownLoading = false;
+        state.departmentDropdown = action.payload.result || {};
+      })
+      .addCase(fetchDepartmentDropdown.rejected, (state) => {
+        state.departmentDropdownLoading = false;
+        state.departmentDropdown = {};
       });
   },
 });
