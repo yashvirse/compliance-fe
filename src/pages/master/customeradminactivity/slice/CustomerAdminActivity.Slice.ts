@@ -3,7 +3,10 @@ import { apiClient } from '../../../../services/api';
 import type {
   CustomerAdminActivityState,
   GetActivityMasterListResponse,
-  ImportActivitiesResponse
+  ImportActivitiesResponse,
+  GetActivityByIdResponse,
+  UpdateActivityRequest,
+  UpdateActivityResponse
 } from './CustomerAdminActivity.Type';
 
 const initialState: CustomerAdminActivityState = {
@@ -91,6 +94,58 @@ export const importActivities = createAsyncThunk(
   }
 );
 
+export const fetchActivityById = createAsyncThunk(
+  'customerAdminActivity/fetchActivityById',
+  async (activityId: string, { rejectWithValue }) => {
+    try {
+      const response = await apiClient.get<GetActivityByIdResponse>(
+        `CompanyActivityMaster/getCompActivityById/${activityId}?id=${activityId}`
+      );
+      
+      if (response.data.isSuccess) {
+        return response.data.result;
+      } else {
+        return rejectWithValue(response.data.message || 'Failed to fetch activity details');
+      }
+    } catch (error: any) {
+      return rejectWithValue(
+        error.response?.data?.message || 
+        error.message || 
+        'An error occurred while fetching activity details'
+      );
+    }
+  }
+);
+
+export const updateActivity = createAsyncThunk(
+  'customerAdminActivity/updateActivity',
+  async (data: UpdateActivityRequest, { rejectWithValue }) => {
+    try {
+      const response = await apiClient.put<UpdateActivityResponse>(
+        'CompanyActivityMaster/updateCompActivityMaster',
+        data,
+        {
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        }
+      );
+      
+      if (response.data.isSuccess) {
+        return response.data;
+      } else {
+        return rejectWithValue(response.data.message || 'Failed to update activity');
+      }
+    } catch (error: any) {
+      return rejectWithValue(
+        error.response?.data?.message || 
+        error.message || 
+        'An error occurred while updating activity'
+      );
+    }
+  }
+);
+
 const customerAdminActivitySlice = createSlice({
   name: 'customerAdminActivity',
   initialState,
@@ -136,6 +191,30 @@ const customerAdminActivitySlice = createSlice({
         state.loading = false;
       })
       .addCase(importActivities.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
+      })
+      // Fetch Activity By ID
+      .addCase(fetchActivityById.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(fetchActivityById.fulfilled, (state) => {
+        state.loading = false;
+      })
+      .addCase(fetchActivityById.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
+      })
+      // Update Activity
+      .addCase(updateActivity.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(updateActivity.fulfilled, (state) => {
+        state.loading = false;
+      })
+      .addCase(updateActivity.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload as string;
       });

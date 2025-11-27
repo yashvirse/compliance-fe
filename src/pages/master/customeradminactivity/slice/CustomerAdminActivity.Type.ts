@@ -36,3 +36,44 @@ export interface ImportActivitiesResponse {
   message: string;
   result?: any;
 }
+
+export interface ActivityDetail {
+  activityId: string;
+  actName: string;
+  departmentName: string;
+  activityName: string;
+  description: string;
+  frequency: string;
+  dueDay: number;
+  gracePeriodDay: number;
+  reminderDay: number;
+  maker: string | null;
+  checker: string | null;
+  reviewer: string | null;
+  viewer: string | null;
+  companyId: string;
+  companyDomain: string;
+}
+
+export interface GetActivityByIdResponse {
+  isSuccess: boolean;
+  message: string;
+  result: ActivityDetail;
+}
+
+export interface UpdateActivityRequest {
+  activityId: string;
+  maker?: string;
+  checker?: string;
+  reviewer?: string;
+  viewer?: string;
+  frequency?: string;
+  dueDay?: number;
+  gracePeriodDay?: number;
+}
+
+export interface UpdateActivityResponse {
+  isSuccess: boolean;
+  message: string;
+  result?: any;
+}

@@ -21,7 +21,13 @@ import {
   alpha,
   Chip,
   Tooltip,
-  Button
+  Button,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  TextField,
+  Grid
 } from '@mui/material';
 import {
   KeyboardArrowDown as KeyboardArrowDownIcon,
@@ -30,12 +36,13 @@ import {
   Add as AddIcon,
   Upload as UploadIcon
 } from '@mui/icons-material';
-import { fetchCompanyActivityList, clearError } from './slice/CustomerAdminActivity.Slice';
+import { fetchCompanyActivityList, fetchActivityById, updateActivity, clearError } from './slice/CustomerAdminActivity.Slice';
 import {
   selectActivityMasterLoading,
   selectActivityMasterError,
   selectGroupedActivityMasters
 } from './slice/CustomerAdminActivity.Selector';
+import type { ActivityDetail } from './slice/CustomerAdminActivity.Type';
 
 const CustomerAdminActivityMasterPage: React.FC = () => {
   const theme = useTheme();
@@ -48,6 +55,19 @@ const CustomerAdminActivityMasterPage: React.FC = () => {
 
   const [expandedRows, setExpandedRows] = useState<Set<string>>(new Set());
   const [showSnackbar, setShowSnackbar] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState('');
+  const [snackbarSeverity, setSnackbarSeverity] = useState<'success' | 'error'>('success');
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [selectedActivity, setSelectedActivity] = useState<ActivityDetail | null>(null);
+  const [editFormData, setEditFormData] = useState({
+    maker: '',
+    checker: '',
+    reviewer: '',
+    viewer: '',
+    frequency: '',
+    dueDay: 0,
+    gracePeriodDay: 0
+  });
 
   useEffect(() => {
     dispatch(fetchCompanyActivityList());
@@ -55,6 +75,8 @@ const CustomerAdminActivityMasterPage: React.FC = () => {
 
   useEffect(() => {
     if (error) {
+      setSnackbarMessage(error);
+      setSnackbarSeverity('error');
       setShowSnackbar(true);
     }
   }, [error]);
@@ -76,9 +98,70 @@ const CustomerAdminActivityMasterPage: React.FC = () => {
     });
   };
 
-  const handleEdit = (actId: string) => {
-    // TODO: Implement edit functionality
-    console.log('Edit activity:', actId);
+  const handleEdit = async (actId: string) => {
+    try {
+      const activity = await dispatch(fetchActivityById(actId)).unwrap();
+      setSelectedActivity(activity);
+      setEditFormData({
+        maker: activity.maker || '',
+        checker: activity.checker || '',
+        reviewer: activity.reviewer || '',
+        viewer: activity.viewer || '',
+        frequency: activity.frequency || '',
+        dueDay: activity.dueDay || 0,
+        gracePeriodDay: activity.gracePeriodDay || 0
+      });
+      setEditDialogOpen(true);
+    } catch (err) {
+      setSnackbarMessage('Failed to fetch activity details');
+      setSnackbarSeverity('error');
+      setShowSnackbar(true);
+    }
+  };
+
+  const handleCloseEditDialog = () => {
+    setEditDialogOpen(false);
+    setSelectedActivity(null);
+    setEditFormData({
+      maker: '',
+      checker: '',
+      reviewer: '',
+      viewer: '',
+      frequency: '',
+      dueDay: 0,
+      gracePeriodDay: 0
+    });
+  };
+
+  const handleEditFormChange = (field: string) => (event: React.ChangeEvent<HTMLInputElement>) => {
+    setEditFormData(prev => ({ ...prev, [field]: event.target.value }));
+  };
+
+  const handleSaveEdit = async () => {
+    if (!selectedActivity) return;
+
+    try {
+      await dispatch(updateActivity({
+        activityId: selectedActivity.activityId,
+        maker: editFormData.maker,
+        checker: editFormData.checker,
+        reviewer: editFormData.reviewer,
+        viewer: editFormData.viewer,
+        frequency: editFormData.frequency,
+        dueDay: editFormData.dueDay,
+        gracePeriodDay: editFormData.gracePeriodDay
+      })).unwrap();
+      
+      setSnackbarMessage('Activity updated successfully');
+      setSnackbarSeverity('success');
+      setShowSnackbar(true);
+      handleCloseEditDialog();
+      dispatch(fetchCompanyActivityList());
+    } catch (err) {
+      setSnackbarMessage('Failed to update activity');
+      setSnackbarSeverity('error');
+      setShowSnackbar(true);
+    }
   };
 
   const handleDelete = (actId: string) => {
@@ -410,7 +493,7 @@ const CustomerAdminActivityMasterPage: React.FC = () => {
         </TableContainer>
       </Paper>
 
-      {/* Error Snackbar */}
+      {/* Snackbar */}
       <Snackbar
         open={showSnackbar}
         autoHideDuration={6000}
@@ -419,13 +502,167 @@ const CustomerAdminActivityMasterPage: React.FC = () => {
       >
         <Alert 
           onClose={handleCloseSnackbar} 
-          severity="error"
+          severity={snackbarSeverity}
           variant="filled"
           sx={{ width: '100%' }}
         >
-          {error || 'An error occurred'}
+          {snackbarMessage}
         </Alert>
       </Snackbar>
+
+      {/* Edit Activity Dialog */}
+      <Dialog
+        open={editDialogOpen}
+        onClose={handleCloseEditDialog}
+        maxWidth="md"
+        fullWidth
+      >
+        <DialogTitle sx={{ fontWeight: 600, borderBottom: `1px solid ${theme.palette.divider}` }}>
+          Edit Activity Assignment
+        </DialogTitle>
+        <DialogContent sx={{ mt: 2 }}>
+          {selectedActivity && (
+            <Box>
+              {/* Activity Info - Read Only */}
+              <Paper sx={{ p: 2, mb: 3, bgcolor: alpha(theme.palette.primary.main, 0.05) }}>
+                <Grid container spacing={2}>
+                  <Grid size={{ xs: 12, md: 6 }}>
+                    <Typography variant="caption" color="text.secondary">
+                      Act Name
+                    </Typography>
+                    <Typography variant="body2" fontWeight={600}>
+                      {selectedActivity.actName}
+                    </Typography>
+                  </Grid>
+                  <Grid size={{ xs: 12, md: 6 }}>
+                    <Typography variant="caption" color="text.secondary">
+                      Department
+                    </Typography>
+                    <Typography variant="body2" fontWeight={600}>
+                      {selectedActivity.departmentName}
+                    </Typography>
+                  </Grid>
+                  <Grid size={{ xs: 12 }}>
+                    <Typography variant="caption" color="text.secondary">
+                      Activity Name
+                    </Typography>
+                    <Typography variant="body2" fontWeight={600}>
+                      {selectedActivity.activityName}
+                    </Typography>
+                  </Grid>
+                  <Grid size={{ xs: 12 }}>
+                    <Typography variant="caption" color="text.secondary">
+                      Description
+                    </Typography>
+                    <Typography variant="body2">
+                      {selectedActivity.description}
+                    </Typography>
+                  </Grid>
+                </Grid>
+              </Paper>
+
+              {/* Editable Fields */}
+              <Typography variant="subtitle2" fontWeight={600} gutterBottom sx={{ mb: 2 }}>
+                Activity Details
+              </Typography>
+              <Grid container spacing={2} sx={{ mb: 3 }}>
+                <Grid size={{ xs: 12, md: 4 }}>
+                  <TextField
+                    fullWidth
+                    label="Frequency"
+                    value={editFormData.frequency}
+                    onChange={handleEditFormChange('frequency')}
+                    placeholder="e.g., Monthly, Quarterly"
+                  />
+                </Grid>
+                <Grid size={{ xs: 12, md: 4 }}>
+                  <TextField
+                    fullWidth
+                    label="Due Day"
+                    type="number"
+                    value={editFormData.dueDay}
+                    onChange={handleEditFormChange('dueDay')}
+                    placeholder="Enter due day"
+                    inputProps={{ min: 0 }}
+                  />
+                </Grid>
+                <Grid size={{ xs: 12, md: 4 }}>
+                  <TextField
+                    fullWidth
+                    label="Grace Period Days"
+                    type="number"
+                    value={editFormData.gracePeriodDay}
+                    onChange={handleEditFormChange('gracePeriodDay')}
+                    placeholder="Enter grace period days"
+                    inputProps={{ min: 0 }}
+                  />
+                </Grid>
+              </Grid>
+
+              <Typography variant="subtitle2" fontWeight={600} gutterBottom sx={{ mb: 2 }}>
+                Assign Users
+              </Typography>
+              <Grid container spacing={2}>
+                <Grid size={{ xs: 12, md: 6 }}>
+                  <TextField
+                    fullWidth
+                    label="Maker"
+                    value={editFormData.maker}
+                    onChange={handleEditFormChange('maker')}
+                    placeholder="Enter maker name"
+                  />
+                </Grid>
+                <Grid size={{ xs: 12, md: 6 }}>
+                  <TextField
+                    fullWidth
+                    label="Checker"
+                    value={editFormData.checker}
+                    onChange={handleEditFormChange('checker')}
+                    placeholder="Enter checker name"
+                  />
+                </Grid>
+                <Grid size={{ xs: 12, md: 6 }}>
+                  <TextField
+                    fullWidth
+                    label="Reviewer"
+                    value={editFormData.reviewer}
+                    onChange={handleEditFormChange('reviewer')}
+                    placeholder="Enter reviewer name"
+                  />
+                </Grid>
+                <Grid size={{ xs: 12, md: 6 }}>
+                  <TextField
+                    fullWidth
+                    label="Viewer"
+                    value={editFormData.viewer}
+                    onChange={handleEditFormChange('viewer')}
+                    placeholder="Enter viewer name"
+                  />
+                </Grid>
+              </Grid>
+            </Box>
+          )}
+        </DialogContent>
+        <DialogActions sx={{ px: 3, pb: 2, borderTop: `1px solid ${theme.palette.divider}` }}>
+          <Button 
+            onClick={handleCloseEditDialog}
+            sx={{ textTransform: 'none' }}
+          >
+            Cancel
+          </Button>
+          <Button 
+            onClick={handleSaveEdit}
+            variant="contained"
+            disabled={loading}
+            sx={{ 
+              textTransform: 'none',
+              minWidth: 100
+            }}
+          >
+            {loading ? <CircularProgress size={20} /> : 'Save Changes'}
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 };
