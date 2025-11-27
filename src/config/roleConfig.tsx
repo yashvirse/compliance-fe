@@ -46,13 +46,19 @@ export const menuConfig: MenuItem[] = [
         id: 'user',
         label: 'User',
         path: '/dashboard/master/user',
-        allowedRoles: [UserRole.SUPER_ADMIN, UserRole.CUSTOMER_ADMIN],
+        allowedRoles: [UserRole.SUPER_ADMIN],
+      },
+      {
+        id: 'customeradminuser',
+        label: 'User Master',
+        path: '/dashboard/master/customeradminuser',
+        allowedRoles: [UserRole.CUSTOMER_ADMIN],
       },
       {
         id: 'company',
         label: 'Company',
         path: '/dashboard/master/company',
-        allowedRoles: [UserRole.SUPER_ADMIN, UserRole.CUSTOMER_ADMIN, UserRole.MAKER],
+        allowedRoles: [UserRole.SUPER_ADMIN, UserRole.MAKER],
       },
       {
         id: 'department',

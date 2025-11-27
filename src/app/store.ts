@@ -5,6 +5,7 @@ import actMasterReducer from "../pages/master/act/slice/Act.Slice";
 import departmentMasterReducer from "../pages/master/department/slice/Department.Slice";
 import activityMasterReducer from "../pages/master/activity/slice/Activity.Slice";
 import customerAdminActivityReducer from "../pages/master/customeradminactivity/slice/CustomerAdminActivity.Slice";
+import customerAdminUserReducer from "../pages/master/customeradminuser/slice/CustomerAdminUser.Slice";
 
 export const store = configureStore({
   reducer: {
@@ -14,6 +15,7 @@ export const store = configureStore({
     departmentMaster: departmentMasterReducer,
     activityMaster: activityMasterReducer,
     customerAdminActivity: customerAdminActivityReducer,
+    customerAdminUser: customerAdminUserReducer,
   },
 });
 

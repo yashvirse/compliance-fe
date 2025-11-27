@@ -34,6 +34,9 @@ import AddDepartmentMasterPage from './pages/master/department/AddDepartmentMast
 import ActivityMasterPage from './pages/master/activity/ActivityMasterPage.tsx';
 import AddActivityMasterPage from './pages/master/activity/AddActivityMasterPage.tsx';
 import CustomerAdminActivityMasterPage from './pages/master/customeradminactivity/CustomerAdminActivityMasterPage.tsx';
+import ImportActivityList from './pages/master/customeradminactivity/ImportActivityList.tsx';
+import CustomerAdminUserPage from './pages/master/customeradminuser/CustomerAdminUserPage.tsx';
+import AddCustomerAdminUserPage from './pages/master/customeradminuser/AddCustomerAdminUserPage.tsx';
 import ComponentDemoPage from './pages/ComponentDemoPage.tsx';
 
 const theme = createTheme({
@@ -278,6 +281,38 @@ function App() {
                 element={
                   <RoleBasedRoute allowedRoles={[UserRole.CUSTOMER_ADMIN]}>
                     <CustomerAdminActivityMasterPage />
+                  </RoleBasedRoute>
+                } 
+              />
+              <Route 
+                path="master/customeradminactivity/import" 
+                element={
+                  <RoleBasedRoute allowedRoles={[UserRole.CUSTOMER_ADMIN]}>
+                    <ImportActivityList />
+                  </RoleBasedRoute>
+                } 
+              />
+              <Route 
+                path="master/customeradminuser" 
+                element={
+                  <RoleBasedRoute allowedRoles={[UserRole.CUSTOMER_ADMIN]}>
+                    <CustomerAdminUserPage />
+                  </RoleBasedRoute>
+                } 
+              />
+              <Route 
+                path="master/customeradminuser/add" 
+                element={
+                  <RoleBasedRoute allowedRoles={[UserRole.CUSTOMER_ADMIN]}>
+                    <AddCustomerAdminUserPage />
+                  </RoleBasedRoute>
+                } 
+              />
+              <Route 
+                path="master/customeradminuser/edit/:id" 
+                element={
+                  <RoleBasedRoute allowedRoles={[UserRole.CUSTOMER_ADMIN]}>
+                    <AddCustomerAdminUserPage />
                   </RoleBasedRoute>
                 } 
               />

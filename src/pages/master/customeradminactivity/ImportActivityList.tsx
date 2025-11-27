@@ -20,15 +20,12 @@ import {
   useTheme,
   alpha,
   Chip,
-  Tooltip,
+  Checkbox,
   Button
 } from '@mui/material';
 import {
   KeyboardArrowDown as KeyboardArrowDownIcon,
-  Edit as EditIcon,
-  Delete as DeleteIcon,
-  Add as AddIcon,
-  Upload as UploadIcon
+  ArrowBack as ArrowBackIcon
 } from '@mui/icons-material';
 import { fetchActivityMasterList, clearError } from './slice/CustomerAdminActivity.Slice';
 import {
@@ -37,7 +34,7 @@ import {
   selectGroupedActivityMasters
 } from './slice/CustomerAdminActivity.Selector';
 
-const CustomerAdminActivityMasterPage: React.FC = () => {
+const ImportActivityList: React.FC = () => {
   const theme = useTheme();
   const dispatch = useDispatch<AppDispatch>();
   const navigate = useNavigate();
@@ -48,6 +45,7 @@ const CustomerAdminActivityMasterPage: React.FC = () => {
 
   const [expandedRows, setExpandedRows] = useState<Set<string>>(new Set());
   const [showSnackbar, setShowSnackbar] = useState(false);
+  const [selectedActivities, setSelectedActivities] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     dispatch(fetchActivityMasterList());
@@ -76,23 +74,41 @@ const CustomerAdminActivityMasterPage: React.FC = () => {
     });
   };
 
-  const handleEdit = (actId: string) => {
-    // TODO: Implement edit functionality
-    console.log('Edit activity:', actId);
+  const handleSelectActivity = (activityId: string) => {
+    setSelectedActivities(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(activityId)) {
+        newSet.delete(activityId);
+      } else {
+        newSet.add(activityId);
+      }
+      return newSet;
+    });
   };
 
-  const handleDelete = (actId: string) => {
-    // TODO: Implement delete functionality
-    console.log('Delete activity:', actId);
+  const handleSelectAll = (activities: any[]) => {
+    const allIds = activities.map(a => a.activityId);
+    const allSelected = allIds.every(id => selectedActivities.has(id));
+    
+    setSelectedActivities(prev => {
+      const newSet = new Set(prev);
+      if (allSelected) {
+        allIds.forEach(id => newSet.delete(id));
+      } else {
+        allIds.forEach(id => newSet.add(id));
+      }
+      return newSet;
+    });
   };
 
-  const handleAddActivity = () => {
-    // TODO: Navigate to add activity page
-    console.log('Add activity');
+  const handleImport = () => {
+    // TODO: Implement import functionality
+    console.log('Importing activities:', Array.from(selectedActivities));
+    navigate('/dashboard/master/customeradminactivity');
   };
 
-  const handleImportActivity = () => {
-    navigate('/dashboard/master/customeradminactivity/import');
+  const handleBack = () => {
+    navigate('/dashboard/master/customeradminactivity');
   };
 
   if (loading) {
@@ -120,42 +136,38 @@ const CustomerAdminActivityMasterPage: React.FC = () => {
       {/* Header */}
       <Box sx={{ mb: 3, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
         <Box>
+          <Button
+            startIcon={<ArrowBackIcon />}
+            onClick={handleBack}
+            sx={{
+              mb: 2,
+              textTransform: 'none',
+              fontWeight: 600
+            }}
+          >
+            Back to Activity Master
+          </Button>
           <Typography variant="h4" fontWeight={700} gutterBottom>
-            Activity Master
+            Import Activities
           </Typography>
           <Typography variant="body1" color="text.secondary">
-            View and manage activities grouped by Act and Department
+            Select activities to import ({selectedActivities.size} selected)
           </Typography>
         </Box>
-        <Box sx={{ display: 'flex', gap: 2 }}>
-          <Button
-            variant="outlined"
-            startIcon={<UploadIcon />}
-            onClick={handleImportActivity}
-            sx={{
-              borderRadius: 2,
-              textTransform: 'none',
-              fontWeight: 600,
-              px: 3
-            }}
-          >
-            Import Activity
-          </Button>
-          <Button
-            variant="contained"
-            startIcon={<AddIcon />}
-            onClick={handleAddActivity}
-            sx={{
-              borderRadius: 2,
-              textTransform: 'none',
-              fontWeight: 600,
-              px: 3,
-              boxShadow: `0 4px 12px ${alpha(theme.palette.primary.main, 0.3)}`
-            }}
-          >
-            Add Activity
-          </Button>
-        </Box>
+        <Button
+          variant="contained"
+          onClick={handleImport}
+          disabled={selectedActivities.size === 0}
+          sx={{
+            borderRadius: 2,
+            textTransform: 'none',
+            fontWeight: 600,
+            px: 3,
+            boxShadow: `0 4px 12px ${alpha(theme.palette.primary.main, 0.3)}`
+          }}
+        >
+          Import Selected ({selectedActivities.size})
+        </Button>
       </Box>
 
       {/* Main Table */}
@@ -260,16 +272,36 @@ const CustomerAdminActivityMasterPage: React.FC = () => {
                                   bgcolor: alpha(theme.palette.grey[500], 0.03),
                                   px: 2,
                                   py: 1.5,
-                                  borderBottom: `1px solid ${alpha(theme.palette.divider, 0.1)}`
+                                  borderBottom: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
+                                  display: 'flex',
+                                  justifyContent: 'space-between',
+                                  alignItems: 'center'
                                 }}
                               >
                                 <Typography variant="subtitle2" fontWeight={600}>
                                   Activities ({group.activities.length})
                                 </Typography>
+                                <Button
+                                  size="small"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleSelectAll(group.activities);
+                                  }}
+                                  sx={{ textTransform: 'none' }}
+                                >
+                                  {group.activities.every(a => selectedActivities.has(a.activityId))
+                                    ? 'Deselect All'
+                                    : 'Select All'}
+                                </Button>
                               </Box>
                               <Table size="small">
                                 <TableHead>
                                   <TableRow sx={{ bgcolor: alpha(theme.palette.grey[500], 0.02) }}>
+                                    <TableCell sx={{ width: 50 }}>
+                                      <Typography variant="caption" fontWeight={600}>
+                                        Select
+                                      </Typography>
+                                    </TableCell>
                                     <TableCell>
                                       <Typography variant="caption" fontWeight={600}>
                                         Activity Name
@@ -300,11 +332,6 @@ const CustomerAdminActivityMasterPage: React.FC = () => {
                                         Reminder Date
                                       </Typography>
                                     </TableCell>
-                                    <TableCell align="center" sx={{ width: 120 }}>
-                                      <Typography variant="caption" fontWeight={600}>
-                                        Actions
-                                      </Typography>
-                                    </TableCell>
                                   </TableRow>
                                 </TableHead>
                                 <TableBody>
@@ -312,10 +339,20 @@ const CustomerAdminActivityMasterPage: React.FC = () => {
                                     <TableRow 
                                       key={activity.activityId}
                                       hover
+                                      selected={selectedActivities.has(activity.activityId)}
                                       sx={{
-                                        '&:last-child td': { borderBottom: 0 }
+                                        '&:last-child td': { borderBottom: 0 },
+                                        cursor: 'pointer'
                                       }}
+                                      onClick={() => handleSelectActivity(activity.activityId)}
                                     >
+                                      <TableCell>
+                                        <Checkbox
+                                          checked={selectedActivities.has(activity.activityId)}
+                                          onChange={() => handleSelectActivity(activity.activityId)}
+                                          onClick={(e) => e.stopPropagation()}
+                                        />
+                                      </TableCell>
                                       <TableCell>
                                         <Typography variant="body2">
                                           {activity.activityName}
@@ -355,44 +392,6 @@ const CustomerAdminActivityMasterPage: React.FC = () => {
                                             : '-'}
                                         </Typography>
                                       </TableCell>
-                                      <TableCell align="center">
-                                        <Box sx={{ display: 'flex', gap: 1, justifyContent: 'center' }}>
-                                          <Tooltip title="Edit Activity">
-                                            <IconButton
-                                              size="small"
-                                              onClick={(e) => {
-                                                e.stopPropagation();
-                                                handleEdit(activity.activityId);
-                                              }}
-                                              sx={{
-                                                color: theme.palette.primary.main,
-                                                '&:hover': {
-                                                  bgcolor: alpha(theme.palette.primary.main, 0.1)
-                                                }
-                                              }}
-                                            >
-                                              <EditIcon fontSize="small" />
-                                            </IconButton>
-                                          </Tooltip>
-                                          <Tooltip title="Delete Activity">
-                                            <IconButton
-                                              size="small"
-                                              onClick={(e) => {
-                                                e.stopPropagation();
-                                                handleDelete(activity.activityId);
-                                              }}
-                                              sx={{
-                                                color: theme.palette.error.main,
-                                                '&:hover': {
-                                                  bgcolor: alpha(theme.palette.error.main, 0.1)
-                                                }
-                                              }}
-                                            >
-                                              <DeleteIcon fontSize="small" />
-                                            </IconButton>
-                                          </Tooltip>
-                                        </Box>
-                                      </TableCell>
                                     </TableRow>
                                   ))}
                                 </TableBody>
@@ -430,4 +429,4 @@ const CustomerAdminActivityMasterPage: React.FC = () => {
   );
 };
 
-export default CustomerAdminActivityMasterPage;
+export default ImportActivityList;
