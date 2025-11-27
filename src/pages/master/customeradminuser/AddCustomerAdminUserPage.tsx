@@ -50,9 +50,9 @@ const AddCustomerAdminUserPage: React.FC = () => {
     companyId: localStorage.getItem('userId') || '',
     companyType: '',
     companyDomain: '',
-    userImage: '',
+    userimg: '',
     isActive: true,
-    createdBy: 'admin' // TODO: Get from logged-in user
+    createdBy: localStorage.getItem('userId') || '' // TODO: Get from logged-in user
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -100,8 +100,8 @@ const AddCustomerAdminUserPage: React.FC = () => {
     }
     if (!formData.userRole.trim()) newErrors.userRole = 'Role is required';
     if (!formData.companyId.trim()) newErrors.companyId = 'Company ID is required';
-    if (!formData.companyType.trim()) newErrors.companyType = 'Company Type is required';
-    if (!formData.companyDomain.trim()) newErrors.companyDomain = 'Company Domain is required';
+
+  
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -120,7 +120,7 @@ const AddCustomerAdminUserPage: React.FC = () => {
     try {
       const submitData = {
         ...formData,
-        userImage: imageFile || formData.userImage
+        userimg: imageFile || formData.userimg
       };
       await dispatch(addUser(submitData)).unwrap();
       setSnackbarMessage('User added successfully');
@@ -253,25 +253,9 @@ const AddCustomerAdminUserPage: React.FC = () => {
             </FormControl>
           </Grid>
 
-         
-
-          <Grid size={{ xs: 12, md: 6 }}>
-            <TextField
-              fullWidth
-              label="Company Domain"
-              value={formData.companyDomain}
-              onChange={handleChange('companyDomain')}
-              error={!!errors.companyDomain}
-              helperText={errors.companyDomain}
-              required
-            />
-          </Grid>
-
           <Grid size={{ xs: 12, md: 6 }}>
             <Box>
-              <Typography variant="body2" sx={{ mb: 1, fontWeight: 500 }}>
-                User Image
-              </Typography>
+           
               <Button
                 variant="outlined"
                 component="label"
@@ -283,7 +267,7 @@ const AddCustomerAdminUserPage: React.FC = () => {
                   borderStyle: 'dashed'
                 }}
               >
-                {imageFile ? imageFile.name : 'Choose Image'}
+                {imageFile ? imageFile.name : 'Upload User Image'}
                 <input
                   type="file"
                   hidden

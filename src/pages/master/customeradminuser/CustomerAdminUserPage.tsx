@@ -12,7 +12,12 @@ import {
   Button,
   Chip,
   Snackbar,
-  Alert
+  Alert,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogContentText,
+  DialogActions
 } from '@mui/material';
 import {
   Add as AddIcon,
@@ -22,7 +27,7 @@ import {
 } from '@mui/icons-material';
 import { DataGrid } from '@mui/x-data-grid';
 import type { GridColDef, GridRenderCellParams } from '@mui/x-data-grid';
-import { fetchUserList, clearError } from './slice/CustomerAdminUser.Slice';
+import { fetchUserList, deleteUser, clearError } from './slice/CustomerAdminUser.Slice';
 import {
   selectUsers,
   selectUserLoading,
@@ -39,6 +44,10 @@ const CustomerAdminUserPage: React.FC = () => {
   const error = useSelector(selectUserError);
 
   const [showSnackbar, setShowSnackbar] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState('');
+  const [snackbarSeverity, setSnackbarSeverity] = useState<'success' | 'error'>('success');
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [selectedUserId, setSelectedUserId] = useState<string>('');
 
   useEffect(() => {
     dispatch(fetchUserList());
@@ -46,6 +55,8 @@ const CustomerAdminUserPage: React.FC = () => {
 
   useEffect(() => {
     if (error) {
+      setSnackbarMessage(error);
+      setSnackbarSeverity('error');
       setShowSnackbar(true);
     }
   }, [error]);
@@ -64,8 +75,29 @@ const CustomerAdminUserPage: React.FC = () => {
   };
 
   const handleDelete = (id: string) => {
-    console.log('Delete User:', id);
-    // TODO: Implement delete functionality
+    setSelectedUserId(id);
+    setDeleteDialogOpen(true);
+  };
+
+  const handleDeleteConfirm = async () => {
+    try {
+      await dispatch(deleteUser(selectedUserId)).unwrap();
+      setSnackbarMessage('User deleted successfully');
+      setSnackbarSeverity('success');
+      setShowSnackbar(true);
+      setDeleteDialogOpen(false);
+      setSelectedUserId('');
+    } catch (err) {
+      setSnackbarMessage(error || 'Failed to delete user');
+      setSnackbarSeverity('error');
+      setShowSnackbar(true);
+      setDeleteDialogOpen(false);
+    }
+  };
+
+  const handleDeleteCancel = () => {
+    setDeleteDialogOpen(false);
+    setSelectedUserId('');
   };
 
   const handleView = (id: string) => {
@@ -236,13 +268,46 @@ const CustomerAdminUserPage: React.FC = () => {
       >
         <Alert 
           onClose={handleCloseSnackbar} 
-          severity="error"
+          severity={snackbarSeverity}
           variant="filled"
           sx={{ width: '100%' }}
         >
-          {error || 'An error occurred'}
+          {snackbarMessage}
         </Alert>
       </Snackbar>
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog
+        open={deleteDialogOpen}
+        onClose={handleDeleteCancel}
+        maxWidth="sm"
+        fullWidth
+      >
+        <DialogTitle sx={{ fontWeight: 600 }}>
+          Confirm Delete
+        </DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            Are you sure you want to delete this user? This action cannot be undone.
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions sx={{ px: 3, pb: 2 }}>
+          <Button 
+            onClick={handleDeleteCancel}
+            sx={{ textTransform: 'none' }}
+          >
+            Cancel
+          </Button>
+          <Button 
+            onClick={handleDeleteConfirm}
+            variant="contained"
+            color="error"
+            sx={{ textTransform: 'none' }}
+          >
+            Delete
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 };

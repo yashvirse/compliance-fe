@@ -31,8 +31,8 @@ export const addUser = createAsyncThunk(
       formData.append('createdBy', userData.createdBy);
       formData.append('createdOn', new Date().toISOString());
       
-      if (userData.userImage) {
-        formData.append('userImage', userData.userImage);
+      if (userData.userimg) {
+        formData.append('userimg', userData.userimg);
       }
 
       const response = await apiClient.post<AddUserResponse>(
@@ -83,6 +83,29 @@ export const fetchUserList = createAsyncThunk(
   }
 );
 
+export const deleteUser = createAsyncThunk(
+  'customerAdminUser/deleteUser',
+  async (userId: string, { rejectWithValue }) => {
+    try {
+      const response = await apiClient.delete<AddUserResponse>(
+        `User/deleteUser?uid=${userId}`
+      );
+      
+      if (response.data.isSuccess) {
+        return userId;
+      } else {
+        return rejectWithValue(response.data.message || 'Failed to delete user');
+      }
+    } catch (error: any) {
+      return rejectWithValue(
+        error.response?.data?.message || 
+        error.message || 
+        'An error occurred while deleting user'
+      );
+    }
+  }
+);
+
 const customerAdminUserSlice = createSlice({
   name: 'customerAdminUser',
   initialState,
@@ -115,6 +138,19 @@ const customerAdminUserSlice = createSlice({
         state.users = action.payload;
       })
       .addCase(fetchUserList.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
+      })
+      // Delete User
+      .addCase(deleteUser.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(deleteUser.fulfilled, (state, action) => {
+        state.loading = false;
+        state.users = state.users.filter(user => user.userID !== action.payload);
+      })
+      .addCase(deleteUser.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload as string;
       });
