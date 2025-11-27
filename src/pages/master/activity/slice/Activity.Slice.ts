@@ -9,7 +9,7 @@ import type {
   GetActivityMasterListResponse,
   GetActivityMasterByIdResponse,
   DeleteActivityMasterResponse,
-  ActDropdownResponse
+  GetActMasterListResponse
 } from './Activity.Type';
 
 // Initial state
@@ -24,8 +24,8 @@ const initialState: ActivityMasterState = {
   currentActivityMaster: null,
   fetchByIdLoading: false,
   fetchByIdError: null,
-  actDropdown: {},
-  actDropdownLoading: false,
+  actMasters: [],
+  actMastersLoading: false,
 };
 
 // Async thunk for adding activity master
@@ -83,28 +83,28 @@ export const fetchActivityMasterList = createAsyncThunk<
   }
 );
 
-// Async thunk for fetching act dropdown
-export const fetchActDropdown = createAsyncThunk<
-  ActDropdownResponse,
+// Async thunk for fetching act master list
+export const fetchActMasterListForActivity = createAsyncThunk<
+  GetActMasterListResponse,
   void,
   { rejectValue: string }
 >(
-  'activityMaster/fetchActDropdown',
+  'activityMaster/fetchActMasterList',
   async (_, { rejectWithValue }) => {
     try {
-      const response = await apiService.get<ActDropdownResponse>(
-        'Master/actDropDown'
+      const response = await apiService.get<GetActMasterListResponse>(
+        'Master/getActMasterList'
       );
 
       if (!response.isSuccess) {
-        return rejectWithValue(response.message || 'Failed to fetch act dropdown');
+        return rejectWithValue(response.message || 'Failed to fetch act master list');
       }
 
       return response;
     } catch (error: any) {
       const errorMessage = error?.response?.data?.message || 
                           error?.message || 
-                          'Failed to fetch act dropdown. Please try again.';
+                          'Failed to fetch act master list. Please try again.';
       return rejectWithValue(errorMessage);
     }
   }
@@ -311,17 +311,17 @@ const activityMasterSlice = createSlice({
         state.error = action.payload || 'An error occurred while updating activity master';
         state.success = false;
       })
-      // Fetch Act Dropdown
-      .addCase(fetchActDropdown.pending, (state) => {
-        state.actDropdownLoading = true;
+      // Fetch Act Master List
+      .addCase(fetchActMasterListForActivity.pending, (state) => {
+        state.actMastersLoading = true;
       })
-      .addCase(fetchActDropdown.fulfilled, (state, action) => {
-        state.actDropdownLoading = false;
-        state.actDropdown = action.payload.result || {};
+      .addCase(fetchActMasterListForActivity.fulfilled, (state, action) => {
+        state.actMastersLoading = false;
+        state.actMasters = action.payload.result || [];
       })
-      .addCase(fetchActDropdown.rejected, (state) => {
-        state.actDropdownLoading = false;
-        state.actDropdown = {};
+      .addCase(fetchActMasterListForActivity.rejected, (state) => {
+        state.actMastersLoading = false;
+        state.actMasters = [];
       });
   },
 });

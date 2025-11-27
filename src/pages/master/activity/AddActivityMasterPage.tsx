@@ -19,15 +19,15 @@ import {
 } from '@mui/material';
 import { ArrowBack } from '@mui/icons-material';
 import { CustomTextField, CustomDropdown } from '../../../components/common';
-import { addActivityMaster, updateActivityMaster, clearError, clearSuccess, fetchActivityMasterById, clearCurrentActivityMaster, fetchActDropdown } from './slice/Activity.Slice';
+import { addActivityMaster, updateActivityMaster, clearError, clearSuccess, fetchActivityMasterById, clearCurrentActivityMaster, fetchActMasterListForActivity } from './slice/Activity.Slice';
 import {
   selectActivityMasterLoading,
   selectActivityMasterError,
   selectActivityMasterSuccess,
   selectCurrentActivityMaster,
   selectFetchByIdLoading,
-  selectActDropdown,
-  selectActDropdownLoading
+  selectActMasters,
+  selectActMastersLoading
 } from './slice/Activity.Selector';
 import type { UpdateActivityMasterRequest, FrequencyTypeValue } from './slice/Activity.Type';
 import { FREQUENCY_OPTIONS, FrequencyType } from './slice/Activity.Type';
@@ -43,8 +43,8 @@ const AddActivityMasterPage: React.FC = () => {
   const success = useSelector(selectActivityMasterSuccess);
   const currentActivityMaster = useSelector(selectCurrentActivityMaster);
   const fetchByIdLoading = useSelector(selectFetchByIdLoading);
-  const actDropdown = useSelector(selectActDropdown);
-  const actDropdownLoading = useSelector(selectActDropdownLoading);
+  const actMasters = useSelector(selectActMasters);
+  const actMastersLoading = useSelector(selectActMastersLoading);
 
   const isEditMode = !!id;
   const [showSnackbar, setShowSnackbar] = useState(false);
@@ -65,7 +65,7 @@ const AddActivityMasterPage: React.FC = () => {
   const openMenu = Boolean(anchorEl);
 
   useEffect(() => {
-    dispatch(fetchActDropdown());
+    dispatch(fetchActMasterListForActivity());
   }, [dispatch]);
 
   useEffect(() => {
@@ -392,13 +392,15 @@ const AddActivityMasterPage: React.FC = () => {
     const reminderDayISO = reminderDate.toISOString();
 
     if (isEditMode && currentActivityMaster) {
-      // Get the act label (Act Name - Department) from dropdown
-      const actLabel = Object.entries(actDropdown).find(([_, value]) => value === formData.actID)?.[0] || '';
+      // Find the selected act master and get actName and departmentName separately
+      const selectedAct = actMasters.find(act => act.actId === formData.actID);
+      const actName = selectedAct ? selectedAct.actName : '';
+      const departmentName = selectedAct ? selectedAct.depaermentName : '';
       
       const updateData: UpdateActivityMasterRequest = {
         activityId: currentActivityMaster.activityId,
-        actName: actLabel,
-        departmentName: '',
+        actName: actName,
+        departmentName: departmentName,
         activityName: formData.activityName,
         description: formData.description,
         frequency: formData.frequency as string,
@@ -409,13 +411,15 @@ const AddActivityMasterPage: React.FC = () => {
 
       await dispatch(updateActivityMaster(updateData));
     } else {
-      // Get the act label (Act Name - Department) from dropdown
-      const actLabel = Object.entries(actDropdown).find(([_, value]) => value === formData.actID)?.[0] || '';
+      // Find the selected act master and get actName and departmentName separately
+      const selectedAct = actMasters.find(act => act.actId === formData.actID);
+      const actName = selectedAct ? selectedAct.actName : '';
+      const departmentName = selectedAct ? selectedAct.depaermentName : '';
       
       const requestData = {
         activityId: '',
-        actName: actLabel,
-        departmentName: '',
+        actName: actName,
+        departmentName: departmentName,
         activityName: formData.activityName,
         description: formData.description,
         frequency: formData.frequency as string,
@@ -448,7 +452,7 @@ const AddActivityMasterPage: React.FC = () => {
     );
   }
 
-  if (actDropdownLoading) {
+  if (actMastersLoading) {
     return (
       <Box 
         sx={{ 
@@ -468,9 +472,9 @@ const AddActivityMasterPage: React.FC = () => {
     );
   }
 
-  const actOptions = Object.entries(actDropdown).map(([label, value]) => ({
-    value: value,
-    label: label
+  const actOptions = actMasters.map(act => ({
+    value: act.actId,
+    label: `${act.actName} - ${act.depaermentName}`
   }));
 
   const frequencyOptions = FREQUENCY_OPTIONS.map(freq => ({

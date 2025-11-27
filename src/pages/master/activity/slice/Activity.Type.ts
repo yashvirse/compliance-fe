@@ -104,6 +104,19 @@ export interface ActDropdownResponse {
   result: Record<string, string>; // { "Act Name - Department": "actId/deptId" }
 }
 
+export interface ActMaster {
+  actId: string;
+  actName: string;
+  depaermentName: string;
+  description: string;
+}
+
+export interface GetActMasterListResponse {
+  isSuccess: boolean;
+  message: string;
+  result: ActMaster[];
+}
+
 export interface ActivityMasterState {
   loading: boolean;
   error: string | null;
@@ -115,6 +128,6 @@ export interface ActivityMasterState {
   currentActivityMaster: ActivityMaster | null;
   fetchByIdLoading: boolean;
   fetchByIdError: string | null;
-  actDropdown: Record<string, string>;
-  actDropdownLoading: boolean;
+  actMasters: ActMaster[];
+  actMastersLoading: boolean;
 }

@@ -26,7 +26,7 @@ import {
   Delete as DeleteIcon,
   Warning as WarningIcon
 } from '@mui/icons-material';
-import { fetchActivityMasterList, deleteActivityMaster, clearError, clearSuccess, fetchActDropdown } from './slice/Activity.Slice';
+import { fetchActivityMasterList, deleteActivityMaster, clearError, clearSuccess, } from './slice/Activity.Slice';
 import {
   selectActivityMasterLoading,
   selectActivityMasterError,
@@ -34,7 +34,7 @@ import {
   selectActivityMasterDeleteLoading,
   selectActivityMasterDeleteSuccess,
   selectActivityMasterDeleteError,
-  selectActDropdown
+
 } from './slice/Activity.Selector';
 
 const ActivityMasterPage: React.FC = () => {
@@ -48,7 +48,6 @@ const ActivityMasterPage: React.FC = () => {
   const deleteLoading = useSelector(selectActivityMasterDeleteLoading);
   const deleteSuccess = useSelector(selectActivityMasterDeleteSuccess);
   const deleteError = useSelector(selectActivityMasterDeleteError);
-  const actDropdown = useSelector(selectActDropdown);
 
   const [showSnackbar, setShowSnackbar] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
@@ -56,7 +55,7 @@ const ActivityMasterPage: React.FC = () => {
 
   useEffect(() => {
     dispatch(fetchActivityMasterList());
-    dispatch(fetchActDropdown());
+
   }, [dispatch]);
 
   useEffect(() => {
@@ -144,11 +143,8 @@ const ActivityMasterPage: React.FC = () => {
       headerName: 'Act - Department',
       flex: 2,
       minWidth: 220,
-      renderCell: (params: GridRenderCellParams) => {
-        // Find the act name with department from dropdown by matching the actID
-        const actID = params.row.actID;
-        const actLabel = Object.entries(actDropdown).find(([_, value]) => value === actID)?.[0];
-        return actLabel || params.value;
+      renderCell: (params: GridRenderCellParams) => {       
+          return `${params.row.actName} - ${params.row.departmentName}`;
       }
     },
     {

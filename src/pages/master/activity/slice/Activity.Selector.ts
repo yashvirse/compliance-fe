@@ -53,12 +53,12 @@ export const selectFetchByIdError = createSelector(
   (state) => state.fetchByIdError
 );
 
-export const selectActDropdown = createSelector(
+export const selectActMasters = createSelector(
   selectActivityMasterState,
-  (state) => state.actDropdown
+  (state) => state.actMasters
 );
 
-export const selectActDropdownLoading = createSelector(
+export const selectActMastersLoading = createSelector(
   selectActivityMasterState,
-  (state) => state.actDropdownLoading
+  (state) => state.actMastersLoading
 );
