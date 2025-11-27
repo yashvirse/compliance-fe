@@ -2,7 +2,8 @@ import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import { apiClient } from '../../../../services/api';
 import type {
   CustomerAdminActivityState,
-  GetActivityMasterListResponse
+  GetActivityMasterListResponse,
+  ImportActivitiesResponse
 } from './CustomerAdminActivity.Type';
 
 const initialState: CustomerAdminActivityState = {
@@ -35,6 +36,35 @@ export const fetchActivityMasterList = createAsyncThunk(
   }
 );
 
+export const importActivities = createAsyncThunk(
+  'customerAdminActivity/importActivities',
+  async (activityIds: string[], { rejectWithValue }) => {
+    try {
+      const response = await apiClient.post<ImportActivitiesResponse>(
+        'CompanyActivityMaster/addCompActivityMaster',
+        activityIds,
+        {
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        }
+      );
+      
+      if (response.data.isSuccess) {
+        return response.data;
+      } else {
+        return rejectWithValue(response.data.message || 'Failed to import activities');
+      }
+    } catch (error: any) {
+      return rejectWithValue(
+        error.response?.data?.message || 
+        error.message || 
+        'An error occurred while importing activities'
+      );
+    }
+  }
+);
+
 const customerAdminActivitySlice = createSlice({
   name: 'customerAdminActivity',
   initialState,
@@ -55,6 +85,18 @@ const customerAdminActivitySlice = createSlice({
         state.activities = action.payload;
       })
       .addCase(fetchActivityMasterList.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
+      })
+      // Import Activities
+      .addCase(importActivities.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(importActivities.fulfilled, (state) => {
+        state.loading = false;
+      })
+      .addCase(importActivities.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload as string;
       });

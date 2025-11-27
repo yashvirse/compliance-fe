@@ -27,7 +27,7 @@ import {
   KeyboardArrowDown as KeyboardArrowDownIcon,
   ArrowBack as ArrowBackIcon
 } from '@mui/icons-material';
-import { fetchActivityMasterList, clearError } from './slice/CustomerAdminActivity.Slice';
+import { fetchActivityMasterList, importActivities, clearError } from './slice/CustomerAdminActivity.Slice';
 import {
   selectActivityMasterLoading,
   selectActivityMasterError,
@@ -45,6 +45,8 @@ const ImportActivityList: React.FC = () => {
 
   const [expandedRows, setExpandedRows] = useState<Set<string>>(new Set());
   const [showSnackbar, setShowSnackbar] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState('');
+  const [snackbarSeverity, setSnackbarSeverity] = useState<'success' | 'error'>('success');
   const [selectedActivities, setSelectedActivities] = useState<Set<string>>(new Set());
 
   useEffect(() => {
@@ -53,6 +55,8 @@ const ImportActivityList: React.FC = () => {
 
   useEffect(() => {
     if (error) {
+      setSnackbarMessage(error);
+      setSnackbarSeverity('error');
       setShowSnackbar(true);
     }
   }, [error]);
@@ -101,10 +105,21 @@ const ImportActivityList: React.FC = () => {
     });
   };
 
-  const handleImport = () => {
-    // TODO: Implement import functionality
-    console.log('Importing activities:', Array.from(selectedActivities));
-    navigate('/dashboard/master/customeradminactivity');
+  const handleImport = async () => {
+    try {
+      const activityIdsArray = Array.from(selectedActivities);
+      await dispatch(importActivities(activityIdsArray)).unwrap();
+      setSnackbarMessage(`Successfully imported ${activityIdsArray.length} activities`);
+      setSnackbarSeverity('success');
+      setShowSnackbar(true);
+      setTimeout(() => {
+        navigate('/dashboard/master/customeradminactivity');
+      }, 1500);
+    } catch (err) {
+      setSnackbarMessage(error || 'Failed to import activities');
+      setSnackbarSeverity('error');
+      setShowSnackbar(true);
+    }
   };
 
   const handleBack = () => {
@@ -409,7 +424,7 @@ const ImportActivityList: React.FC = () => {
         </TableContainer>
       </Paper>
 
-      {/* Error Snackbar */}
+      {/* Snackbar */}
       <Snackbar
         open={showSnackbar}
         autoHideDuration={6000}
@@ -418,11 +433,11 @@ const ImportActivityList: React.FC = () => {
       >
         <Alert 
           onClose={handleCloseSnackbar} 
-          severity="error"
+          severity={snackbarSeverity}
           variant="filled"
           sx={{ width: '100%' }}
         >
-          {error || 'An error occurred'}
+          {snackbarMessage}
         </Alert>
       </Snackbar>
     </Box>

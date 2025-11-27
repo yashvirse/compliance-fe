@@ -30,3 +30,9 @@ export interface CustomerAdminActivityState {
   loading: boolean;
   error: string | null;
 }
+
+export interface ImportActivitiesResponse {
+  isSuccess: boolean;
+  message: string;
+  result?: any;
+}
