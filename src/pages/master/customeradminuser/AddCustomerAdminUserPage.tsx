@@ -47,7 +47,7 @@ const AddCustomerAdminUserPage: React.FC = () => {
     userMobile: '',
     userPassword: '',
     userRole: '',
-    companyId: '',
+    companyId: localStorage.getItem('userId') || '',
     companyType: '',
     companyDomain: '',
     userImage: '',
@@ -56,6 +56,8 @@ const AddCustomerAdminUserPage: React.FC = () => {
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string>('');
 
   const handleChange = (field: keyof AddUserRequest) => (
     event: React.ChangeEvent<HTMLInputElement | { value: unknown }>
@@ -69,6 +71,18 @@ const AddCustomerAdminUserPage: React.FC = () => {
 
   const handleSwitchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setFormData(prev => ({ ...prev, isActive: event.target.checked }));
+  };
+
+  const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      setImageFile(file);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImagePreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
   };
 
   const validateForm = (): boolean => {
@@ -104,7 +118,11 @@ const AddCustomerAdminUserPage: React.FC = () => {
     }
 
     try {
-      await dispatch(addUser(formData)).unwrap();
+      const submitData = {
+        ...formData,
+        userImage: imageFile || formData.userImage
+      };
+      await dispatch(addUser(submitData)).unwrap();
       setSnackbarMessage('User added successfully');
       setSnackbarSeverity('success');
       setShowSnackbar(true);
@@ -152,6 +170,7 @@ const AddCustomerAdminUserPage: React.FC = () => {
       <Paper
         component="form"
         onSubmit={handleSubmit}
+        autoComplete="off"
         sx={{
           borderRadius: 3,
           boxShadow: `0 4px 20px ${alpha(theme.palette.common.black, 0.08)}`,
@@ -163,6 +182,8 @@ const AddCustomerAdminUserPage: React.FC = () => {
             <TextField
               fullWidth
               label="User Name"
+              type="text"
+              autoComplete="off"
               value={formData.userName}
               onChange={handleChange('userName')}
               error={!!errors.userName}
@@ -176,6 +197,7 @@ const AddCustomerAdminUserPage: React.FC = () => {
               fullWidth
               label="Email"
               type="email"
+              autoComplete="off"
               value={formData.userEmail}
               onChange={handleChange('userEmail')}
               error={!!errors.userEmail}
@@ -201,6 +223,7 @@ const AddCustomerAdminUserPage: React.FC = () => {
               fullWidth
               label="Password"
               type="password"
+              autoComplete="new-password"
               value={formData.userPassword}
               onChange={handleChange('userPassword')}
               error={!!errors.userPassword}
@@ -217,8 +240,6 @@ const AddCustomerAdminUserPage: React.FC = () => {
                 onChange={handleChange('userRole') as any}
                 label="User Role"
               >
-                <MenuItem value="SuperAdmin">Super Admin</MenuItem>
-                <MenuItem value="CustomerAdmin">Customer Admin</MenuItem>
                 <MenuItem value="Maker">Maker</MenuItem>
                 <MenuItem value="Checker">Checker</MenuItem>
                 <MenuItem value="Reviewer">Reviewer</MenuItem>
@@ -232,29 +253,7 @@ const AddCustomerAdminUserPage: React.FC = () => {
             </FormControl>
           </Grid>
 
-          <Grid size={{ xs: 12, md: 6 }}>
-            <TextField
-              fullWidth
-              label="Company ID"
-              value={formData.companyId}
-              onChange={handleChange('companyId')}
-              error={!!errors.companyId}
-              helperText={errors.companyId}
-              required
-            />
-          </Grid>
-
-          <Grid size={{ xs: 12, md: 6 }}>
-            <TextField
-              fullWidth
-              label="Company Type"
-              value={formData.companyType}
-              onChange={handleChange('companyType')}
-              error={!!errors.companyType}
-              helperText={errors.companyType}
-              required
-            />
-          </Grid>
+         
 
           <Grid size={{ xs: 12, md: 6 }}>
             <TextField
@@ -269,13 +268,44 @@ const AddCustomerAdminUserPage: React.FC = () => {
           </Grid>
 
           <Grid size={{ xs: 12, md: 6 }}>
-            <TextField
-              fullWidth
-              label="User Image URL"
-              value={formData.userImage}
-              onChange={handleChange('userImage')}
-              helperText="Optional: Enter image URL"
-            />
+            <Box>
+              <Typography variant="body2" sx={{ mb: 1, fontWeight: 500 }}>
+                User Image
+              </Typography>
+              <Button
+                variant="outlined"
+                component="label"
+                fullWidth
+                sx={{
+                  borderRadius: 2,
+                  textTransform: 'none',
+                  py: 1.5,
+                  borderStyle: 'dashed'
+                }}
+              >
+                {imageFile ? imageFile.name : 'Choose Image'}
+                <input
+                  type="file"
+                  hidden
+                  accept="image/*"
+                  onChange={handleImageChange}
+                />
+              </Button>
+              {imagePreview && (
+                <Box sx={{ mt: 2, textAlign: 'center' }}>
+                  <img
+                    src={imagePreview}
+                    alt="Preview"
+                    style={{
+                      maxWidth: '100%',
+                      maxHeight: '150px',
+                      borderRadius: '8px',
+                      objectFit: 'cover'
+                    }}
+                  />
+                </Box>
+              )}
+            </Box>
           </Grid>
 
           <Grid size={{ xs: 12, md: 6 }}>

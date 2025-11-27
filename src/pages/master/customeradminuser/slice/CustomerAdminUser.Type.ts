@@ -24,7 +24,7 @@ export interface AddUserRequest {
   companyId: string;
   companyType: string;
   companyDomain: string;
-  userImage?: string;
+  userImage?: string | File;
   isActive: boolean;
   createdBy: string;
 }
