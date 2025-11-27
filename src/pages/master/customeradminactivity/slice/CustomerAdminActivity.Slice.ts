@@ -36,6 +36,32 @@ export const fetchActivityMasterList = createAsyncThunk(
   }
 );
 
+export const fetchCompanyActivityList = createAsyncThunk(
+  'customerAdminActivity/fetchCompanyActivityList',
+  async (_, { rejectWithValue }) => {
+    try {
+      // Get companyId from localStorage
+      const companyId = localStorage.getItem('companyID') || '';
+      
+      const response = await apiClient.get<GetActivityMasterListResponse>(
+        `CompanyActivityMaster/getCompActivityMasterList/${companyId}`
+      );
+      
+      if (response.data.isSuccess) {
+        return response.data.result;
+      } else {
+        return rejectWithValue(response.data.message || 'Failed to fetch company activities');
+      }
+    } catch (error: any) {
+      return rejectWithValue(
+        error.response?.data?.message || 
+        error.message || 
+        'An error occurred while fetching company activities'
+      );
+    }
+  }
+);
+
 export const importActivities = createAsyncThunk(
   'customerAdminActivity/importActivities',
   async (activityIds: string[], { rejectWithValue }) => {
@@ -85,6 +111,19 @@ const customerAdminActivitySlice = createSlice({
         state.activities = action.payload;
       })
       .addCase(fetchActivityMasterList.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
+      })
+      // Fetch Company Activity List
+      .addCase(fetchCompanyActivityList.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(fetchCompanyActivityList.fulfilled, (state, action) => {
+        state.loading = false;
+        state.activities = action.payload;
+      })
+      .addCase(fetchCompanyActivityList.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload as string;
       })

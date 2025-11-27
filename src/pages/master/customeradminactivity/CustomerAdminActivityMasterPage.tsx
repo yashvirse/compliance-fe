@@ -30,7 +30,7 @@ import {
   Add as AddIcon,
   Upload as UploadIcon
 } from '@mui/icons-material';
-import { fetchActivityMasterList, clearError } from './slice/CustomerAdminActivity.Slice';
+import { fetchCompanyActivityList, clearError } from './slice/CustomerAdminActivity.Slice';
 import {
   selectActivityMasterLoading,
   selectActivityMasterError,
@@ -50,7 +50,7 @@ const CustomerAdminActivityMasterPage: React.FC = () => {
   const [showSnackbar, setShowSnackbar] = useState(false);
 
   useEffect(() => {
-    dispatch(fetchActivityMasterList());
+    dispatch(fetchCompanyActivityList());
   }, [dispatch]);
 
   useEffect(() => {

@@ -47,7 +47,7 @@ const AddCustomerAdminUserPage: React.FC = () => {
     userMobile: '',
     userPassword: '',
     userRole: '',
-    companyId: localStorage.getItem('userId') || '',
+    companyId: localStorage.getItem('companyID') || '',
     companyType: '',
     companyDomain: '',
     userimg: '',
