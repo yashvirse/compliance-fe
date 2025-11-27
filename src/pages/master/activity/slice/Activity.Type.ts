@@ -15,7 +15,6 @@ export type FrequencyTypeValue = typeof FrequencyType[keyof typeof FrequencyType
 export interface ActivityMaster {
   activityId: string;
   actID: string;
-  departmentID: string;
   activityName: string;
   description: string;
   frequency: FrequencyTypeValue;
@@ -47,8 +46,8 @@ export const FREQUENCY_OPTIONS: FrequencyOption[] = [
 
 export interface AddActivityMasterRequest {
   activityId: string;
-  actID: string;
-  departmentID: string;
+  actName: string;
+  departmentName: string;
   activityName: string;
   description: string;
   frequency: string;
@@ -65,8 +64,8 @@ export interface AddActivityMasterResponse {
 
 export interface UpdateActivityMasterRequest {
   activityId: string;
-  actID: string;
-  departmentID: string;
+  actName: string;
+  departmentName: string;
   activityName: string;
   description: string;
   frequency: string;
@@ -99,10 +98,10 @@ export interface DeleteActivityMasterResponse {
   result?: any;
 }
 
-export interface DepartmentDropdownResponse {
+export interface ActDropdownResponse {
   isSuccess: boolean;
   message: string;
-  result: Record<string, string>; // { "id": "name" }
+  result: Record<string, string>; // { "Act Name - Department": "actId/deptId" }
 }
 
 export interface ActivityMasterState {
@@ -116,6 +115,6 @@ export interface ActivityMasterState {
   currentActivityMaster: ActivityMaster | null;
   fetchByIdLoading: boolean;
   fetchByIdError: string | null;
-  departmentDropdown: Record<string, string>;
-  departmentDropdownLoading: boolean;
+  actDropdown: Record<string, string>;
+  actDropdownLoading: boolean;
 }

@@ -3,7 +3,8 @@
 export interface ActMaster {
   actId: string;
   actName: string;
-  depaermentID: string;
+  depaermentID?: string; // For internal use
+  depaermentName: string; // From API response
   description: string;
 }
 
@@ -23,7 +24,7 @@ export interface AddActMasterResponse {
 export interface UpdateActMasterRequest {
   actId: string;
   actName: string;
-  depaermentID: string;
+  depaermentName: string;
   description: string;
 }
 
@@ -51,6 +52,12 @@ export interface GetActMasterByIdResponse {
   result: ActMaster;
 }
 
+export interface DepartmentDropdownResponse {
+  isSuccess: boolean;
+  message: string;
+  result: Record<string, string>; // { "id": "name" }
+}
+
 export interface ActMasterState {
   loading: boolean;
   error: string | null;
@@ -62,4 +69,6 @@ export interface ActMasterState {
   currentActMaster: ActMaster | null;
   fetchByIdLoading: boolean;
   fetchByIdError: string | null;
+  departmentDropdown: Record<string, string>;
+  departmentDropdownLoading: boolean;
 }

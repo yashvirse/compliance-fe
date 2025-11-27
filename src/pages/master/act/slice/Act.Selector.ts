@@ -11,3 +11,5 @@ export const selectActMasterDeleteError = (state: RootState) => state.actMaster.
 export const selectCurrentActMaster = (state: RootState) => state.actMaster.currentActMaster;
 export const selectFetchByIdLoading = (state: RootState) => state.actMaster.fetchByIdLoading;
 export const selectFetchByIdError = (state: RootState) => state.actMaster.fetchByIdError;
+export const selectDepartmentDropdown = (state: RootState) => state.actMaster.departmentDropdown;
+export const selectDepartmentDropdownLoading = (state: RootState) => state.actMaster.departmentDropdownLoading;

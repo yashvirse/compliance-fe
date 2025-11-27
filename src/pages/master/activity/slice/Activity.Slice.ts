@@ -9,7 +9,7 @@ import type {
   GetActivityMasterListResponse,
   GetActivityMasterByIdResponse,
   DeleteActivityMasterResponse,
-  DepartmentDropdownResponse
+  ActDropdownResponse
 } from './Activity.Type';
 
 // Initial state
@@ -24,8 +24,8 @@ const initialState: ActivityMasterState = {
   currentActivityMaster: null,
   fetchByIdLoading: false,
   fetchByIdError: null,
-  departmentDropdown: {},
-  departmentDropdownLoading: false,
+  actDropdown: {},
+  actDropdownLoading: false,
 };
 
 // Async thunk for adding activity master
@@ -83,28 +83,28 @@ export const fetchActivityMasterList = createAsyncThunk<
   }
 );
 
-// Async thunk for fetching department dropdown
-export const fetchDepartmentDropdown = createAsyncThunk<
-  DepartmentDropdownResponse,
+// Async thunk for fetching act dropdown
+export const fetchActDropdown = createAsyncThunk<
+  ActDropdownResponse,
   void,
   { rejectValue: string }
 >(
-  'activityMaster/fetchDepartmentDropdown',
+  'activityMaster/fetchActDropdown',
   async (_, { rejectWithValue }) => {
     try {
-      const response = await apiService.get<DepartmentDropdownResponse>(
-        'Master/departmentDropDown'
+      const response = await apiService.get<ActDropdownResponse>(
+        'Master/actDropDown'
       );
 
       if (!response.isSuccess) {
-        return rejectWithValue(response.message || 'Failed to fetch department dropdown');
+        return rejectWithValue(response.message || 'Failed to fetch act dropdown');
       }
 
       return response;
     } catch (error: any) {
       const errorMessage = error?.response?.data?.message || 
                           error?.message || 
-                          'Failed to fetch department dropdown. Please try again.';
+                          'Failed to fetch act dropdown. Please try again.';
       return rejectWithValue(errorMessage);
     }
   }
@@ -120,7 +120,7 @@ export const deleteActivityMaster = createAsyncThunk<
   async (activityMasterId: string, { rejectWithValue }) => {
     try {
       const response = await apiService.get<DeleteActivityMasterResponse>(
-        `Master/deleteActivityMaster/${activityMasterId}`
+        `Master/deleteSupAdmActMast/${activityMasterId}`
       );
 
       if (!response.isSuccess) {
@@ -311,17 +311,17 @@ const activityMasterSlice = createSlice({
         state.error = action.payload || 'An error occurred while updating activity master';
         state.success = false;
       })
-      // Fetch Department Dropdown
-      .addCase(fetchDepartmentDropdown.pending, (state) => {
-        state.departmentDropdownLoading = true;
+      // Fetch Act Dropdown
+      .addCase(fetchActDropdown.pending, (state) => {
+        state.actDropdownLoading = true;
       })
-      .addCase(fetchDepartmentDropdown.fulfilled, (state, action) => {
-        state.departmentDropdownLoading = false;
-        state.departmentDropdown = action.payload.result || {};
+      .addCase(fetchActDropdown.fulfilled, (state, action) => {
+        state.actDropdownLoading = false;
+        state.actDropdown = action.payload.result || {};
       })
-      .addCase(fetchDepartmentDropdown.rejected, (state) => {
-        state.departmentDropdownLoading = false;
-        state.departmentDropdown = {};
+      .addCase(fetchActDropdown.rejected, (state) => {
+        state.actDropdownLoading = false;
+        state.actDropdown = {};
       });
   },
 });

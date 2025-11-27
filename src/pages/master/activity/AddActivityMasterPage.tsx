@@ -19,17 +19,16 @@ import {
 } from '@mui/material';
 import { ArrowBack } from '@mui/icons-material';
 import { CustomTextField, CustomDropdown } from '../../../components/common';
-import { addActivityMaster, updateActivityMaster, clearError, clearSuccess, fetchActivityMasterById, clearCurrentActivityMaster, fetchDepartmentDropdown } from './slice/Activity.Slice';
+import { addActivityMaster, updateActivityMaster, clearError, clearSuccess, fetchActivityMasterById, clearCurrentActivityMaster, fetchActDropdown } from './slice/Activity.Slice';
 import {
   selectActivityMasterLoading,
   selectActivityMasterError,
   selectActivityMasterSuccess,
   selectCurrentActivityMaster,
   selectFetchByIdLoading,
-  selectDepartmentDropdown
+  selectActDropdown,
+  selectActDropdownLoading
 } from './slice/Activity.Selector';
-import { selectActMasters } from '../act/slice/Act.Selector';
-import { fetchActMasterList } from '../act/slice/Act.Slice';
 import type { UpdateActivityMasterRequest, FrequencyTypeValue } from './slice/Activity.Type';
 import { FREQUENCY_OPTIONS, FrequencyType } from './slice/Activity.Type';
 
@@ -44,14 +43,13 @@ const AddActivityMasterPage: React.FC = () => {
   const success = useSelector(selectActivityMasterSuccess);
   const currentActivityMaster = useSelector(selectCurrentActivityMaster);
   const fetchByIdLoading = useSelector(selectFetchByIdLoading);
-  const actMasters = useSelector(selectActMasters);
-  const departmentDropdown = useSelector(selectDepartmentDropdown);
+  const actDropdown = useSelector(selectActDropdown);
+  const actDropdownLoading = useSelector(selectActDropdownLoading);
 
   const isEditMode = !!id;
   const [showSnackbar, setShowSnackbar] = useState(false);
   const [formData, setFormData] = useState({
     actID: '',
-    departmentID: '',
     activityName: '',
     description: '',
     frequency: '' as FrequencyTypeValue | '',
@@ -67,8 +65,7 @@ const AddActivityMasterPage: React.FC = () => {
   const openMenu = Boolean(anchorEl);
 
   useEffect(() => {
-    dispatch(fetchActMasterList());
-    dispatch(fetchDepartmentDropdown());
+    dispatch(fetchActDropdown());
   }, [dispatch]);
 
   useEffect(() => {
@@ -81,7 +78,6 @@ const AddActivityMasterPage: React.FC = () => {
     if (isEditMode && currentActivityMaster) {
       setFormData({
         actID: currentActivityMaster.actID || '',
-        departmentID: currentActivityMaster.departmentID || '',
         activityName: currentActivityMaster.activityName || '',
         description: currentActivityMaster.description || '',
         frequency: currentActivityMaster.frequency || '',
@@ -396,10 +392,13 @@ const AddActivityMasterPage: React.FC = () => {
     const reminderDayISO = reminderDate.toISOString();
 
     if (isEditMode && currentActivityMaster) {
+      // Get the act label (Act Name - Department) from dropdown
+      const actLabel = Object.entries(actDropdown).find(([_, value]) => value === formData.actID)?.[0] || '';
+      
       const updateData: UpdateActivityMasterRequest = {
         activityId: currentActivityMaster.activityId,
-        actID: formData.actID,
-        departmentID: formData.departmentID,
+        actName: actLabel,
+        departmentName: '',
         activityName: formData.activityName,
         description: formData.description,
         frequency: formData.frequency as string,
@@ -410,10 +409,13 @@ const AddActivityMasterPage: React.FC = () => {
 
       await dispatch(updateActivityMaster(updateData));
     } else {
+      // Get the act label (Act Name - Department) from dropdown
+      const actLabel = Object.entries(actDropdown).find(([_, value]) => value === formData.actID)?.[0] || '';
+      
       const requestData = {
         activityId: '',
-        actID: formData.actID,
-        departmentID: formData.departmentID,
+        actName: actLabel,
+        departmentName: '',
         activityName: formData.activityName,
         description: formData.description,
         frequency: formData.frequency as string,
@@ -446,14 +448,29 @@ const AddActivityMasterPage: React.FC = () => {
     );
   }
 
-  const actOptions = actMasters.map(act => ({
-    value: act.actId,
-    label: act.actName
-  }));
+  if (actDropdownLoading) {
+    return (
+      <Box 
+        sx={{ 
+          display: 'flex', 
+          justifyContent: 'center', 
+          alignItems: 'center', 
+          minHeight: '60vh',
+          flexDirection: 'column',
+          gap: 2 
+        }}
+      >
+        <CircularProgress size={50} />
+        <Typography variant="body1" color="text.secondary">
+          Loading acts...
+        </Typography>
+      </Box>
+    );
+  }
 
-  const departmentOptions = Object.entries(departmentDropdown).map(([id, name]) => ({
-    value: id,
-    label: name
+  const actOptions = Object.entries(actDropdown).map(([label, value]) => ({
+    value: value,
+    label: label
   }));
 
   const frequencyOptions = FREQUENCY_OPTIONS.map(freq => ({
@@ -499,7 +516,7 @@ const AddActivityMasterPage: React.FC = () => {
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
               <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 3 }}>
                 <CustomDropdown
-                  label="Act Name"
+                  label="Act Name - Department"
                   name="actID"
                   value={formData.actID}
                   onChange={handleChange}
@@ -508,18 +525,6 @@ const AddActivityMasterPage: React.FC = () => {
                   placeholder="Select Act"
                 />
 
-                <CustomDropdown
-                  label="Department"
-                  name="departmentID"
-                  value={formData.departmentID}
-                  onChange={handleChange}
-                  options={departmentOptions}
-                  required
-                  placeholder="Select Department"
-                />
-              </Box>
-
-              <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 3 }}>
                 <CustomTextField
                   label="Activity Name"
                   name="activityName"

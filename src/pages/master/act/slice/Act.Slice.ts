@@ -8,7 +8,8 @@ import type {
   DeleteActMasterResponse,
   GetActMasterByIdResponse,
   UpdateActMasterRequest,
-  UpdateActMasterResponse
+  UpdateActMasterResponse,
+  DepartmentDropdownResponse
 } from './Act.Type';
 
 // Initial state
@@ -23,6 +24,8 @@ const initialState: ActMasterState = {
   currentActMaster: null,
   fetchByIdLoading: false,
   fetchByIdError: null,
+  departmentDropdown: {},
+  departmentDropdownLoading: false,
 };
 
 // Async thunk for adding act master
@@ -167,6 +170,33 @@ export const updateActMaster = createAsyncThunk<
   }
 );
 
+// Async thunk for fetching department dropdown
+export const fetchDepartmentDropdown = createAsyncThunk<
+  DepartmentDropdownResponse,
+  void,
+  { rejectValue: string }
+>(
+  'actMaster/fetchDepartmentDropdown',
+  async (_, { rejectWithValue }) => {
+    try {
+      const response = await apiService.get<DepartmentDropdownResponse>(
+        'Master/departmentDropDown'
+      );
+
+      if (!response.isSuccess) {
+        return rejectWithValue(response.message || 'Failed to fetch department dropdown');
+      }
+
+      return response;
+    } catch (error: any) {
+      const errorMessage = error?.response?.data?.message || 
+                          error?.message || 
+                          'Failed to fetch department dropdown. Please try again.';
+      return rejectWithValue(errorMessage);
+    }
+  }
+);
+
 // Act Master slice
 const actMasterSlice = createSlice({
   name: 'actMaster',
@@ -299,6 +329,18 @@ const actMasterSlice = createSlice({
         state.loading = false;
         state.error = action.payload || 'An error occurred while updating act master';
         state.success = false;
+      })
+      // Fetch Department Dropdown
+      .addCase(fetchDepartmentDropdown.pending, (state) => {
+        state.departmentDropdownLoading = true;
+      })
+      .addCase(fetchDepartmentDropdown.fulfilled, (state, action) => {
+        state.departmentDropdownLoading = false;
+        state.departmentDropdown = action.payload.result || {};
+      })
+      .addCase(fetchDepartmentDropdown.rejected, (state) => {
+        state.departmentDropdownLoading = false;
+        state.departmentDropdown = {};
       });
   },
 });

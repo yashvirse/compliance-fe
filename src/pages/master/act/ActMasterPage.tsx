@@ -25,16 +25,15 @@ import {
   Delete as DeleteIcon,
   Warning as WarningIcon
 } from '@mui/icons-material';
-import { fetchActMasterList, deleteActMaster, clearError, clearSuccess } from './slice/Act.Slice';
-import { fetchDepartmentMasterList } from '../department/slice/Department.Slice';
-import { selectDepartmentMasters } from '../department/slice/Department.Selector';
+import { fetchActMasterList, deleteActMaster, clearError, clearSuccess, fetchDepartmentDropdown } from './slice/Act.Slice';
 import {
   selectActMasterLoading,
   selectActMasterError,
   selectActMasters,
   selectActMasterDeleteLoading,
   selectActMasterDeleteSuccess,
-  selectActMasterDeleteError
+  selectActMasterDeleteError,
+  selectDepartmentDropdown
 } from './slice/Act.Selector';
 
 const ActMasterPage: React.FC = () => {
@@ -48,7 +47,7 @@ const ActMasterPage: React.FC = () => {
   const deleteLoading = useSelector(selectActMasterDeleteLoading);
   const deleteSuccess = useSelector(selectActMasterDeleteSuccess);
   const deleteError = useSelector(selectActMasterDeleteError);
-  const departments = useSelector(selectDepartmentMasters);
+  const departmentDropdown = useSelector(selectDepartmentDropdown);
 
   const [showSnackbar, setShowSnackbar] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
@@ -56,7 +55,7 @@ const ActMasterPage: React.FC = () => {
 
   useEffect(() => {
     dispatch(fetchActMasterList());
-    dispatch(fetchDepartmentMasterList());
+    dispatch(fetchDepartmentDropdown());
   }, [dispatch]);
 
   useEffect(() => {
@@ -129,14 +128,10 @@ const ActMasterPage: React.FC = () => {
       minWidth: 200,
     },
     {
-      field: 'depaermentID',
+      field: 'depaermentName',
       headerName: 'Department',
       flex: 1,
       minWidth: 150,
-      renderCell: (params: GridRenderCellParams) => {
-        const department = departments.find(dept => dept.deptId === params.value);
-        return department?.departmentName || params.value;
-      }
     },
     {
       field: 'description',

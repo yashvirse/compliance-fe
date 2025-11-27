@@ -16,15 +16,14 @@ import {
 } from '@mui/material';
 import { ArrowBack } from '@mui/icons-material';
 import { CustomTextField, CustomDropdown } from '../../../components/common';
-import { addActMaster, updateActMaster, clearError, clearSuccess, fetchActMasterById, clearCurrentActMaster } from './slice/Act.Slice';
-import { fetchDepartmentMasterList } from '../department/slice/Department.Slice';
-import { selectDepartmentMasters } from '../department/slice/Department.Selector';
+import { addActMaster, updateActMaster, clearError, clearSuccess, fetchActMasterById, clearCurrentActMaster, fetchDepartmentDropdown } from './slice/Act.Slice';
 import {
   selectActMasterLoading,
   selectActMasterError,
   selectActMasterSuccess,
   selectCurrentActMaster,
-  selectFetchByIdLoading
+  selectFetchByIdLoading,
+  selectDepartmentDropdown
 } from './slice/Act.Selector';
 import type { UpdateActMasterRequest } from './slice/Act.Type';
 
@@ -39,7 +38,7 @@ const AddActMasterPage: React.FC = () => {
   const success = useSelector(selectActMasterSuccess);
   const currentActMaster = useSelector(selectCurrentActMaster);
   const fetchByIdLoading = useSelector(selectFetchByIdLoading);
-  const departments = useSelector(selectDepartmentMasters);
+  const departmentDropdown = useSelector(selectDepartmentDropdown);
 
   const isEditMode = !!id;
   const [showSnackbar, setShowSnackbar] = useState(false);
@@ -49,9 +48,9 @@ const AddActMasterPage: React.FC = () => {
     description: '',
   });
 
-  // Fetch departments list
+  // Fetch department dropdown
   useEffect(() => {
-    dispatch(fetchDepartmentMasterList());
+    dispatch(fetchDepartmentDropdown());
   }, [dispatch]);
 
   // Fetch act master data in edit mode
@@ -63,14 +62,19 @@ const AddActMasterPage: React.FC = () => {
 
   // Populate form when act master data is loaded
   useEffect(() => {
-    if (isEditMode && currentActMaster) {
+    if (isEditMode && currentActMaster && Object.keys(departmentDropdown).length > 0) {
+      // Find department ID from department name
+      const departmentId = Object.entries(departmentDropdown).find(
+        ([_id, name]) => name === currentActMaster.depaermentName
+      )?.[0] || '';
+
       setFormData({
         actName: currentActMaster.actName || '',
-        depaermentID: currentActMaster.depaermentID || '',
+        depaermentID: departmentId,
         description: currentActMaster.description || '',
       });
     }
-  }, [isEditMode, currentActMaster]);
+  }, [isEditMode, currentActMaster, departmentDropdown]);
 
   useEffect(() => {
     if (success) {
@@ -115,11 +119,12 @@ const AddActMasterPage: React.FC = () => {
     e.preventDefault();
 
     if (isEditMode && currentActMaster) {
-      // Update existing act master
+      // Update existing act master - send department name instead of ID
+      const departmentName = departmentDropdown[formData.depaermentID] || '';
       const updateData: UpdateActMasterRequest = {
         actId: currentActMaster.actId,
         actName: formData.actName,
-        depaermentID: formData.depaermentID,
+        depaermentName: departmentName,
         description: formData.description,
       };
 
@@ -195,6 +200,21 @@ const AddActMasterPage: React.FC = () => {
           <Box component="form" onSubmit={handleSubmit}>
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
               <Box sx={{ display: 'flex', gap: 3, flexWrap: 'wrap' }}>
+                
+
+                <Box sx={{ flex: '1 1 calc(50% - 12px)', minWidth: '250px' }}>
+                  <CustomDropdown
+                    label="Department"
+                    name="depaermentID"
+                    value={formData.depaermentID}
+                    onChange={(e) => setFormData({ ...formData, depaermentID: e.target.value as string })}
+                    options={Object.entries(departmentDropdown).map(([id, name]) => ({
+                      label: name,
+                      value: id
+                    }))}
+                    required
+                  />
+                </Box>
                 <Box sx={{ flex: '1 1 calc(50% - 12px)', minWidth: '250px' }}>
                   <CustomTextField
                     label="Act Name"
@@ -203,20 +223,6 @@ const AddActMasterPage: React.FC = () => {
                     onChange={handleChange}
                     required
                     placeholder="Enter act name"
-                  />
-                </Box>
-
-                <Box sx={{ flex: '1 1 calc(50% - 12px)', minWidth: '250px' }}>
-                  <CustomDropdown
-                    label="Department"
-                    name="depaermentID"
-                    value={formData.depaermentID}
-                    onChange={(e) => setFormData({ ...formData, depaermentID: e.target.value as string })}
-                    options={departments.map(dept => ({
-                      label: dept.departmentName,
-                      value: dept.deptId
-                    }))}
-                    required
                   />
                 </Box>
               </Box>
