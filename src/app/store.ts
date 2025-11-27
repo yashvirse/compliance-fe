@@ -4,6 +4,7 @@ import companyReducer from "../pages/master/company/slice/Company.Slice";
 import actMasterReducer from "../pages/master/act/slice/Act.Slice";
 import departmentMasterReducer from "../pages/master/department/slice/Department.Slice";
 import activityMasterReducer from "../pages/master/activity/slice/Activity.Slice";
+import customerAdminActivityReducer from "../pages/master/customeradminactivity/slice/CustomerAdminActivity.Slice";
 
 export const store = configureStore({
   reducer: {
@@ -12,6 +13,7 @@ export const store = configureStore({
     actMaster: actMasterReducer,
     departmentMaster: departmentMasterReducer,
     activityMaster: activityMasterReducer,
+    customerAdminActivity: customerAdminActivityReducer,
   },
 });
 

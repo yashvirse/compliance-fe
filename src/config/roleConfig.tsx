@@ -73,6 +73,12 @@ export const menuConfig: MenuItem[] = [
         allowedRoles: [UserRole.SUPER_ADMIN],
       },
       {
+        id: 'customeradminactivity',
+        label: 'Activity Master',
+        path: '/dashboard/master/customeradminactivity',
+        allowedRoles: [UserRole.CUSTOMER_ADMIN],
+      },
+      {
         id: 'country',
         label: 'Country',
         path: '/dashboard/master/country',

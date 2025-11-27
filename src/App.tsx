@@ -33,6 +33,7 @@ import DepartmentMasterPage from './pages/master/department/DepartmentMasterPage
 import AddDepartmentMasterPage from './pages/master/department/AddDepartmentMasterPage.tsx';
 import ActivityMasterPage from './pages/master/activity/ActivityMasterPage.tsx';
 import AddActivityMasterPage from './pages/master/activity/AddActivityMasterPage.tsx';
+import CustomerAdminActivityMasterPage from './pages/master/customeradminactivity/CustomerAdminActivityMasterPage.tsx';
 import ComponentDemoPage from './pages/ComponentDemoPage.tsx';
 
 const theme = createTheme({
@@ -269,6 +270,14 @@ function App() {
                 element={
                   <RoleBasedRoute path="/dashboard/master/activity">
                     <AddActivityMasterPage />
+                  </RoleBasedRoute>
+                } 
+              />
+              <Route 
+                path="master/customeradminactivity" 
+                element={
+                  <RoleBasedRoute allowedRoles={[UserRole.CUSTOMER_ADMIN]}>
+                    <CustomerAdminActivityMasterPage />
                   </RoleBasedRoute>
                 } 
               />
