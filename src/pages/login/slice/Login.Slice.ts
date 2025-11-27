@@ -78,6 +78,9 @@ const loginSlice = createSlice({
       state.error = null;
       localStorage.removeItem('authToken');
       localStorage.removeItem('user');
+      localStorage.removeItem('companyID');
+      localStorage.removeItem('userRole');
+      localStorage.removeItem('userId');
     },
     
     // Clear error
@@ -131,6 +134,7 @@ const loginSlice = createSlice({
         localStorage.setItem('authToken', action.payload.result.token);
         localStorage.setItem('userRole', userData.role);
         localStorage.setItem('userId', userData.id);
+        localStorage.setItem('companyID', userData.companyID);
       })
       // Login rejected
       .addCase(loginUser.rejected, (state, action) => {
