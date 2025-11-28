@@ -11,9 +11,9 @@ const mapApiRoleToUserRole = (apiRole: string): UserRole => {
     'Maker': UserRole.MAKER,
     'Checker': UserRole.CHECKER,
     'Reviewer': UserRole.REVIEWER,
-    'Viewer': UserRole.VIEWER,
+    'Auditor': UserRole.AUDITOR,
   };
-  return roleMapping[apiRole] || UserRole.VIEWER;
+  return roleMapping[apiRole] || UserRole.AUDITOR;
 };
 
 // Initial state

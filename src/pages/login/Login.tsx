@@ -71,10 +71,10 @@ const Login: React.FC = () => {
         'Maker': UserRole.MAKER,
         'Checker': UserRole.CHECKER,
         'Reviewer': UserRole.REVIEWER,
-        'Viewer': UserRole.VIEWER,
+        'Auditor': UserRole.AUDITOR,
       };
       
-      const mappedRole = roleMapping[userRole] || UserRole.VIEWER;
+      const mappedRole = roleMapping[userRole] || UserRole.AUDITOR;
       
       // Get the dashboard path for the role
       const dashboardPath = getDashboardPathForRole(mappedRole);

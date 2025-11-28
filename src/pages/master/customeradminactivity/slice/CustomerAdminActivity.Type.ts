@@ -66,7 +66,7 @@ export interface UpdateActivityRequest {
   maker?: string;
   checker?: string;
   reviewer?: string;
-  viewer?: string;
+  auditor?: string;
   frequency?: string;
   dueDay?: number;
   gracePeriodDay?: number;

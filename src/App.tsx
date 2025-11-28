@@ -19,7 +19,7 @@ import CustomerAdminDashboard from './pages/dashboards/CustomerAdminDashboard.ts
 import MakerDashboard from './pages/dashboards/MakerDashboard.tsx';
 import CheckerDashboard from './pages/dashboards/CheckerDashboard.tsx';
 import ReviewerDashboard from './pages/dashboards/ReviewerDashboard.tsx';
-import ViewerDashboard from './pages/dashboards/ViewerDashboard.tsx';
+import AuditorDashboard from './pages/dashboards/AuditorDashboard.tsx';
 
 // Pages
 import FormPage from './pages/FormPage.tsx';
@@ -152,10 +152,10 @@ function App() {
                 } 
               />
               <Route 
-                path="viewer" 
+                path="auditor" 
                 element={
-                  <RoleBasedRoute allowedRoles={[UserRole.VIEWER]}>
-                    <ViewerDashboard />
+                  <RoleBasedRoute allowedRoles={[UserRole.AUDITOR]}>
+                    <AuditorDashboard />
                   </RoleBasedRoute>
                 } 
               />

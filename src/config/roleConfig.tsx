@@ -7,7 +7,7 @@ export const UserRole = {
   MAKER: 'Maker',
   CHECKER: 'Checker',
   REVIEWER: 'Reviewer',
-  VIEWER: 'Viewer',
+  AUDITOR: 'Auditor',
 } as const;
 
 export type UserRole = typeof UserRole[keyof typeof UserRole];
@@ -34,7 +34,7 @@ export const menuConfig: MenuItem[] = [
       UserRole.MAKER,
       UserRole.CHECKER,
       UserRole.REVIEWER,
-      UserRole.VIEWER,
+      UserRole.AUDITOR,
     ],
   },
   {
@@ -137,7 +137,7 @@ export const menuConfig: MenuItem[] = [
       UserRole.SUPER_ADMIN,
       UserRole.CUSTOMER_ADMIN,
       UserRole.REVIEWER,
-      UserRole.VIEWER,
+      UserRole.AUDITOR,
     ],
     children: [
       {
@@ -150,7 +150,7 @@ export const menuConfig: MenuItem[] = [
         id: 'view-reports',
         label: 'View Reports',
         path: '/dashboard/reports/view',
-        allowedRoles: [UserRole.REVIEWER, UserRole.VIEWER],
+        allowedRoles: [UserRole.REVIEWER, UserRole.AUDITOR],
       },
       {
         id: 'export-reports',
@@ -214,8 +214,8 @@ export const getDashboardPathForRole = (role: UserRole): string => {
       return '/dashboard/checker';
     case UserRole.REVIEWER:
       return '/dashboard/reviewer';
-    case UserRole.VIEWER:
-      return '/dashboard/viewer';
+    case UserRole.AUDITOR:
+      return '/dashboard/auditor';
     default:
       return '/dashboard';
   }

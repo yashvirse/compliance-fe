@@ -20,9 +20,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           'Maker': UserRole.MAKER,
           'Checker': UserRole.CHECKER,
           'Reviewer': UserRole.REVIEWER,
-          'Viewer': UserRole.VIEWER,
+          'Auditor': UserRole.AUDITOR,
         };
-        parsedUser.role = roleMapping[parsedUser.role] || UserRole.VIEWER;
+        parsedUser.role = roleMapping[parsedUser.role] || UserRole.AUDITOR;
         setUser(parsedUser);
       } catch (error) {
         console.error('Error parsing user from localStorage:', error);
@@ -36,7 +36,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     await new Promise(resolve => setTimeout(resolve, 1000));
     
     // Assign role based on email for demo purposes
-    let role: UserRole = UserRole.VIEWER;
+    let role: UserRole = UserRole.AUDITOR;
     if (email.includes('superadmin')) role = UserRole.SUPER_ADMIN;
     else if (email.includes('admin')) role = UserRole.CUSTOMER_ADMIN;
     else if (email.includes('maker')) role = UserRole.MAKER;

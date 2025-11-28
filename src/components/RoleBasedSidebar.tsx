@@ -63,7 +63,7 @@ const RoleBasedSidebar: React.FC<RoleBasedSidebarProps> = ({ sidebarOpen }) => {
   const [openMenus, setOpenMenus] = useState<Record<string, boolean>>({});
 
   // Get menu items based on user role
-  const userRole = (user?.role as UserRole) || UserRole.VIEWER;
+  const userRole = (user?.role as UserRole) || UserRole.AUDITOR;
   const menuItems = getMenuItemsForRole(userRole);
 
   const handleMenuClick = (menuId: string) => {

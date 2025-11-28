@@ -85,4 +85,4 @@ const ViewerDashboard: React.FC = () => {
   );
 };
 
-export default ViewerDashboard;
+export default AuditorDashboard;

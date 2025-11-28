@@ -447,7 +447,7 @@ const AddCustomerAdminUserPage: React.FC = () => {
                 <MenuItem value="Maker">Maker</MenuItem>
                 <MenuItem value="Checker">Checker</MenuItem>
                 <MenuItem value="Reviewer">Reviewer</MenuItem>
-                <MenuItem value="Viewer">Viewer</MenuItem>
+                <MenuItem value="Auditor">Auditor</MenuItem>
               </Select>
               {errors.userRole && (
                 <Typography variant="caption" color="error" sx={{ mt: 0.5, ml: 2 }}>

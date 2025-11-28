@@ -63,7 +63,7 @@ const CustomerAdminActivityMasterPage: React.FC = () => {
     maker: '',
     checker: '',
     reviewer: '',
-    viewer: '',
+    auditor: '',
     frequency: '',
     dueDay: 0,
     gracePeriodDay: 0
@@ -106,7 +106,7 @@ const CustomerAdminActivityMasterPage: React.FC = () => {
         maker: activity.maker || '',
         checker: activity.checker || '',
         reviewer: activity.reviewer || '',
-        viewer: activity.viewer || '',
+        auditor: activity.auditor || '',
         frequency: activity.frequency || '',
         dueDay: activity.dueDay || 0,
         gracePeriodDay: activity.gracePeriodDay || 0
@@ -126,7 +126,7 @@ const CustomerAdminActivityMasterPage: React.FC = () => {
       maker: '',
       checker: '',
       reviewer: '',
-      viewer: '',
+      auditor: '',
       frequency: '',
       dueDay: 0,
       gracePeriodDay: 0
@@ -146,7 +146,7 @@ const CustomerAdminActivityMasterPage: React.FC = () => {
         maker: editFormData.maker,
         checker: editFormData.checker,
         reviewer: editFormData.reviewer,
-        viewer: editFormData.viewer,
+        auditor: editFormData.auditor,
         frequency: editFormData.frequency,
         dueDay: editFormData.dueDay,
         gracePeriodDay: editFormData.gracePeriodDay
@@ -633,10 +633,10 @@ const CustomerAdminActivityMasterPage: React.FC = () => {
                 <Grid size={{ xs: 12, md: 6 }}>
                   <TextField
                     fullWidth
-                    label="Viewer"
-                    value={editFormData.viewer}
-                    onChange={handleEditFormChange('viewer')}
-                    placeholder="Enter viewer name"
+                    label="Auditor"
+                    value={editFormData.auditor}
+                    onChange={handleEditFormChange('auditor')}
+                    placeholder="Enter auditor name"
                   />
                 </Grid>
               </Grid>
