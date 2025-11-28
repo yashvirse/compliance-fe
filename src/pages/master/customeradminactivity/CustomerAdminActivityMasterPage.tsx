@@ -36,7 +36,7 @@ import {
   Add as AddIcon,
   Upload as UploadIcon
 } from '@mui/icons-material';
-import { fetchCompanyActivityList, fetchActivityById, updateActivity, clearError } from './slice/CustomerAdminActivity.Slice';
+import { fetchCompanyActivityList, fetchActivityById, updateActivity, deleteActivity, clearError } from './slice/CustomerAdminActivity.Slice';
 import {
   selectActivityMasterLoading,
   selectActivityMasterError,
@@ -59,6 +59,8 @@ const CustomerAdminActivityMasterPage: React.FC = () => {
   const [snackbarSeverity, setSnackbarSeverity] = useState<'success' | 'error'>('success');
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [selectedActivity, setSelectedActivity] = useState<ActivityDetail | null>(null);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [activityToDelete, setActivityToDelete] = useState<string | null>(null);
   const [editFormData, setEditFormData] = useState({
     maker: '',
     checker: '',
@@ -165,8 +167,31 @@ const CustomerAdminActivityMasterPage: React.FC = () => {
   };
 
   const handleDelete = (actId: string) => {
-    // TODO: Implement delete functionality
-    console.log('Delete activity:', actId);
+    setActivityToDelete(actId);
+    setDeleteDialogOpen(true);
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!activityToDelete) return;
+
+    try {
+      await dispatch(deleteActivity(activityToDelete)).unwrap();
+      setSnackbarMessage('Activity deleted successfully');
+      setSnackbarSeverity('success');
+      setShowSnackbar(true);
+      setDeleteDialogOpen(false);
+      setActivityToDelete(null);
+      dispatch(fetchCompanyActivityList());
+    } catch (err) {
+      setSnackbarMessage('Failed to delete activity');
+      setSnackbarSeverity('error');
+      setShowSnackbar(true);
+    }
+  };
+
+  const handleDeleteCancel = () => {
+    setDeleteDialogOpen(false);
+    setActivityToDelete(null);
   };
 
   const handleAddActivity = () => {
@@ -210,24 +235,11 @@ const CustomerAdminActivityMasterPage: React.FC = () => {
             View and manage activities grouped by Act and Department
           </Typography>
         </Box>
-        <Box sx={{ display: 'flex', gap: 2 }}>
-          <Button
-            variant="outlined"
-            startIcon={<UploadIcon />}
-            onClick={handleImportActivity}
-            sx={{
-              borderRadius: 2,
-              textTransform: 'none',
-              fontWeight: 600,
-              px: 3
-            }}
-          >
-            Import Activity
-          </Button>
+        <Box>
           <Button
             variant="contained"
-            startIcon={<AddIcon />}
-            onClick={handleAddActivity}
+            startIcon={<UploadIcon />}
+            onClick={handleImportActivity}
             sx={{
               borderRadius: 2,
               textTransform: 'none',
@@ -236,7 +248,7 @@ const CustomerAdminActivityMasterPage: React.FC = () => {
               boxShadow: `0 4px 12px ${alpha(theme.palette.primary.main, 0.3)}`
             }}
           >
-            Add Activity
+            Import Activity
           </Button>
         </Box>
       </Box>
@@ -360,11 +372,6 @@ const CustomerAdminActivityMasterPage: React.FC = () => {
                                     </TableCell>
                                     <TableCell>
                                       <Typography variant="caption" fontWeight={600}>
-                                        Description
-                                      </Typography>
-                                    </TableCell>
-                                    <TableCell>
-                                      <Typography variant="caption" fontWeight={600}>
                                         Frequency
                                       </Typography>
                                     </TableCell>
@@ -378,9 +385,9 @@ const CustomerAdminActivityMasterPage: React.FC = () => {
                                         Grace Days
                                       </Typography>
                                     </TableCell>
-                                    <TableCell>
+                                    <TableCell align="center">
                                       <Typography variant="caption" fontWeight={600}>
-                                        Reminder Date
+                                        Reminder Day
                                       </Typography>
                                     </TableCell>
                                     <TableCell align="center" sx={{ width: 120 }}>
@@ -405,11 +412,6 @@ const CustomerAdminActivityMasterPage: React.FC = () => {
                                         </Typography>
                                       </TableCell>
                                       <TableCell>
-                                        <Typography variant="body2" color="text.secondary">
-                                          {activity.description}
-                                        </Typography>
-                                      </TableCell>
-                                      <TableCell>
                                         <Chip 
                                           label={activity.frequency || 'N/A'} 
                                           size="small"
@@ -427,15 +429,9 @@ const CustomerAdminActivityMasterPage: React.FC = () => {
                                           {activity.gracePeriodDay || '-'}
                                         </Typography>
                                       </TableCell>
-                                      <TableCell>
+                                      <TableCell align="center">
                                         <Typography variant="body2">
-                                          {activity.reminderDay 
-                                            ? new Date(activity.reminderDay).toLocaleDateString('en-GB', { 
-                                                day: '2-digit', 
-                                                month: 'short', 
-                                                year: 'numeric' 
-                                              })
-                                            : '-'}
+                                          {activity.reminderDay !== null && activity.reminderDay !== undefined ? activity.reminderDay : '-'}
                                         </Typography>
                                       </TableCell>
                                       <TableCell align="center">
@@ -660,6 +656,43 @@ const CustomerAdminActivityMasterPage: React.FC = () => {
             }}
           >
             {loading ? <CircularProgress size={20} /> : 'Save Changes'}
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog
+        open={deleteDialogOpen}
+        onClose={handleDeleteCancel}
+        maxWidth="xs"
+        fullWidth
+      >
+        <DialogTitle sx={{ fontWeight: 600 }}>
+          Confirm Delete
+        </DialogTitle>
+        <DialogContent>
+          <Typography>
+            Are you sure you want to delete this activity? This action cannot be undone.
+          </Typography>
+        </DialogContent>
+        <DialogActions sx={{ px: 3, pb: 2 }}>
+          <Button 
+            onClick={handleDeleteCancel}
+            sx={{ textTransform: 'none' }}
+          >
+            Cancel
+          </Button>
+          <Button 
+            onClick={handleDeleteConfirm}
+            variant="contained"
+            color="error"
+            disabled={loading}
+            sx={{ 
+              textTransform: 'none',
+              minWidth: 100
+            }}
+          >
+            {loading ? <CircularProgress size={20} /> : 'Delete'}
           </Button>
         </DialogActions>
       </Dialog>

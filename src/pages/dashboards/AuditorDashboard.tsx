@@ -2,7 +2,7 @@ import React from 'react';
 import { Box, Typography, Card, CardContent, Grid, useTheme, alpha } from '@mui/material';
 import { Visibility, Assessment, Download } from '@mui/icons-material';
 
-const ViewerDashboard: React.FC = () => {
+const AuditorDashboard: React.FC = () => {
   const theme = useTheme();
 
   const stats = [

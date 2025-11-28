@@ -6,7 +6,8 @@ import type {
   ImportActivitiesResponse,
   GetActivityByIdResponse,
   UpdateActivityRequest,
-  UpdateActivityResponse
+  UpdateActivityResponse,
+  DeleteActivityResponse
 } from './CustomerAdminActivity.Type';
 
 const initialState: CustomerAdminActivityState = {
@@ -146,6 +147,29 @@ export const updateActivity = createAsyncThunk(
   }
 );
 
+export const deleteActivity = createAsyncThunk(
+  'customerAdminActivity/deleteActivity',
+  async (activityId: string, { rejectWithValue }) => {
+    try {
+      const response = await apiClient.get<DeleteActivityResponse>(
+        `CompanyActivityMaster/deleteCompAdminActivity/${activityId}`
+      );
+      
+      if (response.data.isSuccess) {
+        return activityId;
+      } else {
+        return rejectWithValue(response.data.message || 'Failed to delete activity');
+      }
+    } catch (error: any) {
+      return rejectWithValue(
+        error.response?.data?.message || 
+        error.message || 
+        'An error occurred while deleting activity'
+      );
+    }
+  }
+);
+
 const customerAdminActivitySlice = createSlice({
   name: 'customerAdminActivity',
   initialState,
@@ -215,6 +239,21 @@ const customerAdminActivitySlice = createSlice({
         state.loading = false;
       })
       .addCase(updateActivity.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
+      })
+      // Delete Activity
+      .addCase(deleteActivity.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(deleteActivity.fulfilled, (state, action) => {
+        state.loading = false;
+        state.activities = state.activities.filter(
+          activity => activity.activityId !== action.payload
+        );
+      })
+      .addCase(deleteActivity.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload as string;
       });

@@ -77,3 +77,9 @@ export interface UpdateActivityResponse {
   message: string;
   result?: any;
 }
+
+export interface DeleteActivityResponse {
+  isSuccess: boolean;
+  message: string;
+  result?: any;
+}
