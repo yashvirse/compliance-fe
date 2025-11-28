@@ -34,14 +34,16 @@ export interface EditUserRequest {
   userName: string;
   userEmail: string;
   userMobile: string;
-  userPassword?: string;
+  userPassword?: string | null;
   userRole: string;
   companyId: string;
   companyDomain: string;
   userimg?: string | File;
+  userImage?: string;
   isActive: boolean;
   createdBy: string;
   createdOn: string;
+
 }
 
 export interface AddUserResponse {

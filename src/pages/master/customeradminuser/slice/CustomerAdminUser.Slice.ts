@@ -127,8 +127,14 @@ export const editUser = createAsyncThunk(
       formData.append('createdBy', userData.createdBy);
       formData.append('createdOn', userData.createdOn);
       
-      if (userData.userimg) {
+      // Only send userimg if new image is uploaded
+      if (userData.userimg && userData.userimg instanceof File) {
         formData.append('userimg', userData.userimg);
+      }
+      
+      // Send userImage with existing path
+      if (userData.userImage) {
+        formData.append('userImage', userData.userImage);
       }
 
       const response = await apiClient.post<AddUserResponse>(

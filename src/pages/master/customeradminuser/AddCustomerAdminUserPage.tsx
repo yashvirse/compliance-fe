@@ -226,7 +226,9 @@ const AddCustomerAdminUserPage: React.FC = () => {
           isActive: formData.isActive,
           createdBy: formData.createdBy,
           createdOn: originalUserData.createdOn,
-          userimg: imageFile || formData.userimg
+          userimg: imageFile || undefined,
+          userImage: originalUserData.userImage || '',
+          // Will be conditionally added below
         };
         
         // Only include password if it was changed
