@@ -27,7 +27,11 @@ import {
   DialogContent,
   DialogActions,
   TextField,
-  Grid
+  Grid,
+  Select,
+  MenuItem,
+  FormControl,
+  InputLabel
 } from '@mui/material';
 import {
   KeyboardArrowDown as KeyboardArrowDownIcon,
@@ -37,6 +41,7 @@ import {
   Upload as UploadIcon
 } from '@mui/icons-material';
 import { fetchCompanyActivityList, fetchActivityById, updateActivity, deleteActivity, clearError } from './slice/CustomerAdminActivity.Slice';
+import { fetchUserList } from '../customeradminuser/slice/CustomerAdminUser.Slice';
 import {
   selectActivityMasterLoading,
   selectActivityMasterError,
@@ -61,6 +66,7 @@ const CustomerAdminActivityMasterPage: React.FC = () => {
   const [selectedActivity, setSelectedActivity] = useState<ActivityDetail | null>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [activityToDelete, setActivityToDelete] = useState<string | null>(null);
+  const [userList, setUserList] = useState<Array<{userID: string, userName: string, userRole: string}>>([]);
   const [editFormData, setEditFormData] = useState({
     maker: '',
     checker: '',
@@ -68,12 +74,23 @@ const CustomerAdminActivityMasterPage: React.FC = () => {
     auditor: '',
     frequency: '',
     dueDay: 0,
-    gracePeriodDay: 0
+    gracePeriodDay: 0,
+    reminderDay: 0
   });
 
   useEffect(() => {
     dispatch(fetchCompanyActivityList());
+    fetchUsers();
   }, [dispatch]);
+
+  const fetchUsers = async () => {
+    try {
+      const result = await dispatch(fetchUserList()).unwrap();
+      setUserList(result);
+    } catch (err) {
+      console.error('Failed to fetch user list:', err);
+    }
+  };
 
   useEffect(() => {
     if (error) {
@@ -111,7 +128,8 @@ const CustomerAdminActivityMasterPage: React.FC = () => {
         auditor: activity.auditor || '',
         frequency: activity.frequency || '',
         dueDay: activity.dueDay || 0,
-        gracePeriodDay: activity.gracePeriodDay || 0
+        gracePeriodDay: activity.gracePeriodDay || 0,
+        reminderDay: activity.reminderDay || 0
       });
       setEditDialogOpen(true);
     } catch (err) {
@@ -131,11 +149,12 @@ const CustomerAdminActivityMasterPage: React.FC = () => {
       auditor: '',
       frequency: '',
       dueDay: 0,
-      gracePeriodDay: 0
+      gracePeriodDay: 0,
+      reminderDay: 0
     });
   };
 
-  const handleEditFormChange = (field: string) => (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleEditFormChange = (field: string) => (event: React.ChangeEvent<HTMLInputElement> | any) => {
     setEditFormData(prev => ({ ...prev, [field]: event.target.value }));
   };
 
@@ -562,16 +581,29 @@ const CustomerAdminActivityMasterPage: React.FC = () => {
                 Activity Details
               </Typography>
               <Grid container spacing={2} sx={{ mb: 3 }}>
-                <Grid size={{ xs: 12, md: 4 }}>
-                  <TextField
-                    fullWidth
-                    label="Frequency"
-                    value={editFormData.frequency}
-                    onChange={handleEditFormChange('frequency')}
-                    placeholder="e.g., Monthly, Quarterly"
-                  />
+                <Grid size={{ xs: 12, md: 6 }}>
+                  <FormControl fullWidth>
+                    <InputLabel>Frequency</InputLabel>
+                    <Select
+                      value={editFormData.frequency}
+                      onChange={handleEditFormChange('frequency')}
+                      label="Frequency"
+                    >
+                      <MenuItem value="">
+                        <em>None</em>
+                      </MenuItem>
+                      <MenuItem value="Daily">Daily</MenuItem>
+                      <MenuItem value="Weekly">Weekly</MenuItem>
+                      <MenuItem value="Fortnightly">Fortnightly</MenuItem>
+                      <MenuItem value="Monthly">Monthly</MenuItem>
+                      <MenuItem value="Quarterly">Quarterly</MenuItem>
+                      <MenuItem value="Half Yearly">Half Yearly</MenuItem>
+                      <MenuItem value="Yearly">Yearly</MenuItem>
+                      <MenuItem value="One Time">One Time</MenuItem>
+                    </Select>
+                  </FormControl>
                 </Grid>
-                <Grid size={{ xs: 12, md: 4 }}>
+                <Grid size={{ xs: 12, md: 6 }}>
                   <TextField
                     fullWidth
                     label="Due Day"
@@ -582,7 +614,7 @@ const CustomerAdminActivityMasterPage: React.FC = () => {
                     inputProps={{ min: 0 }}
                   />
                 </Grid>
-                <Grid size={{ xs: 12, md: 4 }}>
+                <Grid size={{ xs: 12, md: 6 }}>
                   <TextField
                     fullWidth
                     label="Grace Period Days"
@@ -593,6 +625,17 @@ const CustomerAdminActivityMasterPage: React.FC = () => {
                     inputProps={{ min: 0 }}
                   />
                 </Grid>
+                <Grid size={{ xs: 12, md: 6 }}>
+                  <TextField
+                    fullWidth
+                    label="Reminder Day"
+                    type="number"
+                    value={editFormData.reminderDay}
+                    onChange={handleEditFormChange('reminderDay')}
+                    placeholder="Enter reminder day"
+                    inputProps={{ min: 0 }}
+                  />
+                </Grid>
               </Grid>
 
               <Typography variant="subtitle2" fontWeight={600} gutterBottom sx={{ mb: 2 }}>
@@ -600,40 +643,88 @@ const CustomerAdminActivityMasterPage: React.FC = () => {
               </Typography>
               <Grid container spacing={2}>
                 <Grid size={{ xs: 12, md: 6 }}>
-                  <TextField
-                    fullWidth
-                    label="Maker"
-                    value={editFormData.maker}
-                    onChange={handleEditFormChange('maker')}
-                    placeholder="Enter maker name"
-                  />
+                  <FormControl fullWidth>
+                    <InputLabel>Maker</InputLabel>
+                    <Select
+                      value={editFormData.maker}
+                      onChange={handleEditFormChange('maker')}
+                      label="Maker"
+                    >
+                      <MenuItem value="">
+                        <em>None</em>
+                      </MenuItem>
+                      {userList
+                        .filter(user => user.userRole === 'Maker')
+                        .map(user => (
+                          <MenuItem key={user.userID} value={user.userName}>
+                            {user.userName}
+                          </MenuItem>
+                        ))}
+                    </Select>
+                  </FormControl>
                 </Grid>
                 <Grid size={{ xs: 12, md: 6 }}>
-                  <TextField
-                    fullWidth
-                    label="Checker"
-                    value={editFormData.checker}
-                    onChange={handleEditFormChange('checker')}
-                    placeholder="Enter checker name"
-                  />
+                  <FormControl fullWidth>
+                    <InputLabel>Checker</InputLabel>
+                    <Select
+                      value={editFormData.checker}
+                      onChange={handleEditFormChange('checker')}
+                      label="Checker"
+                    >
+                      <MenuItem value="">
+                        <em>None</em>
+                      </MenuItem>
+                      {userList
+                        .filter(user => user.userRole === 'Checker')
+                        .map(user => (
+                          <MenuItem key={user.userID} value={user.userName}>
+                            {user.userName}
+                          </MenuItem>
+                        ))}
+                    </Select>
+                  </FormControl>
                 </Grid>
                 <Grid size={{ xs: 12, md: 6 }}>
-                  <TextField
-                    fullWidth
-                    label="Reviewer"
-                    value={editFormData.reviewer}
-                    onChange={handleEditFormChange('reviewer')}
-                    placeholder="Enter reviewer name"
-                  />
+                  <FormControl fullWidth>
+                    <InputLabel>Reviewer</InputLabel>
+                    <Select
+                      value={editFormData.reviewer}
+                      onChange={handleEditFormChange('reviewer')}
+                      label="Reviewer"
+                    >
+                      <MenuItem value="">
+                        <em>None</em>
+                      </MenuItem>
+                      {userList
+                        .filter(user => user.userRole === 'Reviewer')
+                        .map(user => (
+                          <MenuItem key={user.userID} value={user.userName}>
+                            {user.userName}
+                          </MenuItem>
+                        ))}
+                    </Select>
+                  </FormControl>
                 </Grid>
                 <Grid size={{ xs: 12, md: 6 }}>
-                  <TextField
-                    fullWidth
-                    label="Auditor"
-                    value={editFormData.auditor}
-                    onChange={handleEditFormChange('auditor')}
-                    placeholder="Enter auditor name"
-                  />
+                  <FormControl fullWidth>
+                    <InputLabel>Auditor</InputLabel>
+                    <Select
+                      value={editFormData.auditor}
+                      onChange={handleEditFormChange('auditor')}
+                      label="Auditor"
+                    >
+                      <MenuItem value="">
+                        <em>None</em>
+                      </MenuItem>
+                      {userList
+                        .filter(user => user.userRole === 'Auditor')
+                        .map(user => (
+                          <MenuItem key={user.userID} value={user.userName}>
+                            {user.userName}
+                          </MenuItem>
+                        ))}
+                    </Select>
+                  </FormControl>
                 </Grid>
               </Grid>
             </Box>
