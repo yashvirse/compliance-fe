@@ -3,8 +3,10 @@ import { apiClient } from '../../../../services/api';
 import type {
   UserState,
   AddUserRequest,
+  EditUserRequest,
   AddUserResponse,
-  GetUserListResponse
+  GetUserListResponse,
+  GetUserByIdResponse
 } from './CustomerAdminUser.Type';
 
 const initialState: UserState = {
@@ -83,6 +85,77 @@ export const fetchUserList = createAsyncThunk(
   }
 );
 
+export const fetchUserById = createAsyncThunk(
+  'customerAdminUser/fetchUserById',
+  async (userId: string, { rejectWithValue }) => {
+    try {
+      const response = await apiClient.get<GetUserByIdResponse>(
+        `User/getUserById?uid=${userId}`
+      );
+      
+      if (response.data.isSuccess) {
+        return response.data.result;
+      } else {
+        return rejectWithValue(response.data.message || 'Failed to fetch user');
+      }
+    } catch (error: any) {
+      return rejectWithValue(
+        error.response?.data?.message || 
+        error.message || 
+        'An error occurred while fetching user'
+      );
+    }
+  }
+);
+
+export const editUser = createAsyncThunk(
+  'customerAdminUser/editUser',
+  async (userData: EditUserRequest, { rejectWithValue }) => {
+    try {
+      const formData = new FormData();
+      formData.append('userID', userData.userID);
+      formData.append('userName', userData.userName);
+      formData.append('userEmail', userData.userEmail);
+      formData.append('userMobile', userData.userMobile);
+      if (userData.userPassword) {
+        formData.append('userPassword', userData.userPassword);
+      }
+      formData.append('userRole', userData.userRole);
+      formData.append('companyId', userData.companyId);
+      formData.append('companyDomain', userData.companyDomain);
+      formData.append('IsActive', userData.isActive.toString());
+      formData.append('createdBy', userData.createdBy);
+      formData.append('createdOn', userData.createdOn);
+      
+      if (userData.userimg) {
+        formData.append('userimg', userData.userimg);
+      }
+
+      const response = await apiClient.post<AddUserResponse>(
+        'User/editUser',
+        formData,
+        {
+          headers: {
+            'Content-Type': 'multipart/form-data'
+          }
+        }
+      );
+      
+      if (response.data.isSuccess) {
+        return response.data;
+      } else {
+        return rejectWithValue(response.data.message || 'Failed to edit user');
+      }
+    } catch (error: any) {
+      return rejectWithValue(
+        error.response?.data?.message || 
+        error.message || 
+        'An error occurred while editing user'
+      );
+    }
+  }
+);
+
 export const deleteUser = createAsyncThunk(
   'customerAdminUser/deleteUser',
   async (userId: string, { rejectWithValue }) => {
@@ -138,6 +211,30 @@ const customerAdminUserSlice = createSlice({
         state.users = action.payload;
       })
       .addCase(fetchUserList.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
+      })
+      // Fetch User By ID
+      .addCase(fetchUserById.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(fetchUserById.fulfilled, (state) => {
+        state.loading = false;
+      })
+      .addCase(fetchUserById.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
+      })
+      // Edit User
+      .addCase(editUser.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(editUser.fulfilled, (state) => {
+        state.loading = false;
+      })
+      .addCase(editUser.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload as string;
       })

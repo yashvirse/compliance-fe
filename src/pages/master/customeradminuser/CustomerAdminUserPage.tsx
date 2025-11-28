@@ -107,6 +107,16 @@ const CustomerAdminUserPage: React.FC = () => {
 
   const columns: GridColDef[] = [
     { 
+      field: 'sno', 
+      headerName: 'S.No.', 
+      width: 70,
+      sortable: false,
+      renderCell: (params: GridRenderCellParams) => {
+        const index = users.findIndex(user => user.userID === params.row.userID);
+        return index + 1;
+      }
+    },
+    { 
       field: 'userName', 
       headerName: 'Name', 
       width: 200,
@@ -244,7 +254,6 @@ const CustomerAdminUserPage: React.FC = () => {
             },
           }}
           pageSizeOptions={[5, 10, 25]}
-          checkboxSelection
           disableRowSelectionOnClick
           sx={{
             border: 'none',

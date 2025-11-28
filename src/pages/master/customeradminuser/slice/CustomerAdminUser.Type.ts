@@ -29,6 +29,21 @@ export interface AddUserRequest {
   createdBy: string;
 }
 
+export interface EditUserRequest {
+  userID: string;
+  userName: string;
+  userEmail: string;
+  userMobile: string;
+  userPassword?: string;
+  userRole: string;
+  companyId: string;
+  companyDomain: string;
+  userimg?: string | File;
+  isActive: boolean;
+  createdBy: string;
+  createdOn: string;
+}
+
 export interface AddUserResponse {
   isSuccess: boolean;
   message: string;
@@ -45,4 +60,10 @@ export interface UserState {
   users: User[];
   loading: boolean;
   error: string | null;
+}
+
+export interface GetUserByIdResponse {
+  isSuccess: boolean;
+  message: string;
+  result: User & { userPassword: string };
 }

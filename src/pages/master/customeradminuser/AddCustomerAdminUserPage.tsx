@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import type { AppDispatch } from '../../../app/store';
 import {
   Box,
@@ -19,20 +19,24 @@ import {
   FormControlLabel,
   Snackbar,
   Alert,
-  CircularProgress
+  CircularProgress,
+  InputAdornment,
+  IconButton
 } from '@mui/material';
-import { ArrowBack as ArrowBackIcon, Save as SaveIcon } from '@mui/icons-material';
-import { addUser, clearError } from './slice/CustomerAdminUser.Slice';
+import { ArrowBack as ArrowBackIcon, Save as SaveIcon, Visibility, VisibilityOff } from '@mui/icons-material';
+import { addUser, editUser, fetchUserById, clearError } from './slice/CustomerAdminUser.Slice';
 import {
   selectUserLoading,
   selectUserError
 } from './slice/CustomerAdminUser.Selector';
-import type { AddUserRequest } from './slice/CustomerAdminUser.Type';
+import type { AddUserRequest, EditUserRequest } from './slice/CustomerAdminUser.Type';
 
 const AddCustomerAdminUserPage: React.FC = () => {
   const theme = useTheme();
   const dispatch = useDispatch<AppDispatch>();
   const navigate = useNavigate();
+  const { id } = useParams<{ id: string }>();
+  const isEditMode = Boolean(id);
 
   const loading = useSelector(selectUserLoading);
   const error = useSelector(selectUserError);
@@ -40,6 +44,7 @@ const AddCustomerAdminUserPage: React.FC = () => {
   const [showSnackbar, setShowSnackbar] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState('');
   const [snackbarSeverity, setSnackbarSeverity] = useState<'success' | 'error'>('success');
+  const [showPassword, setShowPassword] = useState(false);
 
   const [formData, setFormData] = useState<AddUserRequest>({
     userName: '',
@@ -58,12 +63,64 @@ const AddCustomerAdminUserPage: React.FC = () => {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string>('');
+  const [originalUserData, setOriginalUserData] = useState<any>(null);
+  const [passwordStrength, setPasswordStrength] = useState({
+    hasMinLength: false,
+    hasUpperCase: false,
+    hasNumber: false,
+    hasSpecialChar: false
+  });
+
+  // Fetch user data if in edit mode
+  useEffect(() => {
+    if (isEditMode && id) {
+      const loadUser = async () => {
+        try {
+          const user = await dispatch(fetchUserById(id)).unwrap();
+          setOriginalUserData(user);
+          setFormData({
+            userName: user.userName,
+            userEmail: user.userEmail,
+            userMobile: user.userMobile,
+            userPassword: '', // Don't populate password for security
+            userRole: user.userRole,
+            companyId: user.companyId,
+            companyType: user.companyType || '',
+            companyDomain: user.companyDomain,
+            userimg: user.userImage || '',
+            isActive: user.isActive,
+            createdBy: user.createdBy || localStorage.getItem('userId') || ''
+          });
+          // Set image preview if exists
+          if (user.userImage) {
+            setImagePreview(`http://122.180.254.137:8099${user.userImage}`);
+          }
+        } catch (err) {
+          setSnackbarMessage('Failed to load user data');
+          setSnackbarSeverity('error');
+          setShowSnackbar(true);
+        }
+      };
+      loadUser();
+    }
+  }, [isEditMode, id, dispatch]);
 
   const handleChange = (field: keyof AddUserRequest) => (
     event: React.ChangeEvent<HTMLInputElement | { value: unknown }>
   ) => {
     const value = event.target.value;
     setFormData(prev => ({ ...prev, [field]: value }));
+    
+    // Update password strength indicators in real-time
+    if (field === 'userPassword' && typeof value === 'string') {
+      setPasswordStrength({
+        hasMinLength: value.length >= 8,
+        hasUpperCase: /[A-Z]/.test(value),
+        hasNumber: /[0-9]/.test(value),
+        hasSpecialChar: /[!@#$%^&*(),.?":{}|<>]/.test(value)
+      });
+    }
+    
     if (errors[field]) {
       setErrors(prev => ({ ...prev, [field]: '' }));
     }
@@ -94,10 +151,48 @@ const AddCustomerAdminUserPage: React.FC = () => {
       newErrors.userEmail = 'Invalid email format';
     }
     if (!formData.userMobile.trim()) newErrors.userMobile = 'Mobile is required';
-    if (!formData.userPassword.trim()) newErrors.userPassword = 'Password is required';
-    else if (formData.userPassword.length < 8) {
-      newErrors.userPassword = 'Password must be at least 8 characters';
+    
+    // Password validation - required only for add mode, optional for edit
+    if (!isEditMode) {
+      if (!formData.userPassword.trim()) {
+        newErrors.userPassword = 'Password is required';
+      } else {
+        // Password policy validation
+        const password = formData.userPassword;
+        const hasMinLength = password.length >= 8;
+        const hasUpperCase = /[A-Z]/.test(password);
+        const hasNumber = /[0-9]/.test(password);
+        const hasSpecialChar = /[!@#$%^&*(),.?":{}|<>]/.test(password);
+        
+        if (!hasMinLength) {
+          newErrors.userPassword = 'Password must be at least 8 characters';
+        } else if (!hasUpperCase) {
+          newErrors.userPassword = 'Password must contain at least 1 uppercase letter';
+        } else if (!hasNumber) {
+          newErrors.userPassword = 'Password must contain at least 1 number';
+        } else if (!hasSpecialChar) {
+          newErrors.userPassword = 'Password must contain at least 1 special character';
+        }
+      }
+    } else if (formData.userPassword) {
+      // Password policy validation for edit mode if password is provided
+      const password = formData.userPassword;
+      const hasMinLength = password.length >= 8;
+      const hasUpperCase = /[A-Z]/.test(password);
+      const hasNumber = /[0-9]/.test(password);
+      const hasSpecialChar = /[!@#$%^&*(),.?":{}|<>]/.test(password);
+      
+      if (!hasMinLength) {
+        newErrors.userPassword = 'Password must be at least 8 characters';
+      } else if (!hasUpperCase) {
+        newErrors.userPassword = 'Password must contain at least 1 uppercase letter';
+      } else if (!hasNumber) {
+        newErrors.userPassword = 'Password must contain at least 1 number';
+      } else if (!hasSpecialChar) {
+        newErrors.userPassword = 'Password must contain at least 1 special character';
+      }
     }
+    
     if (!formData.userRole.trim()) newErrors.userRole = 'Role is required';
     if (!formData.companyId.trim()) newErrors.companyId = 'Company ID is required';
 
@@ -118,19 +213,45 @@ const AddCustomerAdminUserPage: React.FC = () => {
     }
 
     try {
-      const submitData = {
-        ...formData,
-        userimg: imageFile || formData.userimg
-      };
-      await dispatch(addUser(submitData)).unwrap();
-      setSnackbarMessage('User added successfully');
+      if (isEditMode && originalUserData) {
+        // Edit mode - use editUser API
+        const editData: EditUserRequest = {
+          userID: originalUserData.userID,
+          userName: formData.userName,
+          userEmail: formData.userEmail,
+          userMobile: formData.userMobile,
+          userRole: formData.userRole,
+          companyId: formData.companyId,
+          companyDomain: formData.companyDomain,
+          isActive: formData.isActive,
+          createdBy: formData.createdBy,
+          createdOn: originalUserData.createdOn,
+          userimg: imageFile || formData.userimg
+        };
+        
+        // Only include password if it was changed
+        if (formData.userPassword) {
+          editData.userPassword = formData.userPassword;
+        }
+        
+        await dispatch(editUser(editData)).unwrap();
+      } else {
+        // Add mode - use addUser API
+        const submitData = {
+          ...formData,
+          userimg: imageFile || formData.userimg
+        };
+        await dispatch(addUser(submitData)).unwrap();
+      }
+      
+      setSnackbarMessage(isEditMode ? 'User updated successfully' : 'User added successfully');
       setSnackbarSeverity('success');
       setShowSnackbar(true);
       setTimeout(() => {
         navigate('/dashboard/master/customeradminuser');
       }, 1500);
     } catch (err) {
-      setSnackbarMessage(error || 'Failed to add user');
+      setSnackbarMessage(error || (isEditMode ? 'Failed to update user' : 'Failed to add user'));
       setSnackbarSeverity('error');
       setShowSnackbar(true);
     }
@@ -160,10 +281,10 @@ const AddCustomerAdminUserPage: React.FC = () => {
           Back to User List
         </Button>
         <Typography variant="h4" fontWeight={700} gutterBottom>
-          Add New User
+          {isEditMode ? 'Edit User' : 'Add New User'}
         </Typography>
         <Typography variant="body1" color="text.secondary">
-          Fill in the details to create a new user
+          {isEditMode ? 'Update user details' : 'Fill in the details to create a new user'}
         </Typography>
       </Box>
 
@@ -222,14 +343,95 @@ const AddCustomerAdminUserPage: React.FC = () => {
             <TextField
               fullWidth
               label="Password"
-              type="password"
+              type={showPassword ? 'text' : 'password'}
               autoComplete="new-password"
               value={formData.userPassword}
               onChange={handleChange('userPassword')}
               error={!!errors.userPassword}
-              helperText={errors.userPassword}
-              required
+              helperText={errors.userPassword || (isEditMode ? 'Leave blank to keep current password' : 'Min 8 chars, 1 uppercase, 1 number, 1 special character')}
+              required={!isEditMode}
+              InputProps={{
+                endAdornment: (
+                  <InputAdornment position="end">
+                    <IconButton
+                      aria-label="toggle password visibility"
+                      onClick={() => setShowPassword(!showPassword)}
+                      edge="end"
+                    >
+                      {showPassword ? <VisibilityOff /> : <Visibility />}
+                    </IconButton>
+                  </InputAdornment>
+                )
+              }}
             />
+            {formData.userPassword && (
+              <Box sx={{ mt: 1, display: 'flex', flexDirection: 'column', gap: 0.5 }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <Box
+                    sx={{
+                      width: 8,
+                      height: 8,
+                      borderRadius: '50%',
+                      bgcolor: passwordStrength.hasMinLength ? 'success.main' : 'grey.300'
+                    }}
+                  />
+                  <Typography
+                    variant="caption"
+                    sx={{ color: passwordStrength.hasMinLength ? 'success.main' : 'text.secondary' }}
+                  >
+                    At least 8 characters
+                  </Typography>
+                </Box>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <Box
+                    sx={{
+                      width: 8,
+                      height: 8,
+                      borderRadius: '50%',
+                      bgcolor: passwordStrength.hasUpperCase ? 'success.main' : 'grey.300'
+                    }}
+                  />
+                  <Typography
+                    variant="caption"
+                    sx={{ color: passwordStrength.hasUpperCase ? 'success.main' : 'text.secondary' }}
+                  >
+                    One uppercase letter
+                  </Typography>
+                </Box>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <Box
+                    sx={{
+                      width: 8,
+                      height: 8,
+                      borderRadius: '50%',
+                      bgcolor: passwordStrength.hasNumber ? 'success.main' : 'grey.300'
+                    }}
+                  />
+                  <Typography
+                    variant="caption"
+                    sx={{ color: passwordStrength.hasNumber ? 'success.main' : 'text.secondary' }}
+                  >
+                    One number
+                  </Typography>
+                </Box>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <Box
+                    sx={{
+                      width: 8,
+                      height: 8,
+                      borderRadius: '50%',
+                      bgcolor: passwordStrength.hasSpecialChar ? 'success.main' : 'grey.300'
+                    }}
+                  />
+                  <Typography
+                    variant="caption"
+                    sx={{ color: passwordStrength.hasSpecialChar ? 'success.main' : 'text.secondary' }}
+                  >
+                    One special character
+                  </Typography>
+                </Box>
+              </Box>
+            )}
           </Grid>
 
           <Grid size={{ xs: 12, md: 6 }}>
@@ -334,7 +536,7 @@ const AddCustomerAdminUserPage: React.FC = () => {
                   boxShadow: `0 4px 12px ${alpha(theme.palette.primary.main, 0.3)}`
                 }}
               >
-                {loading ? 'Saving...' : 'Save User'}
+                {loading ? 'Saving...' : (isEditMode ? 'Update User' : 'Save User')}
               </Button>
             </Box>
           </Grid>
