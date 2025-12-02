@@ -50,7 +50,7 @@ export interface ActivityDetail {
   maker: string | null;
   checker: string | null;
   reviewer: string | null;
-  viewer: string | null;
+  auditor: string | null;
   companyId: string;
   companyDomain: string;
 }
@@ -70,6 +70,7 @@ export interface UpdateActivityRequest {
   frequency?: string;
   dueDay?: number;
   gracePeriodDay?: number;
+  reminderDay?: number;
 }
 
 export interface UpdateActivityResponse {

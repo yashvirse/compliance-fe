@@ -170,7 +170,8 @@ const CustomerAdminActivityMasterPage: React.FC = () => {
         auditor: editFormData.auditor,
         frequency: editFormData.frequency,
         dueDay: editFormData.dueDay,
-        gracePeriodDay: editFormData.gracePeriodDay
+        gracePeriodDay: editFormData.gracePeriodDay,
+        reminderDay: editFormData.reminderDay
       })).unwrap();
       
       setSnackbarMessage('Activity updated successfully');
@@ -589,17 +590,12 @@ const CustomerAdminActivityMasterPage: React.FC = () => {
                       onChange={handleEditFormChange('frequency')}
                       label="Frequency"
                     >
-                      <MenuItem value="">
-                        <em>None</em>
-                      </MenuItem>
-                      <MenuItem value="Daily">Daily</MenuItem>
                       <MenuItem value="Weekly">Weekly</MenuItem>
                       <MenuItem value="Fortnightly">Fortnightly</MenuItem>
                       <MenuItem value="Monthly">Monthly</MenuItem>
-                      <MenuItem value="Quarterly">Quarterly</MenuItem>
                       <MenuItem value="Half Yearly">Half Yearly</MenuItem>
-                      <MenuItem value="Yearly">Yearly</MenuItem>
-                      <MenuItem value="One Time">One Time</MenuItem>
+                      <MenuItem value="Annually">Annually</MenuItem>
+                      <MenuItem value="As Needed">As Needed</MenuItem>
                     </Select>
                   </FormControl>
                 </Grid>
