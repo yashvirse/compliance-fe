@@ -1,14 +1,15 @@
 import React from 'react';
 import { Box, Typography, Card, CardContent, Grid, useTheme, alpha } from '@mui/material';
-import { Edit, PendingActions, CheckCircle } from '@mui/icons-material';
+import { Edit, PendingActions, CheckCircle, Assignment, Cancel } from '@mui/icons-material';
 
 const MakerDashboard: React.FC = () => {
   const theme = useTheme();
 
   const stats = [
-    { label: 'Created Today', value: '8', icon: <Edit />, color: theme.palette.primary.main },
-    { label: 'Pending Review', value: '15', icon: <PendingActions />, color: theme.palette.warning.main },
+    { label: 'Total Tasks', value: '158', icon: <Assignment />, color: theme.palette.info.main },
+    { label: 'Pending', value: '15', icon: <PendingActions />, color: theme.palette.warning.main },
     { label: 'Approved', value: '127', icon: <CheckCircle />, color: theme.palette.success.main },
+    { label: 'Rejected', value: '8', icon: <Cancel />, color: theme.palette.error.main },
   ];
 
   return (
@@ -24,7 +25,7 @@ const MakerDashboard: React.FC = () => {
 
       <Grid container spacing={3}>
         {stats.map((stat, index) => (
-          <Grid key={index} size={{ xs: 12, sm: 6, md: 4 }}>
+          <Grid key={index} size={{ xs: 12, sm: 6, md: 3 }}>
             <Card
               sx={{
                 borderRadius: 3,
