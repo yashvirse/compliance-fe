@@ -6,6 +6,7 @@ import type {
   ImportActivitiesResponse,
   GetActivityByIdResponse,
   UpdateActivityRequest,
+  EditCompAdminActivityRequest,
   UpdateActivityResponse,
   DeleteActivityResponse
 } from './CustomerAdminActivity.Type';
@@ -122,7 +123,7 @@ export const updateActivity = createAsyncThunk(
   'customerAdminActivity/updateActivity',
   async (data: UpdateActivityRequest, { rejectWithValue }) => {
     try {
-      const response = await apiClient.put<UpdateActivityResponse>(
+      const response = await apiClient.post<UpdateActivityResponse>(
         'CompanyActivityMaster/updateCompActivityMaster',
         data,
         {
@@ -142,6 +143,35 @@ export const updateActivity = createAsyncThunk(
         error.response?.data?.message || 
         error.message || 
         'An error occurred while updating activity'
+      );
+    }
+  }
+);
+
+export const editCompAdminActivity = createAsyncThunk(
+  'customerAdminActivity/editCompAdminActivity',
+  async (data: EditCompAdminActivityRequest, { rejectWithValue }) => {
+    try {
+      const response = await apiClient.post<UpdateActivityResponse>(
+        'CompanyActivityMaster/editCompAdminActivity',
+        data,
+        {
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        }
+      );
+      
+      if (response.data.isSuccess) {
+        return response.data;
+      } else {
+        return rejectWithValue(response.data.message || 'Failed to edit activity');
+      }
+    } catch (error: any) {
+      return rejectWithValue(
+        error.response?.data?.message || 
+        error.message || 
+        'An error occurred while editing activity'
       );
     }
   }
@@ -239,6 +269,18 @@ const customerAdminActivitySlice = createSlice({
         state.loading = false;
       })
       .addCase(updateActivity.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
+      })
+      // Edit Company Admin Activity
+      .addCase(editCompAdminActivity.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(editCompAdminActivity.fulfilled, (state) => {
+        state.loading = false;
+      })
+      .addCase(editCompAdminActivity.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload as string;
       })

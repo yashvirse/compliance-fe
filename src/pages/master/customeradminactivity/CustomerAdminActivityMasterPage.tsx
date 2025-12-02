@@ -40,7 +40,7 @@ import {
   Add as AddIcon,
   Upload as UploadIcon
 } from '@mui/icons-material';
-import { fetchCompanyActivityList, fetchActivityById, updateActivity, deleteActivity, clearError } from './slice/CustomerAdminActivity.Slice';
+import { fetchCompanyActivityList, fetchActivityById, updateActivity, editCompAdminActivity, deleteActivity, clearError } from './slice/CustomerAdminActivity.Slice';
 import { fetchUserList } from '../customeradminuser/slice/CustomerAdminUser.Slice';
 import {
   selectActivityMasterLoading,
@@ -162,16 +162,22 @@ const CustomerAdminActivityMasterPage: React.FC = () => {
     if (!selectedActivity) return;
 
     try {
-      await dispatch(updateActivity({
+      await dispatch(editCompAdminActivity({
         activityId: selectedActivity.activityId,
-        maker: editFormData.maker,
-        checker: editFormData.checker,
-        reviewer: editFormData.reviewer,
-        auditor: editFormData.auditor,
+        actName: selectedActivity.actName,
+        departmentName: selectedActivity.departmentName,
+        activityName: selectedActivity.activityName,
+        description: selectedActivity.description,
         frequency: editFormData.frequency,
         dueDay: editFormData.dueDay,
         gracePeriodDay: editFormData.gracePeriodDay,
-        reminderDay: editFormData.reminderDay
+        reminderDay: editFormData.reminderDay,
+        maker: editFormData.maker,
+        checker: editFormData.checker,
+        reviewer: editFormData.reviewer,
+        auditer: editFormData.auditor,
+        companyId: selectedActivity.companyId,
+        companyDomain: selectedActivity.companyDomain
       })).unwrap();
       
       setSnackbarMessage('Activity updated successfully');

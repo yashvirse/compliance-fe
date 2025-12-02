@@ -73,6 +73,24 @@ export interface UpdateActivityRequest {
   reminderDay?: number;
 }
 
+export interface EditCompAdminActivityRequest {
+  activityId: string;
+  actName: string;
+  departmentName: string;
+  activityName: string;
+  description: string;
+  frequency: string;
+  dueDay: number;
+  gracePeriodDay: number;
+  reminderDay: number;
+  maker: string;
+  checker: string;
+  reviewer: string;
+  auditer: string;
+  companyId: string;
+  companyDomain: string;
+}
+
 export interface UpdateActivityResponse {
   isSuccess: boolean;
   message: string;
