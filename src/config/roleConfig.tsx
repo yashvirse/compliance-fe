@@ -27,7 +27,7 @@ export const menuConfig: MenuItem[] = [
   {
     id: 'dashboard',
     label: 'Dashboard',
-    path: '/dashboard',
+    // No path here - will be dynamically set based on role
     allowedRoles: [
       UserRole.SUPER_ADMIN,
       UserRole.CUSTOMER_ADMIN,

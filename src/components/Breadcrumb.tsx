@@ -1,13 +1,20 @@
 import React from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
+import { useSelector } from 'react-redux';
 import { Breadcrumbs, Link, Typography, Box } from '@mui/material';
 import { Home as HomeIcon, NavigateNext } from '@mui/icons-material';
+import { selectUser } from '../pages/login/slice/Login.selector';
+import { getDashboardPathForRole, UserRole } from '../config/roleConfig.tsx';
 
 const Breadcrumb: React.FC = () => {
   const location = useLocation();
   const navigate = useNavigate();
+  const user = useSelector(selectUser);
 
   const pathnames = location.pathname.split('/').filter((x) => x);
+  
+  // Get role-specific dashboard path
+  const dashboardPath = user ? getDashboardPathForRole(user.role as UserRole) : '/dashboard';
 
   const breadcrumbNameMap: { [key: string]: string } = {
     dashboard: 'Dashboard',
@@ -44,7 +51,7 @@ const Breadcrumb: React.FC = () => {
               color: 'primary.dark'
             }
           }}
-          onClick={() => navigate('/dashboard')}
+          onClick={() => navigate(dashboardPath)}
         >
           <HomeIcon sx={{ mr: 0.5, fontSize: 20 }} />
           Home
@@ -54,6 +61,9 @@ const Breadcrumb: React.FC = () => {
           const last = index === pathnames.length - 1;
           const to = `/${pathnames.slice(0, index + 1).join('/')}`;
           const label = breadcrumbNameMap[value] || value;
+          
+          // Special handling for 'dashboard' breadcrumb - navigate to role-specific dashboard
+          const navigationPath = value === 'dashboard' && index === 0 ? dashboardPath : to;
 
           return last ? (
             <Typography
@@ -81,7 +91,7 @@ const Breadcrumb: React.FC = () => {
                   color: 'primary.dark'
                 }
               }}
-              onClick={() => navigate(to)}
+              onClick={() => navigate(navigationPath)}
             >
               {label}
             </Link>

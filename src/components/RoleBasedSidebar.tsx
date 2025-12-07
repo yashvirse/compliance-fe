@@ -29,7 +29,7 @@ import {
   Widgets,
 } from '@mui/icons-material';
 import { selectUser } from '../pages/login/slice/Login.selector';
-import { getMenuItemsForRole, type MenuItem, UserRole } from '../config/roleConfig.tsx';
+import { getMenuItemsForRole, getDashboardPathForRole, type MenuItem, UserRole } from '../config/roleConfig.tsx';
 
 interface RoleBasedSidebarProps {
   sidebarOpen: boolean;
@@ -81,7 +81,10 @@ const RoleBasedSidebar: React.FC<RoleBasedSidebarProps> = ({ sidebarOpen }) => {
     const icon = iconMap[item.id] || <Folder />;
     const hasChildren = item.children && item.children.length > 0;
     const isOpen = openMenus[item.id] || false;
-    const isSelected = item.path === location.pathname;
+    
+    // For dashboard menu, use role-specific path
+    const itemPath = item.id === 'dashboard' ? getDashboardPathForRole(userRole) : item.path;
+    const isSelected = itemPath === location.pathname;
 
     if (hasChildren) {
       return (
@@ -136,7 +139,7 @@ const RoleBasedSidebar: React.FC<RoleBasedSidebarProps> = ({ sidebarOpen }) => {
       <ListItem key={item.id} disablePadding sx={{ mb: hasChildren ? 0.5 : 1, pl: (item.path?.split('/').length ?? 0) > 3 ? 2 : 0 }}>
         <Tooltip title={!sidebarOpen ? item.label : ''} placement="right">
           <ListItemButton
-            onClick={() => item.path && handleNavigate(item.path)}
+            onClick={() => itemPath && handleNavigate(itemPath)}
             selected={isSelected}
             sx={{
               borderRadius: 2,
