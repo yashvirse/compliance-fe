@@ -35,12 +35,18 @@ import {
   Cancel,
   Close as CloseIcon
 } from '@mui/icons-material';
-import { fetchAssignedTasks, clearError } from './slice/MakerDashboard.Slice';
+import { fetchAssignedTasks, clearError } from './makerslice/MakerDashboard.Slice';
+import { fetchTaskCount } from './makerslice/Dashboard.Slice';
 import {
   selectAssignedTasks,
   selectMakerDashboardLoading,
   selectMakerDashboardError
-} from './slice/MakerDashboard.Selector';
+} from './makerslice/MakerDashboard.Selector';
+import {
+  selectTaskCounts,
+  selectDashboardLoading,
+  selectDashboardError
+} from './makerslice/Dashboard.Selector';
 import { selectUser } from '../login/slice/Login.selector';
 
 const MakerDashboard: React.FC = () => {
@@ -50,6 +56,9 @@ const MakerDashboard: React.FC = () => {
   const assignedTasks = useSelector(selectAssignedTasks);
   const loading = useSelector(selectMakerDashboardLoading);
   const error = useSelector(selectMakerDashboardError);
+  const counts = useSelector(selectTaskCounts);
+  const countsLoading = useSelector(selectDashboardLoading);
+  const countsError = useSelector(selectDashboardError);
 
   const [taskDialogOpen, setTaskDialogOpen] = useState(false);
 
@@ -65,11 +74,23 @@ const MakerDashboard: React.FC = () => {
     dispatch(clearError());
   };
 
+  // Fetch dashboard counts when user is available
+  useEffect(() => {
+    if (user?.id) {
+      dispatch(fetchTaskCount(user.id));
+    }
+  }, [dispatch, user?.id]);
+
+  const pendingCount = counts?.pendingCount ?? 0;
+  const approvedCount = counts?.approvedCount ?? 0;
+  const rejectedCount = counts?.rejectedCount ?? 0;
+  const totalCount = pendingCount + approvedCount + rejectedCount;
+debugger
   const stats = [
-    { label: 'Total Tasks', value: '158', icon: <Assignment />, color: theme.palette.info.main },
-    { label: 'Pending', value: '15', icon: <PendingActions />, color: theme.palette.warning.main },
-    { label: 'Approved', value: '127', icon: <CheckCircle />, color: theme.palette.success.main },
-    { label: 'Rejected', value: '8', icon: <Cancel />, color: theme.palette.error.main },
+    { label: 'Total Tasks', value: totalCount.toString(), icon: <Assignment />, color: theme.palette.info.main },
+    { label: 'Pending', value: pendingCount.toString(), icon: <PendingActions />, color: theme.palette.warning.main },
+    { label: 'Approved', value: approvedCount.toString(), icon: <CheckCircle />, color: theme.palette.success.main },
+    { label: 'Rejected', value: rejectedCount.toString(), icon: <Cancel />, color: theme.palette.error.main },
   ];
 
   return (
