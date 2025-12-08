@@ -9,10 +9,6 @@ import {
   Grid,
   useTheme,
   alpha,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
   Button,
   Table,
   TableBody,
@@ -24,29 +20,36 @@ import {
   CircularProgress,
   Alert,
   Chip,
-  IconButton,
-  Tooltip
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  TextField,
 } from '@mui/material';
 import {
-  Edit,
-  PendingActions,
   CheckCircle,
   Assignment,
   Cancel,
-  Close as CloseIcon
+  Close as CloseIcon,
+  ThumbUp as ApproveIcon,
+  ThumbDown as RejectIcon
 } from '@mui/icons-material';
-import { fetchAssignedTasks, clearError } from './makerslice/MakerDashboard.Slice';
-import { fetchTaskCount } from './makerslice/Dashboard.Slice';
+import {
+  fetchAssignedTasks,
+  fetchTaskCount,
+  approveTask,
+  rejectTask,
+  clearError,
+  clearTaskActionError,
+} from './makerslice/MakerDashboard.Slice';
 import {
   selectAssignedTasks,
   selectMakerDashboardLoading,
-  selectMakerDashboardError
-} from './makerslice/MakerDashboard.Selector';
-import {
+  selectMakerDashboardError,
   selectTaskCounts,
-  selectDashboardLoading,
-  selectDashboardError
-} from './makerslice/Dashboard.Selector';
+  selectTaskActionsLoading,
+  selectTaskActionsError,
+} from './makerslice/MakerDashboard.Selector';
 import { selectUser } from '../login/slice/Login.selector';
 
 const MakerDashboard: React.FC = () => {
@@ -57,21 +60,77 @@ const MakerDashboard: React.FC = () => {
   const loading = useSelector(selectMakerDashboardLoading);
   const error = useSelector(selectMakerDashboardError);
   const counts = useSelector(selectTaskCounts);
-  const countsLoading = useSelector(selectDashboardLoading);
-  const countsError = useSelector(selectDashboardError);
+  const taskActionsLoading = useSelector(selectTaskActionsLoading);
+  const taskActionsError = useSelector(selectTaskActionsError);
 
-  const [taskDialogOpen, setTaskDialogOpen] = useState(false);
+  const [tasksOpen, setTasksOpen] = useState(false);
+  const [approveDialogOpen, setApproveDialogOpen] = useState(false);
+  const [rejectDialogOpen, setRejectDialogOpen] = useState(false);
+  const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
+  const [remark, setRemark] = useState('');
 
   const handleTotalTasksClick = async () => {
     if (user?.id) {
       await dispatch(fetchAssignedTasks(user.id));
-      setTaskDialogOpen(true);
+      setTasksOpen(true);
     }
   };
 
   const handleCloseDialog = () => {
-    setTaskDialogOpen(false);
+    setTasksOpen(false);
     dispatch(clearError());
+  };
+
+  const handleApproveClick = (taskId: string) => {
+    setSelectedTaskId(taskId);
+    setRemark('');
+    setApproveDialogOpen(true);
+  };
+
+  const handleRejectClick = (taskId: string) => {
+    setSelectedTaskId(taskId);
+    setRemark('');
+    setRejectDialogOpen(true);
+  };
+
+  const handleConfirmApprove = async () => {
+    if (selectedTaskId && remark.trim()) {
+      await dispatch(approveTask({ taskID: selectedTaskId, remark }));
+      setApproveDialogOpen(false);
+      setRemark('');
+      setSelectedTaskId(null);
+      // Refresh assigned tasks after approval
+      if (user?.id) {
+        dispatch(fetchAssignedTasks(user.id));
+      }
+    }
+  };
+
+  const handleConfirmReject = async () => {
+    if (selectedTaskId && remark.trim()) {
+      await dispatch(rejectTask({ taskID: selectedTaskId, remark }));
+      setRejectDialogOpen(false);
+      setRemark('');
+      setSelectedTaskId(null);
+      // Refresh assigned tasks after rejection
+      if (user?.id) {
+        dispatch(fetchAssignedTasks(user.id));
+      }
+    }
+  };
+
+  const handleCloseApproveDialog = () => {
+    setApproveDialogOpen(false);
+    setRemark('');
+    setSelectedTaskId(null);
+    dispatch(clearTaskActionError());
+  };
+
+  const handleCloseRejectDialog = () => {
+    setRejectDialogOpen(false);
+    setRemark('');
+    setSelectedTaskId(null);
+    dispatch(clearTaskActionError());
   };
 
   // Fetch dashboard counts when user is available
@@ -85,24 +144,25 @@ const MakerDashboard: React.FC = () => {
   const approvedCount = counts?.approvedCount ?? 0;
   const rejectedCount = counts?.rejectedCount ?? 0;
   const totalCount = pendingCount + approvedCount + rejectedCount;
-debugger
+
   const stats = [
     { label: 'Total Tasks', value: totalCount.toString(), icon: <Assignment />, color: theme.palette.info.main },
-    { label: 'Pending', value: pendingCount.toString(), icon: <PendingActions />, color: theme.palette.warning.main },
+    { label: 'Pending', value: pendingCount.toString(), icon: <Assignment />, color: theme.palette.warning.main },
     { label: 'Approved', value: approvedCount.toString(), icon: <CheckCircle />, color: theme.palette.success.main },
     { label: 'Rejected', value: rejectedCount.toString(), icon: <Cancel />, color: theme.palette.error.main },
   ];
 
   return (
     <Box>
-      {!taskDialogOpen ? (
+      {!tasksOpen ? (
         <>
+          {/* Main Dashboard View */}
           <Box sx={{ mb: 4 }}>
             <Typography variant="h4" fontWeight={700} gutterBottom>
               Maker Dashboard
             </Typography>
             <Typography variant="body1" color="text.secondary">
-              Create and manage data entries
+              Manage your assigned tasks
             </Typography>
           </Box>
 
@@ -120,7 +180,9 @@ debugger
                       boxShadow: `0 8px 30px ${alpha(theme.palette.common.black, 0.12)}`,
                     } : {},
                   }}
-                  onClick={() => stat.label === 'Total Tasks' && handleTotalTasksClick()}
+                  onClick={() => {
+                    if (stat.label === 'Total Tasks') handleTotalTasksClick();
+                  }}
                 >
                   <CardContent>
                     <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
@@ -165,24 +227,24 @@ debugger
                 Create and submit data entries for verification.
               </Typography>
               <Typography variant="body2" color="text.secondary">
-                • Create new data entries
+                • View assigned tasks
                 <br />
-                • Edit draft entries
-                <br />• Submit for checker review
+                • Approve or reject tasks
+                <br />• Add remarks for actions
               </Typography>
             </CardContent>
           </Card>
         </>
       ) : (
         <>
-          {/* Task List View - Full Screen like Master Pages */}
+          {/* Assigned Tasks View */}
           <Box sx={{ mb: 3, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
             <Box>
               <Typography variant="h4" fontWeight={700} gutterBottom>
-                Total Assigned Tasks
+                Assigned Tasks
               </Typography>
               <Typography variant="body1" color="text.secondary">
-                View all tasks assigned to you
+                Manage and take action on your assigned tasks
               </Typography>
             </Box>
             <Button
@@ -275,6 +337,11 @@ debugger
                           Reviewer
                         </Typography>
                       </TableCell>
+                      <TableCell align="center">
+                        <Typography variant="subtitle2" fontWeight={600}>
+                          Actions
+                        </Typography>
+                      </TableCell>
                     </TableRow>
                   </TableHead>
                   <TableBody>
@@ -339,6 +406,42 @@ debugger
                             {task.reviewer || '-'}
                           </Typography>
                         </TableCell>
+                        <TableCell align="center">
+                          <Box sx={{ display: 'flex', gap: 1, justifyContent: 'center' }}>
+                            <Button
+                              size="small"
+                              variant="contained"
+                              color="success"
+                              startIcon={<ApproveIcon />}
+                              sx={{
+                                borderRadius: 1.5,
+                                textTransform: 'none',
+                                fontWeight: 600,
+                                px: 2,
+                                py: 1,
+                              }}
+                              onClick={() => handleApproveClick(task.activityId)}
+                            >
+                              Approve
+                            </Button>
+                            <Button
+                              size="small"
+                              variant="contained"
+                              color="error"
+                              startIcon={<RejectIcon />}
+                              sx={{
+                                borderRadius: 1.5,
+                                textTransform: 'none',
+                                fontWeight: 600,
+                                px: 2,
+                                py: 1,
+                              }}
+                              onClick={() => handleRejectClick(task.activityId)}
+                            >
+                              Reject
+                            </Button>
+                          </Box>
+                        </TableCell>
                       </TableRow>
                     ))}
                   </TableBody>
@@ -348,6 +451,106 @@ debugger
           </Paper>
         </>
       )}
+
+      {/* Approve Task Dialog */}
+      <Dialog
+        open={approveDialogOpen}
+        onClose={handleCloseApproveDialog}
+        maxWidth="sm"
+        fullWidth
+      >
+        <DialogTitle sx={{ fontWeight: 600, fontSize: '1.2rem' }}>
+          Approve Task
+        </DialogTitle>
+        {taskActionsError && (
+          <Box sx={{ px: 3, pt: 1 }}>
+            <Alert severity="error" sx={{ mb: 2 }}>
+              {taskActionsError}
+            </Alert>
+          </Box>
+        )}
+        <DialogContent sx={{ py: 2 }}>
+          <TextField
+            autoFocus
+            fullWidth
+            multiline
+            rows={4}
+            label="Remark"
+            placeholder="Enter your remark for approving this task..."
+            value={remark}
+            onChange={(e) => setRemark(e.target.value)}
+            variant="outlined"
+            sx={{ mt: 2 }}
+          />
+        </DialogContent>
+        <DialogActions sx={{ p: 2, gap: 1 }}>
+          <Button
+            onClick={handleCloseApproveDialog}
+            disabled={taskActionsLoading}
+          >
+            Cancel
+          </Button>
+          <Button
+            onClick={handleConfirmApprove}
+            variant="contained"
+            color="success"
+            disabled={taskActionsLoading || !remark.trim()}
+            startIcon={taskActionsLoading ? <CircularProgress size={20} /> : <ApproveIcon />}
+          >
+            {taskActionsLoading ? 'Approving...' : 'Approve'}
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Reject Task Dialog */}
+      <Dialog
+        open={rejectDialogOpen}
+        onClose={handleCloseRejectDialog}
+        maxWidth="sm"
+        fullWidth
+      >
+        <DialogTitle sx={{ fontWeight: 600, fontSize: '1.2rem' }}>
+          Reject Task
+        </DialogTitle>
+        {taskActionsError && (
+          <Box sx={{ px: 3, pt: 1 }}>
+            <Alert severity="error" sx={{ mb: 2 }}>
+              {taskActionsError}
+            </Alert>
+          </Box>
+        )}
+        <DialogContent sx={{ py: 2 }}>
+          <TextField
+            autoFocus
+            fullWidth
+            multiline
+            rows={4}
+            label="Rejection Reason"
+            placeholder="Enter your reason for rejecting this task..."
+            value={remark}
+            onChange={(e) => setRemark(e.target.value)}
+            variant="outlined"
+            sx={{ mt: 2 }}
+          />
+        </DialogContent>
+        <DialogActions sx={{ p: 2, gap: 1 }}>
+          <Button
+            onClick={handleCloseRejectDialog}
+            disabled={taskActionsLoading}
+          >
+            Cancel
+          </Button>
+          <Button
+            onClick={handleConfirmReject}
+            variant="contained"
+            color="error"
+            disabled={taskActionsLoading || !remark.trim()}
+            startIcon={taskActionsLoading ? <CircularProgress size={20} /> : <RejectIcon />}
+          >
+            {taskActionsLoading ? 'Rejecting...' : 'Reject'}
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 };
