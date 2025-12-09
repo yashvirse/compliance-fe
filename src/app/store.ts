@@ -7,6 +7,7 @@ import activityMasterReducer from "../pages/master/activity/slice/Activity.Slice
 import customerAdminActivityReducer from "../pages/master/customeradminactivity/slice/CustomerAdminActivity.Slice";
 import customerAdminUserReducer from "../pages/master/customeradminuser/slice/CustomerAdminUser.Slice";
 import makerDashboardReducer from "../pages/dashboards/makerslice/MakerDashboard.Slice";
+import checkerDashboardReducer from "../pages/dashboards/checkerslice/CheckerDashboard.Slice";
 
 export const store = configureStore({
   reducer: {
@@ -18,6 +19,7 @@ export const store = configureStore({
     customerAdminActivity: customerAdminActivityReducer,
     customerAdminUser: customerAdminUserReducer,
     makerDashboard: makerDashboardReducer,
+    checkerDashboard: checkerDashboardReducer,
   },
 });
 
