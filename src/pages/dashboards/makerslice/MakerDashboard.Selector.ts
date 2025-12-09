@@ -45,3 +45,51 @@ export const selectTaskActionsError = createSelector(
   [selectMakerDashboardState],
   (state) => state.taskActionsError
 );
+
+// ===== Pending Tasks Selectors =====
+export const selectPendingTasks = createSelector(
+  [selectMakerDashboardState],
+  (state) => state.pendingTasks
+);
+
+export const selectPendingTasksLoading = createSelector(
+  [selectMakerDashboardState],
+  (state) => state.pendingTasksLoading
+);
+
+export const selectPendingTasksError = createSelector(
+  [selectMakerDashboardState],
+  (state) => state.pendingTasksError
+);
+
+// ===== Approved Tasks Selectors =====
+export const selectApprovedTasks = createSelector(
+  [selectMakerDashboardState],
+  (state) => state.approvedTasks
+);
+
+export const selectApprovedTasksLoading = createSelector(
+  [selectMakerDashboardState],
+  (state) => state.approvedTasksLoading
+);
+
+export const selectApprovedTasksError = createSelector(
+  [selectMakerDashboardState],
+  (state) => state.approvedTasksError
+);
+
+// ===== Rejected Tasks Selectors =====
+export const selectRejectedTasks = createSelector(
+  [selectMakerDashboardState],
+  (state) => state.rejectedTasks
+);
+
+export const selectRejectedTasksLoading = createSelector(
+  [selectMakerDashboardState],
+  (state) => state.rejectedTasksLoading
+);
+
+export const selectRejectedTasksError = createSelector(
+  [selectMakerDashboardState],
+  (state) => state.rejectedTasksError
+);
