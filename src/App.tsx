@@ -37,6 +37,8 @@ import CustomerAdminActivityMasterPage from './pages/master/customeradminactivit
 import ImportActivityList from './pages/master/customeradminactivity/ImportActivityList.tsx';
 import CustomerAdminUserPage from './pages/master/customeradminuser/CustomerAdminUserPage.tsx';
 import AddCustomerAdminUserPage from './pages/master/customeradminuser/AddCustomerAdminUserPage.tsx';
+import SitePage from './pages/master/site/SitePage.tsx';
+import AddSitePage from './pages/master/site/AddSitePage.tsx';
 import ComponentDemoPage from './pages/ComponentDemoPage.tsx';
 
 const theme = createTheme({
@@ -313,6 +315,30 @@ function App() {
                 element={
                   <RoleBasedRoute allowedRoles={[UserRole.CUSTOMER_ADMIN]}>
                     <AddCustomerAdminUserPage />
+                  </RoleBasedRoute>
+                } 
+              />
+              <Route 
+                path="master/site" 
+                element={
+                  <RoleBasedRoute allowedRoles={[UserRole.CUSTOMER_ADMIN]}>
+                    <SitePage />
+                  </RoleBasedRoute>
+                } 
+              />
+              <Route 
+                path="master/site/add" 
+                element={
+                  <RoleBasedRoute allowedRoles={[UserRole.CUSTOMER_ADMIN]}>
+                    <AddSitePage />
+                  </RoleBasedRoute>
+                } 
+              />
+              <Route 
+                path="master/site/edit/:id" 
+                element={
+                  <RoleBasedRoute allowedRoles={[UserRole.CUSTOMER_ADMIN]}>
+                    <AddSitePage />
                   </RoleBasedRoute>
                 } 
               />

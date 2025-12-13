@@ -85,6 +85,12 @@ export const menuConfig: MenuItem[] = [
         allowedRoles: [UserRole.CUSTOMER_ADMIN],
       },
       {
+        id: 'site',
+        label: 'Site Master',
+        path: '/dashboard/master/site',
+        allowedRoles: [UserRole.CUSTOMER_ADMIN],
+      },
+      {
         id: 'country',
         label: 'Country',
         path: '/dashboard/master/country',

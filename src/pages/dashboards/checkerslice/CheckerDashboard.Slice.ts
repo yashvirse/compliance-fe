@@ -143,7 +143,7 @@ export const approveCheckTask = createAsyncThunk<
     try {
       console.log('🔄 Approving check task:', payload.taskID);
       const response = await apiService.post<ApproveCheckTaskResponse>(
-        `Dashboard/approveCheckTask?taskID=${payload.taskID}&remark=${encodeURIComponent(payload.remark)}`,
+        `Dashboard/approveTask?taskID=${payload.taskID}&remark=${encodeURIComponent(payload.remark)}`,
         {}
       );
       console.log('✅ Check task approved successfully:', response);
