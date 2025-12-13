@@ -72,9 +72,13 @@ const CustomerAdminActivityMasterPage: React.FC = () => {
   const [userList, setUserList] = useState<Array<{userID: string, userName: string, userRole: string}>>([]);
   const [editFormData, setEditFormData] = useState({
     maker: '',
+    makerID: '',
     checker: '',
+    checkerID: '',
     reviewer: '',
+    reviewerID: '',
     auditor: '',
+    auditorID: '',
     frequency: '',
     dueDay: 0,
     gracePeriodDay: 0,
@@ -128,9 +132,13 @@ const CustomerAdminActivityMasterPage: React.FC = () => {
       setSelectedActivity(activity);
       setEditFormData({
         maker: activity.maker || '',
+        makerID: activity.makerID || '',
         checker: activity.checker || '',
+        checkerID: activity.checkerID || '',
         reviewer: activity.reviewer || '',
+        reviewerID: activity.reviewerID || '',
         auditor: activity.auditor || '',
+        auditorID: activity.auditorID || '',
         frequency: activity.frequency || '',
         dueDay: activity.dueDay || 0,
         gracePeriodDay: activity.gracePeriodDay || 0,
@@ -150,9 +158,13 @@ const CustomerAdminActivityMasterPage: React.FC = () => {
     setSelectedActivity(null);
     setEditFormData({
       maker: '',
+      makerID: '',
       checker: '',
+      checkerID: '',
       reviewer: '',
+      reviewerID: '',
       auditor: '',
+      auditorID: '',
       frequency: '',
       dueDay: 0,
       gracePeriodDay: 0,
@@ -162,13 +174,35 @@ const CustomerAdminActivityMasterPage: React.FC = () => {
   };
 
   const handleEditFormChange = (field: string) => (event: React.ChangeEvent<HTMLInputElement> | any) => {
-    setEditFormData(prev => ({ ...prev, [field]: event.target.value }));
+    const value = event.target.value;
+    
+    // Handle user field changes - capture both name and ID
+    if (['maker', 'checker', 'reviewer', 'auditor'].includes(field)) {
+      const user = userList.find(u => u.userName === value);
+      const idField = field + 'ID';
+      
+      setEditFormData(prev => ({
+        ...prev,
+        [field]: value,
+        [idField]: user?.userID || ''
+      }));
+    } else {
+      setEditFormData(prev => ({ ...prev, [field]: value }));
+    }
   };
 
   const handleSaveEdit = async () => {
     if (!selectedActivity) return;
 
     try {
+      // Transform selectedSites from array of IDs to array of objects with siteId and siteName
+      const sitesData = editFormData.selectedSites
+        .map(siteId => {
+          const site = sites.find(s => s.siteId === siteId);
+          return site ? { siteId: site.siteId, siteName: site.siteName } : null;
+        })
+        .filter((site) => site !== null);
+
       await dispatch(editCompAdminActivity({
         activityId: selectedActivity.activityId,
         actName: selectedActivity.actName,
@@ -180,12 +214,16 @@ const CustomerAdminActivityMasterPage: React.FC = () => {
         gracePeriodDay: editFormData.gracePeriodDay,
         reminderDay: editFormData.reminderDay,
         maker: editFormData.maker,
+        makerID: editFormData.makerID,
         checker: editFormData.checker,
+        checkerID: editFormData.checkerID,
         reviewer: editFormData.reviewer,
+        reviewerID: editFormData.reviewerID,
         auditer: editFormData.auditor,
+        auditerID: editFormData.auditorID,
         companyId: selectedActivity.companyId,
         companyDomain: selectedActivity.companyDomain,
-        selectedSites: editFormData.selectedSites
+        sites: sitesData as Array<{siteId: string, siteName: string}>
       })).unwrap();
       
       setSnackbarMessage('Activity updated successfully');

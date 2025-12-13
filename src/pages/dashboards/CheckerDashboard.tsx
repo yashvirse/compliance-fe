@@ -361,16 +361,7 @@ const CheckerDashboard: React.FC = () => {
                           Due Date
                         </Typography>
                       </TableCell>
-                      <TableCell>
-                        <Typography variant="subtitle2" fontWeight={600}>
-                          Maker
-                        </Typography>
-                      </TableCell>
-                      <TableCell>
-                        <Typography variant="subtitle2" fontWeight={600}>
-                          Reviewer
-                        </Typography>
-                      </TableCell>
+                     
                       <TableCell align="center">
                         <Typography variant="subtitle2" fontWeight={600}>
                           Actions
@@ -422,11 +413,7 @@ const CheckerDashboard: React.FC = () => {
                             {task.maker || '-'}
                           </Typography>
                         </TableCell>
-                        <TableCell>
-                          <Typography variant="body2">
-                            {task.reviewer || '-'}
-                          </Typography>
-                        </TableCell>
+                        
                         <TableCell align="center">
                           <Box sx={{ display: 'flex', gap: 1, justifyContent: 'center' }}>
                             <Button
@@ -553,16 +540,7 @@ const CheckerDashboard: React.FC = () => {
                           Due Date
                         </Typography>
                       </TableCell>
-                      <TableCell>
-                        <Typography variant="subtitle2" fontWeight={600}>
-                          Maker
-                        </Typography>
-                      </TableCell>
-                      <TableCell>
-                        <Typography variant="subtitle2" fontWeight={600}>
-                          Reviewer
-                        </Typography>
-                      </TableCell>
+                     
                     </TableRow>
                   </TableHead>
                   <TableBody>
@@ -604,16 +582,7 @@ const CheckerDashboard: React.FC = () => {
                             {task.dueDate ? new Date(task.dueDate).toLocaleDateString() : '-'}
                           </Typography>
                         </TableCell>
-                        <TableCell>
-                          <Typography variant="body2">
-                            {task.maker || '-'}
-                          </Typography>
-                        </TableCell>
-                        <TableCell>
-                          <Typography variant="body2">
-                            {task.reviewer || '-'}
-                          </Typography>
-                        </TableCell>
+                        
                       </TableRow>
                     ))}
                   </TableBody>
@@ -704,16 +673,8 @@ const CheckerDashboard: React.FC = () => {
                           Due Date
                         </Typography>
                       </TableCell>
-                      <TableCell>
-                        <Typography variant="subtitle2" fontWeight={600}>
-                          Maker
-                        </Typography>
-                      </TableCell>
-                      <TableCell>
-                        <Typography variant="subtitle2" fontWeight={600}>
-                          Reviewer
-                        </Typography>
-                      </TableCell>
+                   
+                   
                     </TableRow>
                   </TableHead>
                   <TableBody>
@@ -755,16 +716,7 @@ const CheckerDashboard: React.FC = () => {
                             {task.dueDate ? new Date(task.dueDate).toLocaleDateString() : '-'}
                           </Typography>
                         </TableCell>
-                        <TableCell>
-                          <Typography variant="body2">
-                            {task.maker || '-'}
-                          </Typography>
-                        </TableCell>
-                        <TableCell>
-                          <Typography variant="body2">
-                            {task.reviewer || '-'}
-                          </Typography>
-                        </TableCell>
+                       
                       </TableRow>
                     ))}
                   </TableBody>

@@ -48,9 +48,13 @@ export interface ActivityDetail {
   gracePeriodDay: number;
   reminderDay: number;
   maker: string | null;
+  makerID?: string;
   checker: string | null;
+  checkerID?: string;
   reviewer: string | null;
+  reviewerID?: string;
   auditor: string | null;
+  auditorID?: string;
   companyId: string;
   companyDomain: string;
   selectedSites?: string[];
@@ -85,12 +89,16 @@ export interface EditCompAdminActivityRequest {
   gracePeriodDay: number;
   reminderDay: number;
   maker: string;
+  makerID: string;
   checker: string;
+  checkerID: string;
   reviewer: string;
+  reviewerID: string;
   auditer: string;
+  auditerID: string;
   companyId: string;
   companyDomain: string;
-  selectedSites?: string[];
+  sites?: Array<{siteId: string, siteName: string}>;
 }
 
 export interface UpdateActivityResponse {
