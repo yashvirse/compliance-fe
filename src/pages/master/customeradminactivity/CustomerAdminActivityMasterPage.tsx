@@ -130,6 +130,14 @@ const CustomerAdminActivityMasterPage: React.FC = () => {
     try {
       const activity = await dispatch(fetchActivityById(actId)).unwrap();
       setSelectedActivity(activity);
+      
+      // Extract site IDs from sites array
+      const siteIds = activity.sites?.map(site => site.siteId) || [];
+      
+      // Handle both 'auditor' and 'auditer' (API uses 'auditer')
+      const auditorName = activity.auditor || activity.auditer || '';
+      const auditorId = activity.auditorID || activity.auditerID || '';
+      
       setEditFormData({
         maker: activity.maker || '',
         makerID: activity.makerID || '',
@@ -137,13 +145,13 @@ const CustomerAdminActivityMasterPage: React.FC = () => {
         checkerID: activity.checkerID || '',
         reviewer: activity.reviewer || '',
         reviewerID: activity.reviewerID || '',
-        auditor: activity.auditor || '',
-        auditorID: activity.auditorID || '',
+        auditor: auditorName,
+        auditorID: auditorId,
         frequency: activity.frequency || '',
         dueDay: activity.dueDay || 0,
         gracePeriodDay: activity.gracePeriodDay || 0,
         reminderDay: activity.reminderDay || 0,
-        selectedSites: activity.selectedSites || []
+        selectedSites: siteIds
       });
       setEditDialogOpen(true);
     } catch (err) {

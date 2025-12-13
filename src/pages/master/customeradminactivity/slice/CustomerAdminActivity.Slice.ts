@@ -152,7 +152,7 @@ export const editCompAdminActivity = createAsyncThunk(
   'customerAdminActivity/editCompAdminActivity',
   async (data: EditCompAdminActivityRequest, { rejectWithValue }) => {
     try {
-      const response = await apiClient.post<UpdateActivityResponse>(
+      const response = await apiClient.put<UpdateActivityResponse>(
         'CompanyActivityMaster/editCompAdminActivity',
         data,
         {

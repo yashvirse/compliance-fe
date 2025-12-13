@@ -32,7 +32,8 @@ import {
   Cancel,
   Close as CloseIcon,
   ThumbUp as ApproveIcon,
-  ThumbDown as RejectIcon
+  ThumbDown as RejectIcon,
+  Visibility as EyeIcon
 } from '@mui/icons-material';
 import {
   fetchCheckerTaskCount,
@@ -79,6 +80,8 @@ const CheckerDashboard: React.FC = () => {
   const [pendingCheckTasksOpen, setPendingCheckTasksOpen] = useState(false);
   const [approvedCheckTasksOpen, setApprovedCheckTasksOpen] = useState(false);
   const [rejectedCheckTasksOpen, setRejectedCheckTasksOpen] = useState(false);
+  const [taskMovementDialogOpen, setTaskMovementDialogOpen] = useState(false);
+  const [selectedTask, setSelectedTask] = useState<any | null>(null);
   const [approveDialogOpen, setApproveDialogOpen] = useState(false);
   const [rejectDialogOpen, setRejectDialogOpen] = useState(false);
   const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
@@ -139,6 +142,16 @@ const CheckerDashboard: React.FC = () => {
     setSelectedTaskId(taskId);
     setRemark('');
     setRejectDialogOpen(true);
+  };
+
+  const handleViewTaskMovement = (task: any) => {
+    setSelectedTask(task);
+    setTaskMovementDialogOpen(true);
+  };
+
+  const handleCloseTaskMovementDialog = () => {
+    setTaskMovementDialogOpen(false);
+    setSelectedTask(null);
   };
 
   const handleConfirmApprove = async () => {
@@ -540,7 +553,11 @@ const CheckerDashboard: React.FC = () => {
                           Due Date
                         </Typography>
                       </TableCell>
-                     
+                      <TableCell align="center">
+                        <Typography variant="subtitle2" fontWeight={600}>
+                          Actions
+                        </Typography>
+                      </TableCell>
                     </TableRow>
                   </TableHead>
                   <TableBody>
@@ -582,7 +599,23 @@ const CheckerDashboard: React.FC = () => {
                             {task.dueDate ? new Date(task.dueDate).toLocaleDateString() : '-'}
                           </Typography>
                         </TableCell>
-                        
+                        <TableCell align="center">
+                          <Button
+                            size="small"
+                            variant="text"
+                            startIcon={<EyeIcon />}
+                            onClick={() => handleViewTaskMovement(task)}
+                            sx={{
+                              color: theme.palette.primary.main,
+                              textTransform: 'none',
+                              '&:hover': {
+                                bgcolor: alpha(theme.palette.primary.main, 0.1),
+                              }
+                            }}
+                          >
+                            View
+                          </Button>
+                        </TableCell>
                       </TableRow>
                     ))}
                   </TableBody>
@@ -823,6 +856,177 @@ const CheckerDashboard: React.FC = () => {
             startIcon={taskActionsLoading ? <CircularProgress size={20} /> : <RejectIcon />}
           >
             {taskActionsLoading ? 'Rejecting...' : 'Reject'}
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Task Movement Dialog */}
+      <Dialog
+        open={taskMovementDialogOpen}
+        onClose={handleCloseTaskMovementDialog}
+        maxWidth="md"
+        fullWidth
+      >
+        <DialogTitle sx={{ fontWeight: 600, fontSize: '1.3rem', pb: 1 }}>
+          Task Movement Details
+        </DialogTitle>
+        <DialogContent sx={{ py: 2 }}>
+          {selectedTask && (
+            <Box>
+              <Box sx={{ mb: 3, p: 2, bgcolor: alpha(theme.palette.primary.main, 0.05), borderRadius: 2 }}>
+                <Typography variant="subtitle2" fontWeight={600} gutterBottom>
+                  Activity Information
+                </Typography>
+                <Grid container spacing={2} sx={{ mt: 0.5 }}>
+                  <Grid size={{ xs: 12, sm: 6 }}>
+                    <Typography variant="caption" color="text.secondary" display="block">
+                      Activity Name
+                    </Typography>
+                    <Typography variant="body2" fontWeight={500}>
+                      {selectedTask.activityName}
+                    </Typography>
+                  </Grid>
+                  <Grid size={{ xs: 12, sm: 6 }}>
+                    <Typography variant="caption" color="text.secondary" display="block">
+                      Act Name
+                    </Typography>
+                    <Typography variant="body2" fontWeight={500}>
+                      {selectedTask.actName}
+                    </Typography>
+                  </Grid>
+                  <Grid size={{ xs: 12, sm: 6 }}>
+                    <Typography variant="caption" color="text.secondary" display="block">
+                      Department
+                    </Typography>
+                    <Typography variant="body2" fontWeight={500}>
+                      {selectedTask.departmentName}
+                    </Typography>
+                  </Grid>
+                  <Grid size={{ xs: 12, sm: 6 }}>
+                    <Typography variant="caption" color="text.secondary" display="block">
+                      Due Date
+                    </Typography>
+                    <Typography variant="body2" fontWeight={500}>
+                      {selectedTask.dueDate ? new Date(selectedTask.dueDate).toLocaleDateString() : '-'}
+                    </Typography>
+                  </Grid>
+                </Grid>
+              </Box>
+
+              <Typography variant="subtitle2" fontWeight={600} gutterBottom sx={{ mt: 3, mb: 2 }}>
+                Task Movement History
+              </Typography>
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                {selectedTask.details && selectedTask.details.length > 0 ? (
+                  selectedTask.details.map((detail: any, index: number) => (
+                    <Box
+                      key={index}
+                      sx={{
+                        p: 2,
+                        border: `1px solid ${theme.palette.divider}`,
+                        borderRadius: 2,
+                        bgcolor: alpha(
+                          detail.status === 'Approved'
+                            ? theme.palette.success.main
+                            : detail.status === 'Rejected'
+                            ? theme.palette.error.main
+                            : theme.palette.warning.main,
+                          0.05
+                        ),
+                      }}
+                    >
+                      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start', mb: 1 }}>
+                        <Box>
+                          <Typography variant="subtitle2" fontWeight={600}>
+                            {detail.userName}
+                          </Typography>
+                          <Typography variant="caption" color="text.secondary">
+                            {index === 0 ? 'Maker' : index === 1 ? 'Checker' : 'Reviewer'}
+                          </Typography>
+                        </Box>
+                        <Chip
+                          label={detail.status}
+                          size="small"
+                          color={detail.status === 'Approved' ? 'success' : detail.status === 'Rejected' ? 'error' : 'warning'}
+                          variant="outlined"
+                          sx={{ fontWeight: 600 }}
+                        />
+                      </Box>
+
+                      <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: 2, my: 2 }}>
+                        <Box>
+                          <Typography variant="caption" color="text.secondary" display="block" sx={{ mb: 0.5 }}>
+                            In Date
+                          </Typography>
+                          <Typography variant="body2" fontWeight={500}>
+                            {detail.inDate && detail.inDate !== '0001-01-01T00:00:00Z'
+                              ? new Date(detail.inDate).toLocaleString()
+                              : '-'}
+                          </Typography>
+                        </Box>
+                        <Box>
+                          <Typography variant="caption" color="text.secondary" display="block" sx={{ mb: 0.5 }}>
+                            Out Date
+                          </Typography>
+                          <Typography variant="body2" fontWeight={500}>
+                            {detail.outDate && detail.outDate !== '0001-01-01T00:00:00Z'
+                              ? new Date(detail.outDate).toLocaleString()
+                              : '-'}
+                          </Typography>
+                        </Box>
+                        <Box>
+                          <Typography variant="caption" color="text.secondary" display="block" sx={{ mb: 0.5 }}>
+                            P.TAT (Days)
+                          </Typography>
+                          <Typography variant="body2" fontWeight={500}>
+                            {detail.pTat || 0}
+                          </Typography>
+                        </Box>
+                        <Box>
+                          <Typography variant="caption" color="text.secondary" display="block" sx={{ mb: 0.5 }}>
+                            A.TAT (Days)
+                          </Typography>
+                          <Typography variant="body2" fontWeight={500}>
+                            {detail.aTat || 0}
+                          </Typography>
+                        </Box>
+                      </Box>
+
+                      {detail.remarks && (
+                        <Box sx={{ mt: 2, pt: 2, borderTop: `1px solid ${theme.palette.divider}` }}>
+                          <Typography variant="caption" color="text.secondary" display="block" sx={{ mb: 0.5 }}>
+                            Remarks
+                          </Typography>
+                          <Typography variant="body2">
+                            {detail.remarks}
+                          </Typography>
+                        </Box>
+                      )}
+
+                      {detail.rejectionRemark && (
+                        <Box sx={{ mt: 2, pt: 2, borderTop: `1px solid ${theme.palette.divider}` }}>
+                          <Typography variant="caption" color="error" display="block" sx={{ mb: 0.5, fontWeight: 600 }}>
+                            Rejection Remark
+                          </Typography>
+                          <Typography variant="body2" color="error">
+                            {detail.rejectionRemark}
+                          </Typography>
+                        </Box>
+                      )}
+                    </Box>
+                  ))
+                ) : (
+                  <Typography variant="body2" color="text.secondary" sx={{ textAlign: 'center', py: 4 }}>
+                    No movement details available
+                  </Typography>
+                )}
+              </Box>
+            </Box>
+          )}
+        </DialogContent>
+        <DialogActions sx={{ p: 2 }}>
+          <Button onClick={handleCloseTaskMovementDialog} variant="contained">
+            Close
           </Button>
         </DialogActions>
       </Dialog>

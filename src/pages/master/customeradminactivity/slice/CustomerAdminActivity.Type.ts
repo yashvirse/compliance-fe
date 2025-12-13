@@ -53,11 +53,14 @@ export interface ActivityDetail {
   checkerID?: string;
   reviewer: string | null;
   reviewerID?: string;
-  auditor: string | null;
+  auditor?: string | null;
+  auditer?: string | null;
   auditorID?: string;
+  auditerID?: string;
   companyId: string;
   companyDomain: string;
   selectedSites?: string[];
+  sites?: Array<{siteId: string, siteName: string}>;
 }
 
 export interface GetActivityByIdResponse {
