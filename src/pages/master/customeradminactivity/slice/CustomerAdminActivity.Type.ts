@@ -53,6 +53,7 @@ export interface ActivityDetail {
   auditor: string | null;
   companyId: string;
   companyDomain: string;
+  selectedSites?: string[];
 }
 
 export interface GetActivityByIdResponse {
@@ -89,6 +90,7 @@ export interface EditCompAdminActivityRequest {
   auditer: string;
   companyId: string;
   companyDomain: string;
+  selectedSites?: string[];
 }
 
 export interface UpdateActivityResponse {

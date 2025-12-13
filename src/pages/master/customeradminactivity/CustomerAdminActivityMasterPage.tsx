@@ -47,6 +47,9 @@ import {
   selectActivityMasterError,
   selectGroupedActivityMasters
 } from './slice/CustomerAdminActivity.Selector';
+import { selectSites } from '../site/slice/Site.Selector';
+import { fetchSiteList } from '../site/slice/Site.Slice';
+import CustomMultiSelect from '../../../components/common/CustomMultiSelect';
 import type { ActivityDetail } from './slice/CustomerAdminActivity.Type';
 
 const CustomerAdminActivityMasterPage: React.FC = () => {
@@ -57,6 +60,7 @@ const CustomerAdminActivityMasterPage: React.FC = () => {
   const loading = useSelector(selectActivityMasterLoading);
   const error = useSelector(selectActivityMasterError);
   const groupedActivities = useSelector(selectGroupedActivityMasters);
+  const sites = useSelector(selectSites);
 
   const [expandedRows, setExpandedRows] = useState<Set<string>>(new Set());
   const [showSnackbar, setShowSnackbar] = useState(false);
@@ -75,11 +79,13 @@ const CustomerAdminActivityMasterPage: React.FC = () => {
     frequency: '',
     dueDay: 0,
     gracePeriodDay: 0,
-    reminderDay: 0
+    reminderDay: 0,
+    selectedSites: [] as string[]
   });
 
   useEffect(() => {
     dispatch(fetchCompanyActivityList());
+    dispatch(fetchSiteList());
     fetchUsers();
   }, [dispatch]);
 
@@ -129,7 +135,8 @@ const CustomerAdminActivityMasterPage: React.FC = () => {
         frequency: activity.frequency || '',
         dueDay: activity.dueDay || 0,
         gracePeriodDay: activity.gracePeriodDay || 0,
-        reminderDay: activity.reminderDay || 0
+        reminderDay: activity.reminderDay || 0,
+        selectedSites: activity.selectedSites || []
       });
       setEditDialogOpen(true);
     } catch (err) {
@@ -150,7 +157,8 @@ const CustomerAdminActivityMasterPage: React.FC = () => {
       frequency: '',
       dueDay: 0,
       gracePeriodDay: 0,
-      reminderDay: 0
+      reminderDay: 0,
+      selectedSites: []
     });
   };
 
@@ -177,7 +185,8 @@ const CustomerAdminActivityMasterPage: React.FC = () => {
         reviewer: editFormData.reviewer,
         auditer: editFormData.auditor,
         companyId: selectedActivity.companyId,
-        companyDomain: selectedActivity.companyDomain
+        companyDomain: selectedActivity.companyDomain,
+        selectedSites: editFormData.selectedSites
       })).unwrap();
       
       setSnackbarMessage('Activity updated successfully');
@@ -727,6 +736,25 @@ const CustomerAdminActivityMasterPage: React.FC = () => {
                         ))}
                     </Select>
                   </FormControl>
+                </Grid>
+              </Grid>
+
+              <Typography variant="subtitle2" fontWeight={600} gutterBottom sx={{ mb: 2, mt: 3 }}>
+                Applicable Sites
+              </Typography>
+              <Grid container spacing={2}>
+                <Grid size={{ xs: 12 }}>
+                  <CustomMultiSelect
+                    label="Select Sites"
+                    options={sites.map(site => ({
+                      label: site.siteName,
+                      value: site.siteId
+                    }))}
+                    value={editFormData.selectedSites || []}
+                    onChange={(selected) => {
+                      setEditFormData(prev => ({ ...prev, selectedSites: selected as string[] }));
+                    }}
+                  />
                 </Grid>
               </Grid>
             </Box>

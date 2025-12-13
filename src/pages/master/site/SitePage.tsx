@@ -81,12 +81,23 @@ const SitePage: React.FC = () => {
 
   const handleConfirmDelete = async () => {
     if (selectedSiteId) {
-      await dispatch(deleteSite(selectedSiteId));
-      setDeleteDialogOpen(false);
-      setSelectedSiteId('');
-      setSnackbarMessage('Site deleted successfully');
-      setSnackbarSeverity('success');
-      setShowSnackbar(true);
+      try {
+        await dispatch(deleteSite(selectedSiteId)).unwrap();
+        // Close dialog and show success message
+        setDeleteDialogOpen(false);
+        setSelectedSiteId('');
+        setSnackbarMessage('Site deleted successfully');
+        setSnackbarSeverity('success');
+        setShowSnackbar(true);
+      } catch (error: any) {
+        // Show error message if delete fails
+        setSnackbarMessage(error || 'Failed to delete site');
+        setSnackbarSeverity('error');
+        setShowSnackbar(true);
+        // Close dialog anyway
+        setDeleteDialogOpen(false);
+        setSelectedSiteId('');
+      }
     }
   };
 
