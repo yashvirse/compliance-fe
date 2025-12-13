@@ -37,10 +37,9 @@ import {
   KeyboardArrowDown as KeyboardArrowDownIcon,
   Edit as EditIcon,
   Delete as DeleteIcon,
-  Add as AddIcon,
   Upload as UploadIcon
 } from '@mui/icons-material';
-import { fetchCompanyActivityList, fetchActivityById, updateActivity, editCompAdminActivity, deleteActivity, clearError } from './slice/CustomerAdminActivity.Slice';
+import { fetchCompanyActivityList, fetchActivityById, editCompAdminActivity, deleteActivity, clearError } from './slice/CustomerAdminActivity.Slice';
 import { fetchUserList } from '../customeradminuser/slice/CustomerAdminUser.Slice';
 import {
   selectActivityMasterLoading,
@@ -227,11 +226,6 @@ const CustomerAdminActivityMasterPage: React.FC = () => {
   const handleDeleteCancel = () => {
     setDeleteDialogOpen(false);
     setActivityToDelete(null);
-  };
-
-  const handleAddActivity = () => {
-    // TODO: Navigate to add activity page
-    console.log('Add activity');
   };
 
   const handleImportActivity = () => {
@@ -748,7 +742,7 @@ const CustomerAdminActivityMasterPage: React.FC = () => {
                     label="Select Sites"
                     options={sites.map(site => ({
                       label: site.siteName,
-                      value: site.siteId
+                      value: site.siteId || ''
                     }))}
                     value={editFormData.selectedSites || []}
                     onChange={(selected) => {

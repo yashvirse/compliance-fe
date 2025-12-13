@@ -10,6 +10,7 @@ import siteReducer from "../pages/master/site/slice/Site.Slice";
 import makerDashboardReducer from "../pages/dashboards/makerslice/MakerDashboard.Slice";
 import checkerDashboardReducer from "../pages/dashboards/checkerslice/CheckerDashboard.Slice";
 import reviewerDashboardReducer from "../pages/dashboards/reviewerslice/ReviewerDashboard.Slice";
+import auditorDashboardReducer from "../pages/dashboards/auditorslice/AuditorDashboard.Slice";
 
 export const store = configureStore({
   reducer: {
@@ -24,6 +25,7 @@ export const store = configureStore({
     makerDashboard: makerDashboardReducer,
     checkerDashboard: checkerDashboardReducer,
     reviewerDashboard: reviewerDashboardReducer,
+    auditorDashboard: auditorDashboardReducer,
   },
 });
 

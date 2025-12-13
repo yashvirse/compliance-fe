@@ -109,7 +109,7 @@ export const fetchApprovedReviewTasks = createAsyncThunk(
 
 // Fetch rejected review tasks
 export const fetchRejectedReviewTasks = createAsyncThunk(
-  'reviewerDashboard/fetchRejectedReviewTasks',
+  'reviewerDashboard/fetchRejectedTasks',
   async (userID: string, { rejectWithValue }) => {
     try {
       console.log('🔄 Fetching rejected review tasks for user:', userID);
@@ -143,7 +143,7 @@ export const approveReviewTask = createAsyncThunk<
     try {
       console.log('🔄 Approving review task:', payload.taskID);
       const response = await apiService.post<ApproveReviewTaskResponse>(
-        `Dashboard/approveReviewTask?taskID=${payload.taskID}&remark=${encodeURIComponent(payload.remark)}`,
+        `Dashboard/approveTask?taskID=${payload.taskID}&remark=${encodeURIComponent(payload.remark)}`,
         {}
       );
       console.log('✅ Review task approved successfully:', response);
@@ -164,12 +164,12 @@ export const rejectReviewTask = createAsyncThunk<
   RejectReviewTaskRequest,
   { rejectValue: string }
 >(
-  'reviewerDashboard/rejectReviewTask',
+  'reviewerDashboard/rejectTask',
   async (payload, { rejectWithValue }) => {
     try {
       console.log('🔄 Rejecting review task:', payload.taskID);
       const response = await apiService.post<RejectReviewTaskResponse>(
-        `Dashboard/rejectReviewTask?taskID=${payload.taskID}&remark=${encodeURIComponent(payload.remark)}`,
+        `Dashboard/rejectTask?taskID=${payload.taskID}&remark=${encodeURIComponent(payload.remark)}`,
         {}
       );
       console.log('✅ Review task rejected successfully:', response);
