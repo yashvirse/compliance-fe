@@ -2,15 +2,16 @@
 
 // Frequency type constants
 export const FrequencyType = {
-  WEEKLY: 'Weekly',
-  FORTNIGHTLY: 'Fortnightly',
-  MONTHLY: 'Monthly',
-  HALF_YEARLY: 'Half Yearly',
-  ANNUALLY: 'Annually',
-  AS_NEEDED: 'As Needed'
+  WEEKLY: "Weekly",
+  FORTNIGHTLY: "Fortnightly",
+  MONTHLY: "Monthly",
+  HALF_YEARLY: "Half Yearly",
+  ANNUALLY: "Annually",
+  AS_NEEDED: "As Needed",
 } as const;
 
-export type FrequencyTypeValue = typeof FrequencyType[keyof typeof FrequencyType];
+export type FrequencyTypeValue =
+  (typeof FrequencyType)[keyof typeof FrequencyType];
 
 export interface ActivityMaster {
   activityId: string;
@@ -36,12 +37,43 @@ export interface FrequencyOption {
 }
 
 export const FREQUENCY_OPTIONS: FrequencyOption[] = [
-  { value: FrequencyType.WEEKLY, label: 'Weekly', maxDueDay: 7, description: 'Enter 1-7 (1=Monday, 2=Tuesday, 3=Wednesday, 4=Thursday, 5=Friday, 6=Saturday, 7=Sunday)' },
-  { value: FrequencyType.FORTNIGHTLY, label: 'Fortnightly', maxDueDay: 15, description: 'Enter day 1-15 of the fortnight' },
-  { value: FrequencyType.MONTHLY, label: 'Monthly', maxDueDay: 31, description: 'Enter day 1-31 of the month' },
-  { value: FrequencyType.HALF_YEARLY, label: 'Half Yearly', maxDueDay: 183, description: 'Enter day 1-183 of half year' },
-  { value: FrequencyType.ANNUALLY, label: 'Annually', maxDueDay: 365, description: 'Enter day 1-365 of the year' },
-  { value: FrequencyType.AS_NEEDED, label: 'As Needed', maxDueDay: 0, description: 'Exact date required' }
+  {
+    value: FrequencyType.WEEKLY,
+    label: "Weekly",
+    maxDueDay: 7,
+    description:
+      "Enter 1-7 (1=Monday, 2=Tuesday, 3=Wednesday, 4=Thursday, 5=Friday, 6=Saturday, 7=Sunday)",
+  },
+  {
+    value: FrequencyType.FORTNIGHTLY,
+    label: "Fortnightly",
+    maxDueDay: 15,
+    description: "Enter day 1-15 of the fortnight",
+  },
+  {
+    value: FrequencyType.MONTHLY,
+    label: "Monthly",
+    maxDueDay: 31,
+    description: "Enter day 1-31 of the month",
+  },
+  {
+    value: FrequencyType.HALF_YEARLY,
+    label: "Half Yearly",
+    maxDueDay: 183,
+    description: "Enter day 1-183 of half year",
+  },
+  {
+    value: FrequencyType.ANNUALLY,
+    label: "Annually",
+    maxDueDay: 365,
+    description: "Enter day 1-365 of the year",
+  },
+  {
+    value: FrequencyType.AS_NEEDED,
+    label: "As Needed",
+    maxDueDay: 0,
+    description: "Exact date required",
+  },
 ];
 
 export interface AddActivityMasterRequest {
@@ -53,7 +85,7 @@ export interface AddActivityMasterRequest {
   frequency: string;
   dueDay: number;
   gracePeriodDay: number;
-  reminderDay: string;
+  reminderDay: number;
 }
 
 export interface AddActivityMasterResponse {
@@ -71,7 +103,7 @@ export interface UpdateActivityMasterRequest {
   frequency: string;
   dueDay: number;
   gracePeriodDay: number;
-  reminderDay: string;
+  reminderDay: number;
 }
 
 export interface UpdateActivityMasterResponse {

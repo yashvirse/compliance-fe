@@ -1,5 +1,5 @@
-import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import { apiService } from '../../../../services/api';
+import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
+import { apiService } from "../../../../services/api";
 import type {
   DepartmentMasterState,
   AddDepartmentMasterRequest,
@@ -8,8 +8,8 @@ import type {
   UpdateDepartmentMasterResponse,
   GetDepartmentMasterListResponse,
   GetDepartmentMasterByIdResponse,
-  DeleteDepartmentMasterResponse
-} from './Department.Type';
+  DeleteDepartmentMasterResponse,
+} from "./Department.Type";
 
 // Initial state
 const initialState: DepartmentMasterState = {
@@ -31,24 +31,27 @@ export const addDepartmentMaster = createAsyncThunk<
   AddDepartmentMasterRequest,
   { rejectValue: string }
 >(
-  'departmentMaster/addDepartmentMaster',
+  "departmentMaster/addDepartmentMaster",
   async (departmentData: AddDepartmentMasterRequest, { rejectWithValue }) => {
     try {
       const response = await apiService.post<AddDepartmentMasterResponse>(
-        'Master/addDeptMaster',
+        "Master/addDeptMaster",
         departmentData
       );
 
       // Check if add was successful
       if (!response.isSuccess) {
-        return rejectWithValue(response.message || 'Failed to add department master');
+        return rejectWithValue(
+          response.message || "Failed to add department master"
+        );
       }
 
       return response;
     } catch (error: any) {
-      const errorMessage = error?.response?.data?.message || 
-                          error?.message || 
-                          'Failed to add department master. Please try again.';
+      const errorMessage =
+        error?.response?.data?.message ||
+        error?.message ||
+        "Failed to add department master. Please try again.";
       return rejectWithValue(errorMessage);
     }
   }
@@ -60,23 +63,26 @@ export const fetchDepartmentMasterList = createAsyncThunk<
   void,
   { rejectValue: string }
 >(
-  'departmentMaster/fetchDepartmentMasterList',
+  "departmentMaster/fetchDepartmentMasterList",
   async (_, { rejectWithValue }) => {
     try {
       const response = await apiService.get<GetDepartmentMasterListResponse>(
-        'Master/getDeptMasterList'
+        "Master/getDeptMasterList"
       );
 
       // Check if fetch was successful
       if (!response.isSuccess) {
-        return rejectWithValue(response.message || 'Failed to fetch department master list');
+        return rejectWithValue(
+          response.message || "Failed to fetch department master list"
+        );
       }
 
       return response;
     } catch (error: any) {
-      const errorMessage = error?.response?.data?.message || 
-                          error?.message || 
-                          'Failed to fetch department master list. Please try again.';
+      const errorMessage =
+        error?.response?.data?.message ||
+        error?.message ||
+        "Failed to fetch department master list. Please try again.";
       return rejectWithValue(errorMessage);
     }
   }
@@ -88,23 +94,26 @@ export const deleteDepartmentMaster = createAsyncThunk<
   string,
   { rejectValue: string }
 >(
-  'departmentMaster/deleteDepartmentMaster',
+  "departmentMaster/deleteDepartmentMaster",
   async (departmentMasterId: string, { rejectWithValue }) => {
     try {
-      const response = await apiService.get<DeleteDepartmentMasterResponse>(
+      const response = await apiService.delete<DeleteDepartmentMasterResponse>(
         `Master/deleteDeptMaster/${departmentMasterId}`
       );
 
       // Check if delete was successful
       if (!response.isSuccess) {
-        return rejectWithValue(response.message || 'Failed to delete department master');
+        return rejectWithValue(
+          response.message || "Failed to delete department master"
+        );
       }
 
       return response;
     } catch (error: any) {
-      const errorMessage = error?.response?.data?.message || 
-                          error?.message || 
-                          'Failed to delete department master. Please try again.';
+      const errorMessage =
+        error?.response?.data?.message ||
+        error?.message ||
+        "Failed to delete department master. Please try again.";
       return rejectWithValue(errorMessage);
     }
   }
@@ -116,7 +125,7 @@ export const fetchDepartmentMasterById = createAsyncThunk<
   string,
   { rejectValue: string }
 >(
-  'departmentMaster/fetchDepartmentMasterById',
+  "departmentMaster/fetchDepartmentMasterById",
   async (departmentMasterId: string, { rejectWithValue }) => {
     try {
       const response = await apiService.get<GetDepartmentMasterByIdResponse>(
@@ -125,14 +134,17 @@ export const fetchDepartmentMasterById = createAsyncThunk<
 
       // Check if fetch was successful
       if (!response.isSuccess) {
-        return rejectWithValue(response.message || 'Failed to fetch department master details');
+        return rejectWithValue(
+          response.message || "Failed to fetch department master details"
+        );
       }
 
       return response;
     } catch (error: any) {
-      const errorMessage = error?.response?.data?.message || 
-                          error?.message || 
-                          'Failed to fetch department master details. Please try again.';
+      const errorMessage =
+        error?.response?.data?.message ||
+        error?.message ||
+        "Failed to fetch department master details. Please try again.";
       return rejectWithValue(errorMessage);
     }
   }
@@ -144,24 +156,30 @@ export const updateDepartmentMaster = createAsyncThunk<
   UpdateDepartmentMasterRequest,
   { rejectValue: string }
 >(
-  'departmentMaster/updateDepartmentMaster',
-  async (departmentData: UpdateDepartmentMasterRequest, { rejectWithValue }) => {
+  "departmentMaster/updateDepartmentMaster",
+  async (
+    departmentData: UpdateDepartmentMasterRequest,
+    { rejectWithValue }
+  ) => {
     try {
       const response = await apiService.post<UpdateDepartmentMasterResponse>(
-        'Master/editDeptMaster',
+        "Master/editDeptMaster",
         departmentData
       );
 
       // Check if update was successful
       if (!response.isSuccess) {
-        return rejectWithValue(response.message || 'Failed to update department master');
+        return rejectWithValue(
+          response.message || "Failed to update department master"
+        );
       }
 
       return response;
     } catch (error: any) {
-      const errorMessage = error?.response?.data?.message || 
-                          error?.message || 
-                          'Failed to update department master. Please try again.';
+      const errorMessage =
+        error?.response?.data?.message ||
+        error?.message ||
+        "Failed to update department master. Please try again.";
       return rejectWithValue(errorMessage);
     }
   }
@@ -169,7 +187,7 @@ export const updateDepartmentMaster = createAsyncThunk<
 
 // Create slice
 const departmentMasterSlice = createSlice({
-  name: 'departmentMaster',
+  name: "departmentMaster",
   initialState,
   reducers: {
     // Clear error
@@ -178,13 +196,13 @@ const departmentMasterSlice = createSlice({
       state.deleteError = null;
       state.fetchByIdError = null;
     },
-    
+
     // Clear success
     clearSuccess: (state) => {
       state.success = false;
       state.deleteSuccess = false;
     },
-    
+
     // Reset state
     resetDepartmentMasterState: (state) => {
       state.loading = false;
@@ -198,7 +216,7 @@ const departmentMasterSlice = createSlice({
       state.fetchByIdLoading = false;
       state.fetchByIdError = null;
     },
-    
+
     // Clear current department master
     clearCurrentDepartmentMaster: (state) => {
       state.currentDepartmentMaster = null;
@@ -223,7 +241,8 @@ const departmentMasterSlice = createSlice({
       // Add Department Master rejected
       .addCase(addDepartmentMaster.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.payload || 'An error occurred while adding department master';
+        state.error =
+          action.payload || "An error occurred while adding department master";
         state.success = false;
       })
       // Fetch Department Master List pending
@@ -240,7 +259,9 @@ const departmentMasterSlice = createSlice({
       // Fetch Department Master List rejected
       .addCase(fetchDepartmentMasterList.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.payload || 'An error occurred while fetching department master list';
+        state.error =
+          action.payload ||
+          "An error occurred while fetching department master list";
         state.departmentMasters = [];
       })
       // Delete Department Master pending
@@ -262,7 +283,9 @@ const departmentMasterSlice = createSlice({
       // Delete Department Master rejected
       .addCase(deleteDepartmentMaster.rejected, (state, action) => {
         state.deleteLoading = false;
-        state.deleteError = action.payload || 'An error occurred while deleting department master';
+        state.deleteError =
+          action.payload ||
+          "An error occurred while deleting department master";
         state.deleteSuccess = false;
       })
       // Fetch Department Master By ID pending
@@ -280,7 +303,9 @@ const departmentMasterSlice = createSlice({
       // Fetch Department Master By ID rejected
       .addCase(fetchDepartmentMasterById.rejected, (state, action) => {
         state.fetchByIdLoading = false;
-        state.fetchByIdError = action.payload || 'An error occurred while fetching department master details';
+        state.fetchByIdError =
+          action.payload ||
+          "An error occurred while fetching department master details";
         state.currentDepartmentMaster = null;
       })
       // Update Department Master pending
@@ -299,14 +324,21 @@ const departmentMasterSlice = createSlice({
       // Update Department Master rejected
       .addCase(updateDepartmentMaster.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.payload || 'An error occurred while updating department master';
+        state.error =
+          action.payload ||
+          "An error occurred while updating department master";
         state.success = false;
       });
   },
 });
 
 // Export actions
-export const { clearError, clearSuccess, resetDepartmentMasterState, clearCurrentDepartmentMaster } = departmentMasterSlice.actions;
+export const {
+  clearError,
+  clearSuccess,
+  resetDepartmentMasterState,
+  clearCurrentDepartmentMaster,
+} = departmentMasterSlice.actions;
 
 // Export reducer
 export default departmentMasterSlice.reducer;

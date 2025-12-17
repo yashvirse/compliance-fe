@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
-import { useDispatch, useSelector } from 'react-redux';
-import type { AppDispatch } from '../../../app/store';
+import React, { useState, useEffect } from "react";
+import { useNavigate, useParams } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
+import type { AppDispatch } from "../../../app/store";
 import {
   Box,
   Button,
@@ -14,174 +14,142 @@ import {
   alpha,
   Alert,
   Snackbar,
-  CircularProgress
-} from '@mui/material';
+  CircularProgress,
+} from "@mui/material";
 import {
   Business as CompanyIcon,
   Person as UserIcon,
   Domain as DomainIcon,
   AccountBalance as AccountIcon,
   Subscriptions as SubscriptionIcon,
-  ArrowBack
-} from '@mui/icons-material';
+  ArrowBack,
+} from "@mui/icons-material";
 import {
   CustomTextField,
   CustomDropdown,
-  CustomCheckbox
-} from '../../../components/common';
-import { CloudUpload as UploadIcon } from '@mui/icons-material';
-import { addCompany, updateCompany, clearError, clearSuccess, fetchCompanyById, clearCurrentCompany } from './slice/Company.Slice';
+  CustomCheckbox,
+} from "../../../components/common";
+import { CloudUpload as UploadIcon } from "@mui/icons-material";
+import {
+  addCompany,
+  updateCompany,
+  clearError,
+  clearSuccess,
+  fetchCompanyById,
+  clearCurrentCompany,
+  fetchCountriesAndStates,
+} from "./slice/Company.Slice";
 import {
   selectCompanyLoading,
   selectCompanyError,
   selectCompanySuccess,
   selectCurrentCompany,
-  selectFetchByIdLoading
-} from './slice/Company.Selector';
+  selectFetchByIdLoading,
+} from "./slice/Company.Selector";
 
-type TabType = 'company' | 'user' | 'domain' | 'account' | 'subscription';
+type TabType = "company" | "user" | "domain" | "account" | "subscription";
 
 const AddCompanyPage: React.FC = () => {
   const theme = useTheme();
   const navigate = useNavigate();
   const dispatch = useDispatch<AppDispatch>();
   const { id } = useParams();
-  
+
   // Redux selectors
   const loading = useSelector(selectCompanyLoading);
   const error = useSelector(selectCompanyError);
   const success = useSelector(selectCompanySuccess);
   const currentCompany = useSelector(selectCurrentCompany);
   const fetchByIdLoading = useSelector(selectFetchByIdLoading);
-  
-  const isEditMode = !!id;
-  const [activeTab, setActiveTab] = useState<TabType>('company');
-  const [showSnackbar, setShowSnackbar] = useState(false);
 
+  const isEditMode = !!id;
+  const [activeTab, setActiveTab] = useState<TabType>("company");
+  const [showSnackbar, setShowSnackbar] = useState(false);
+  const [countries, setCountries] = useState<any[]>([]); // API se aayega
+  const [countryOptions, setCountryOptions] = useState<
+    { label: string; value: string }[]
+  >([]);
+  const [stateOptions, setStateOptions] = useState<
+    { label: string; value: string }[]
+  >([]);
+  const [countriesLoading, setCountriesLoading] = useState(true);
+  const [countriesError, setCountriesError] = useState<string | null>(null);
   // Form state for all sections
   const [companyData, setCompanyData] = useState({
-    name: '',
+    name: "",
     companyLogo: null as File | null,
-    companyLogoPreview: '',
-    companyType: '',
-    country: '',
-    state: '',
-    city: '',
-    buildingNo: '',
-    zip: '',
-    address: '',
-    currency: '',
+    companyLogoPreview: "",
+    companyType: "",
+    country: "",
+    state: "",
+    city: "",
+    buildingNo: "",
+    zip: "",
+    address: "",
+    currency: "",
     isActive: true,
   });
 
   const [userData, setUserData] = useState({
-    name: '',
-    email: '',
-    password: '',
-    mobile: '',
+    name: "",
+    email: "",
+    password: "",
+    mobile: "",
     userImage: null as File | null,
-    userImagePreview: '',
+    userImagePreview: "",
     isActive: true,
   });
 
   const [domainData, setDomainData] = useState({
-    domain: '',
-    externalDomain: '',
+    domain: "",
+    externalDomain: "",
   });
 
   const [accountData, setAccountData] = useState({
-    ifscCode: '',
-    panNo: '',
-    gstNo: '',
-    cinNo: '',
+    ifscCode: "",
+    panNo: "",
+    gstNo: "",
+    cinNo: "",
   });
 
   const [subscriptionData, setSubscriptionData] = useState({
-    planType: '',
-    planRate: '',
+    planType: "",
+    planRate: "",
   });
 
   const companyTypeOptions = [
-    { label: 'Private Limited', value: 'private_limited' },
-    { label: 'Public Limited', value: 'public_limited' },
-    { label: 'Partnership', value: 'partnership' },
-    { label: 'Sole Proprietorship', value: 'sole_proprietorship' },
-    { label: 'LLP', value: 'llp' },
-  ];
-
-
-  const countryOptions = [
-    { label: 'United States', value: 'us' },
-    { label: 'United Kingdom', value: 'uk' },
-    { label: 'Canada', value: 'ca' },
-    { label: 'Australia', value: 'au' },
-    { label: 'India', value: 'in' },
-  ];
-
-  const stateOptions = [
-    { label: 'Andhra Pradesh', value: 'andhra_pradesh' },
-    { label: 'Arunachal Pradesh', value: 'arunachal_pradesh' },
-    { label: 'Assam', value: 'assam' },
-    { label: 'Bihar', value: 'bihar' },
-    { label: 'Chhattisgarh', value: 'chhattisgarh' },
-    { label: 'Goa', value: 'goa' },
-    { label: 'Gujarat', value: 'gujarat' },
-    { label: 'Haryana', value: 'haryana' },
-    { label: 'Himachal Pradesh', value: 'himachal_pradesh' },
-    { label: 'Jharkhand', value: 'jharkhand' },
-    { label: 'Karnataka', value: 'karnataka' },
-    { label: 'Kerala', value: 'kerala' },
-    { label: 'Madhya Pradesh', value: 'madhya_pradesh' },
-    { label: 'Maharashtra', value: 'maharashtra' },
-    { label: 'Manipur', value: 'manipur' },
-    { label: 'Meghalaya', value: 'meghalaya' },
-    { label: 'Mizoram', value: 'mizoram' },
-    { label: 'Nagaland', value: 'nagaland' },
-    { label: 'Odisha', value: 'odisha' },
-    { label: 'Punjab', value: 'punjab' },
-    { label: 'Rajasthan', value: 'rajasthan' },
-    { label: 'Sikkim', value: 'sikkim' },
-    { label: 'Tamil Nadu', value: 'tamil_nadu' },
-    { label: 'Telangana', value: 'telangana' },
-    { label: 'Tripura', value: 'tripura' },
-    { label: 'Uttar Pradesh', value: 'uttar_pradesh' },
-    { label: 'Uttarakhand', value: 'uttarakhand' },
-    { label: 'West Bengal', value: 'west_bengal' },
-    { label: 'Andaman and Nicobar Islands', value: 'andaman_nicobar' },
-    { label: 'Chandigarh', value: 'chandigarh' },
-    { label: 'Dadra & Nagar Haveli and Daman & Diu', value: 'dadra_nagar_haveli_daman_diu' },
-    { label: 'Delhi', value: 'delhi' },
-    { label: 'Jammu & Kashmir', value: 'jammu_kashmir' },
-    { label: 'Ladakh', value: 'ladakh' },
-    { label: 'Lakshadweep', value: 'lakshadweep' },
-    { label: 'Puducherry', value: 'puducherry' },
+    { label: "Private Limited", value: "private_limited" },
+    { label: "Public Limited", value: "public_limited" },
+    { label: "Partnership", value: "partnership" },
+    { label: "Sole Proprietorship", value: "sole_proprietorship" },
+    { label: "LLP", value: "llp" },
   ];
 
   const currencyOptions = [
-    { label: 'USD - US Dollar', value: 'USD' },
-    { label: 'EUR - Euro', value: 'EUR' },
-    { label: 'GBP - British Pound', value: 'GBP' },
-    { label: 'INR - Indian Rupee', value: 'INR' },
-    { label: 'AUD - Australian Dollar', value: 'AUD' },
-    { label: 'CAD - Canadian Dollar', value: 'CAD' },
+    { label: "USD - US Dollar", value: "USD" },
+    { label: "EUR - Euro", value: "EUR" },
+    { label: "GBP - British Pound", value: "GBP" },
+    { label: "INR - Indian Rupee", value: "INR" },
+    { label: "AUD - Australian Dollar", value: "AUD" },
+    { label: "CAD - Canadian Dollar", value: "CAD" },
   ];
 
   const planTypeOptions = [
-    { label: 'Basic', value: 'basic' },
-    { label: 'Professional', value: 'professional' },
-    { label: 'Enterprise', value: 'enterprise' },
-    { label: 'Custom', value: 'custom' },
+    { label: "Basic", value: "basic" },
+    { label: "Professional", value: "professional" },
+    { label: "Enterprise", value: "enterprise" },
+    { label: "Custom", value: "custom" },
   ];
 
   const handleFileUpload = (
     e: React.ChangeEvent<HTMLInputElement>,
-    type: 'companyLogo' | 'userImage'
+    type: "companyLogo" | "userImage"
   ) => {
     const file = e.target.files?.[0];
     if (file) {
       const reader = new FileReader();
       reader.onloadend = () => {
-        if (type === 'companyLogo') {
+        if (type === "companyLogo") {
           setCompanyData({
             ...companyData,
             companyLogo: file,
@@ -200,19 +168,70 @@ const AddCompanyPage: React.FC = () => {
   };
 
   const tabs = [
-    { id: 'company', label: 'Company', icon: <CompanyIcon /> },
-    { id: 'user', label: 'User', icon: <UserIcon /> },
-    { id: 'domain', label: 'Domain', icon: <DomainIcon /> },
-    { id: 'account', label: 'Account Details', icon: <AccountIcon /> },
-    { id: 'subscription', label: 'Subscription', icon: <SubscriptionIcon /> },
+    { id: "company", label: "Company", icon: <CompanyIcon /> },
+    { id: "user", label: "User", icon: <UserIcon /> },
+    { id: "domain", label: "Domain", icon: <DomainIcon /> },
+    { id: "account", label: "Account Details", icon: <AccountIcon /> },
+    { id: "subscription", label: "Subscription", icon: <SubscriptionIcon /> },
   ];
+  useEffect(() => {
+    dispatch(fetchCountriesAndStates())
+      .unwrap()
+      .then((response) => {
+        const data = response.result;
+        setCountries(data);
 
+        const opts = data.map((c: any) => ({
+          label: c.countryName,
+          value: c.countryId, // IND, AFG etc.
+        }));
+        setCountryOptions(opts);
+      })
+      .catch((err) => {
+        setCountriesError("Failed to load countries. Please refresh.");
+        console.error(err);
+      })
+      .finally(() => {
+        setCountriesLoading(false);
+      });
+  }, [dispatch]);
+  useEffect(() => {
+    if (companyData.country && countries.length > 0) {
+      const selectedCountry = countries.find(
+        (c: any) => c.countryId === companyData.country
+      );
+      if (selectedCountry) {
+        const opts = selectedCountry.states.map((s: any) => ({
+          label: s.stateName,
+          value: s.stateId,
+        }));
+        setStateOptions(opts);
+        // Agar current state valid nahi hai to clear kar do
+        if (
+          !selectedCountry.states.some(
+            (s: any) => s.stateId === companyData.state
+          )
+        ) {
+          setCompanyData((prev) => ({ ...prev, state: "" }));
+        }
+      } else {
+        setStateOptions([]);
+        setCompanyData((prev) => ({ ...prev, state: "" }));
+      }
+    } else {
+      setStateOptions([]);
+      setCompanyData((prev) => ({ ...prev, state: "" }));
+    }
+  }, [companyData.country, countries]);
+  const handleCountryChange = (value: string) => {
+    setCompanyData((prev) => ({ ...prev, country: value, state: "" }));
+  };
   // Fetch company data in edit mode
   useEffect(() => {
     if (isEditMode && id) {
       dispatch(fetchCompanyById(id));
     }
-    
+
     return () => {
       dispatch(clearCurrentCompany());
     };
@@ -223,49 +242,49 @@ const AddCompanyPage: React.FC = () => {
     if (isEditMode && currentCompany) {
       // Populate company data
       setCompanyData({
-        name: currentCompany.companyName || '',
+        name: currentCompany.companyName || "",
         companyLogo: null,
-        companyLogoPreview: currentCompany.companyLogo || '',
-        companyType: currentCompany.companyType || '',
-        country: currentCompany.companyAddress?.companyCountry || '',
-        state: currentCompany.companyAddress?.companyState || '',
-        city: currentCompany.companyAddress?.companyCity || '',
-        buildingNo: currentCompany.companyAddress?.buildingNumber || '',
-        zip: currentCompany.companyAddress?.companyZIP || '',
-        address: currentCompany.companyAddress?.detailAdddress || '',
-        currency: currentCompany.companyCurrency || '',
+        companyLogoPreview: currentCompany.companyLogo || "",
+        companyType: currentCompany.companyType || "",
+        country: currentCompany.companyAddress?.companyCountry || "",
+        state: currentCompany.companyAddress?.companyState || "",
+        city: currentCompany.companyAddress?.companyCity || "",
+        buildingNo: currentCompany.companyAddress?.buildingNumber || "",
+        zip: currentCompany.companyAddress?.companyZIP || "",
+        address: currentCompany.companyAddress?.detailAdddress || "",
+        currency: currentCompany.companyCurrency || "",
         isActive: currentCompany.companyIsActive ?? true,
       });
 
       // Populate user data
       setUserData({
-        name: currentCompany.user?.userName || '',
-        email: currentCompany.user?.userEmail || '',
-        password: '', // Don't populate password for security
-        mobile: currentCompany.user?.userMobile || '',
+        name: currentCompany.user?.userName || "",
+        email: currentCompany.user?.userEmail || "",
+        password: "", // Don't populate password for security
+        mobile: currentCompany.user?.userMobile || "",
         userImage: null,
-        userImagePreview: currentCompany.user?.userImg || '',
+        userImagePreview: currentCompany.user?.userImg || "",
         isActive: currentCompany.user?.isActive ?? true,
       });
 
       // Populate domain data
       setDomainData({
-        domain: currentCompany.companyDomain || '',
-        externalDomain: currentCompany.user?.companyDomain || '',
+        domain: currentCompany.companyDomain || "",
+        externalDomain: currentCompany.user?.companyDomain || "",
       });
 
       // Populate account data
       setAccountData({
-        ifscCode: currentCompany.ifsC_Code || '',
-        panNo: currentCompany.paN_No || '',
-        gstNo: currentCompany.gsT_NO || '',
-        cinNo: currentCompany.ciN_NO || '',
+        ifscCode: currentCompany.ifsC_Code || "",
+        panNo: currentCompany.paN_No || "",
+        gstNo: currentCompany.gsT_NO || "",
+        cinNo: currentCompany.ciN_NO || "",
       });
 
       // Populate subscription data
       setSubscriptionData({
-        planType: currentCompany.plan_type || '',
-        planRate: currentCompany.plan_rate || '',
+        planType: currentCompany.plan_type || "",
+        planRate: currentCompany.plan_rate || "",
       });
     }
   }, [isEditMode, currentCompany]);
@@ -276,7 +295,7 @@ const AddCompanyPage: React.FC = () => {
       setShowSnackbar(true);
       setTimeout(() => {
         dispatch(clearSuccess());
-        navigate('/dashboard/master/company');
+        navigate("/dashboard/master/company");
       }, 2000);
     }
   }, [success, navigate, dispatch]);
@@ -296,7 +315,7 @@ const AddCompanyPage: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (isEditMode && currentCompany) {
       // Update existing company
       const updateData = {
@@ -323,7 +342,7 @@ const AddCompanyPage: React.FC = () => {
           detailAdddress: companyData.address,
         },
         user: {
-          userID: currentCompany.user?.userID || '',
+          userID: currentCompany.user?.userID || "",
           userName: userData.name,
           userEmail: userData.email,
           userPassword: userData.password,
@@ -340,7 +359,7 @@ const AddCompanyPage: React.FC = () => {
         userImg: userData.userImage, // New image file if uploaded
         CreatedBy: currentCompany.createdBy,
       };
-      
+
       await dispatch(updateCompany(updateData));
     } else {
       // Add new company
@@ -375,7 +394,7 @@ const AddCompanyPage: React.FC = () => {
         },
         userImg: userData.userImage,
       };
-      
+
       await dispatch(addCompany(requestData));
     }
   };
@@ -410,7 +429,9 @@ const AddCompanyPage: React.FC = () => {
           label="Company Name"
           name="name"
           value={companyData.name}
-          onChange={(e) => setCompanyData({ ...companyData, name: e.target.value })}
+          onChange={(e) =>
+            setCompanyData({ ...companyData, name: e.target.value })
+          }
           required
           placeholder="Enter company name"
         />
@@ -426,24 +447,30 @@ const AddCompanyPage: React.FC = () => {
             sx={{
               py: 1.5,
               borderRadius: 2,
-              textTransform: 'none',
-              justifyContent: 'flex-start',
+              textTransform: "none",
+              justifyContent: "flex-start",
             }}
           >
-            {companyData.companyLogo ? companyData.companyLogo.name : 'Upload Logo'}
+            {companyData.companyLogo
+              ? companyData.companyLogo.name
+              : "Upload Logo"}
             <input
               type="file"
               hidden
               accept="image/*"
-              onChange={(e) => handleFileUpload(e, 'companyLogo')}
+              onChange={(e) => handleFileUpload(e, "companyLogo")}
             />
           </Button>
           {companyData.companyLogoPreview && (
-            <Box sx={{ mt: 2, textAlign: 'center' }}>
+            <Box sx={{ mt: 2, textAlign: "center" }}>
               <img
                 src={companyData.companyLogoPreview}
                 alt="Company Logo Preview"
-                style={{ maxWidth: '150px', maxHeight: '150px', borderRadius: '8px' }}
+                style={{
+                  maxWidth: "150px",
+                  maxHeight: "150px",
+                  borderRadius: "8px",
+                }}
               />
             </Box>
           )}
@@ -455,7 +482,12 @@ const AddCompanyPage: React.FC = () => {
           label="Company Type"
           name="companyType"
           value={companyData.companyType}
-          onChange={(e) => setCompanyData({ ...companyData, companyType: e.target.value as string })}
+          onChange={(e) =>
+            setCompanyData({
+              ...companyData,
+              companyType: e.target.value as string,
+            })
+          }
           options={companyTypeOptions}
           required
         />
@@ -466,10 +498,16 @@ const AddCompanyPage: React.FC = () => {
           label="Country"
           name="country"
           value={companyData.country}
-          onChange={(e) => setCompanyData({ ...companyData, country: e.target.value as string })}
+          onChange={(e) => handleCountryChange(e.target.value as string)}
           options={countryOptions}
           required
+          disabled={countriesLoading}
         />
+        {countriesError && (
+          <Typography color="error" variant="caption" display="block">
+            {countriesError}
+          </Typography>
+        )}
       </Grid>
 
       <Grid size={{ xs: 12, sm: 6 }}>
@@ -477,9 +515,16 @@ const AddCompanyPage: React.FC = () => {
           label="State"
           name="state"
           value={companyData.state}
-          onChange={(e) => setCompanyData({ ...companyData, state: e.target.value as string })}
+          onChange={(e) =>
+            setCompanyData({ ...companyData, state: e.target.value as string })
+          }
           options={stateOptions}
           required
+          disabled={
+            !companyData.country ||
+            stateOptions.length === 0 ||
+            countriesLoading
+          }
         />
       </Grid>
 
@@ -488,7 +533,9 @@ const AddCompanyPage: React.FC = () => {
           label="City"
           name="city"
           value={companyData.city}
-          onChange={(e) => setCompanyData({ ...companyData, city: e.target.value })}
+          onChange={(e) =>
+            setCompanyData({ ...companyData, city: e.target.value })
+          }
           placeholder="Enter city"
           required
         />
@@ -499,7 +546,9 @@ const AddCompanyPage: React.FC = () => {
           label="Building No"
           name="buildingNo"
           value={companyData.buildingNo}
-          onChange={(e) => setCompanyData({ ...companyData, buildingNo: e.target.value })}
+          onChange={(e) =>
+            setCompanyData({ ...companyData, buildingNo: e.target.value })
+          }
           placeholder="Building/Floor number"
         />
       </Grid>
@@ -509,7 +558,9 @@ const AddCompanyPage: React.FC = () => {
           label="ZIP Code"
           name="zip"
           value={companyData.zip}
-          onChange={(e) => setCompanyData({ ...companyData, zip: e.target.value })}
+          onChange={(e) =>
+            setCompanyData({ ...companyData, zip: e.target.value })
+          }
           placeholder="Enter ZIP code"
           required
         />
@@ -520,7 +571,9 @@ const AddCompanyPage: React.FC = () => {
           label="Address"
           name="address"
           value={companyData.address}
-          onChange={(e) => setCompanyData({ ...companyData, address: e.target.value })}
+          onChange={(e) =>
+            setCompanyData({ ...companyData, address: e.target.value })
+          }
           placeholder="Enter complete address"
           multiline
           rows={3}
@@ -533,7 +586,12 @@ const AddCompanyPage: React.FC = () => {
           label="Currency"
           name="currency"
           value={companyData.currency}
-          onChange={(e) => setCompanyData({ ...companyData, currency: e.target.value as string })}
+          onChange={(e) =>
+            setCompanyData({
+              ...companyData,
+              currency: e.target.value as string,
+            })
+          }
           options={currencyOptions}
           required
         />
@@ -544,7 +602,9 @@ const AddCompanyPage: React.FC = () => {
           <CustomCheckbox
             singleLabel="Is Active"
             checked={companyData.isActive}
-            onSingleChange={(checked) => setCompanyData({ ...companyData, isActive: checked })}
+            onSingleChange={(checked) =>
+              setCompanyData({ ...companyData, isActive: checked })
+            }
           />
         </Box>
       </Grid>
@@ -591,7 +651,9 @@ const AddCompanyPage: React.FC = () => {
           name="password"
           type="password"
           value={userData.password}
-          onChange={(e) => setUserData({ ...userData, password: e.target.value })}
+          onChange={(e) =>
+            setUserData({ ...userData, password: e.target.value })
+          }
           required
           placeholder="Enter password"
         />
@@ -621,24 +683,28 @@ const AddCompanyPage: React.FC = () => {
             sx={{
               py: 1.5,
               borderRadius: 2,
-              textTransform: 'none',
-              justifyContent: 'flex-start',
+              textTransform: "none",
+              justifyContent: "flex-start",
             }}
           >
-            {userData.userImage ? userData.userImage.name : 'Upload Image'}
+            {userData.userImage ? userData.userImage.name : "Upload Image"}
             <input
               type="file"
               hidden
               accept="image/*"
-              onChange={(e) => handleFileUpload(e, 'userImage')}
+              onChange={(e) => handleFileUpload(e, "userImage")}
             />
           </Button>
           {userData.userImagePreview && (
-            <Box sx={{ mt: 2, textAlign: 'center' }}>
+            <Box sx={{ mt: 2, textAlign: "center" }}>
               <img
                 src={userData.userImagePreview}
                 alt="User Image Preview"
-                style={{ maxWidth: '150px', maxHeight: '150px', borderRadius: '8px' }}
+                style={{
+                  maxWidth: "150px",
+                  maxHeight: "150px",
+                  borderRadius: "8px",
+                }}
               />
             </Box>
           )}
@@ -650,7 +716,9 @@ const AddCompanyPage: React.FC = () => {
           <CustomCheckbox
             singleLabel="Is Active"
             checked={userData.isActive}
-            onSingleChange={(checked) => setUserData({ ...userData, isActive: checked })}
+            onSingleChange={(checked) =>
+              setUserData({ ...userData, isActive: checked })
+            }
           />
         </Box>
       </Grid>
@@ -669,23 +737,25 @@ const AddCompanyPage: React.FC = () => {
       </Grid>
 
       <Grid size={{ xs: 12, sm: 6 }}>
-        <Box sx={{ display: 'flex', alignItems: 'flex-end', gap: 1 }}>
+        <Box sx={{ display: "flex", alignItems: "flex-end", gap: 1 }}>
           <Box sx={{ flex: 1 }}>
             <CustomTextField
               label="Domain"
               name="domain"
               value={domainData.domain}
-              onChange={(e) => setDomainData({ ...domainData, domain: e.target.value })}
+              onChange={(e) =>
+                setDomainData({ ...domainData, domain: e.target.value })
+              }
               required
               placeholder="company"
             />
           </Box>
-          <Typography 
-            variant="h6" 
-            sx={{ 
-              pb: 1.5, 
+          <Typography
+            variant="h6"
+            sx={{
+              pb: 1.5,
               color: theme.palette.text.secondary,
-              fontWeight: 500 
+              fontWeight: 500,
             }}
           >
             .ocmspro.com
@@ -698,7 +768,9 @@ const AddCompanyPage: React.FC = () => {
           label="External Domain"
           name="externalDomain"
           value={domainData.externalDomain}
-          onChange={(e) => setDomainData({ ...domainData, externalDomain: e.target.value })}
+          onChange={(e) =>
+            setDomainData({ ...domainData, externalDomain: e.target.value })
+          }
           placeholder="external.company.com"
         />
       </Grid>
@@ -721,7 +793,9 @@ const AddCompanyPage: React.FC = () => {
           label="IFSC Code"
           name="ifscCode"
           value={accountData.ifscCode}
-          onChange={(e) => setAccountData({ ...accountData, ifscCode: e.target.value })}
+          onChange={(e) =>
+            setAccountData({ ...accountData, ifscCode: e.target.value })
+          }
           required
           placeholder="IFSC0001234"
         />
@@ -732,7 +806,9 @@ const AddCompanyPage: React.FC = () => {
           label="PAN No"
           name="panNo"
           value={accountData.panNo}
-          onChange={(e) => setAccountData({ ...accountData, panNo: e.target.value })}
+          onChange={(e) =>
+            setAccountData({ ...accountData, panNo: e.target.value })
+          }
           required
           placeholder="ABCDE1234F"
         />
@@ -743,7 +819,9 @@ const AddCompanyPage: React.FC = () => {
           label="GST No"
           name="gstNo"
           value={accountData.gstNo}
-          onChange={(e) => setAccountData({ ...accountData, gstNo: e.target.value })}
+          onChange={(e) =>
+            setAccountData({ ...accountData, gstNo: e.target.value })
+          }
           required
           placeholder="22AAAAA0000A1Z5"
         />
@@ -754,7 +832,9 @@ const AddCompanyPage: React.FC = () => {
           label="CIN No"
           name="cinNo"
           value={accountData.cinNo}
-          onChange={(e) => setAccountData({ ...accountData, cinNo: e.target.value })}
+          onChange={(e) =>
+            setAccountData({ ...accountData, cinNo: e.target.value })
+          }
           required
           placeholder="U12345AB2020PTC123456"
         />
@@ -778,7 +858,12 @@ const AddCompanyPage: React.FC = () => {
           label="Plan Type"
           name="planType"
           value={subscriptionData.planType}
-          onChange={(e) => setSubscriptionData({ ...subscriptionData, planType: e.target.value as string })}
+          onChange={(e) =>
+            setSubscriptionData({
+              ...subscriptionData,
+              planType: e.target.value as string,
+            })
+          }
           options={planTypeOptions}
           required
         />
@@ -790,7 +875,12 @@ const AddCompanyPage: React.FC = () => {
           name="planRate"
           type="number"
           value={subscriptionData.planRate}
-          onChange={(e) => setSubscriptionData({ ...subscriptionData, planRate: e.target.value })}
+          onChange={(e) =>
+            setSubscriptionData({
+              ...subscriptionData,
+              planRate: e.target.value,
+            })
+          }
           required
           placeholder="Enter plan rate"
         />
@@ -800,35 +890,35 @@ const AddCompanyPage: React.FC = () => {
 
   const renderContent = () => {
     switch (activeTab) {
-      case 'company':
+      case "company":
         return renderCompanyForm();
-      case 'user':
+      case "user":
         return renderUserForm();
-      case 'domain':
+      case "domain":
         return renderDomainForm();
-      case 'account':
+      case "account":
         return renderAccountForm();
-      case 'subscription':
+      case "subscription":
         return renderSubscriptionForm();
       default:
         return renderCompanyForm();
     }
   };
 
-  const isLastTab = activeTab === 'subscription';
-  const isFirstTab = activeTab === 'company';
+  const isLastTab = activeTab === "subscription";
+  const isFirstTab = activeTab === "company";
 
   // Show loading spinner when fetching company data in edit mode
   if (isEditMode && fetchByIdLoading) {
     return (
-      <Box 
-        sx={{ 
-          display: 'flex', 
-          justifyContent: 'center', 
-          alignItems: 'center', 
-          minHeight: '60vh',
-          flexDirection: 'column',
-          gap: 2 
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          minHeight: "60vh",
+          flexDirection: "column",
+          gap: 2,
         }}
       >
         <CircularProgress size={50} />
@@ -845,23 +935,25 @@ const AddCompanyPage: React.FC = () => {
       <Box sx={{ mb: 3 }}>
         <Button
           startIcon={<ArrowBack />}
-          onClick={() => navigate('/dashboard/master/company')}
+          onClick={() => navigate("/dashboard/master/company")}
           sx={{
-            textTransform: 'none',
+            textTransform: "none",
             mb: 2,
             color: theme.palette.text.secondary,
-            '&:hover': {
+            "&:hover": {
               bgcolor: alpha(theme.palette.primary.main, 0.1),
-            }
+            },
           }}
         >
           Back to Company List
         </Button>
         <Typography variant="h4" fontWeight={700} gutterBottom>
-          {isEditMode ? 'Edit Company' : 'Add New Company'}
+          {isEditMode ? "Edit Company" : "Add New Company"}
         </Typography>
         <Typography variant="body1" color="text.secondary">
-          {isEditMode ? 'Update the company information' : 'Fill in the information to create a new company'}
+          {isEditMode
+            ? "Update the company information"
+            : "Fill in the information to create a new company"}
         </Typography>
       </Box>
 
@@ -872,37 +964,51 @@ const AddCompanyPage: React.FC = () => {
           <Paper
             sx={{
               borderRadius: 3,
-              boxShadow: `0 4px 20px ${alpha(theme.palette.common.black, 0.08)}`,
+              boxShadow: `0 4px 20px ${alpha(
+                theme.palette.common.black,
+                0.08
+              )}`,
               p: 2,
-              position: 'sticky',
-              top: 20
+              position: "sticky",
+              top: 20,
             }}
           >
-            <Typography variant="subtitle2" fontWeight={600} sx={{ mb: 2, px: 1 }}>
+            <Typography
+              variant="subtitle2"
+              fontWeight={600}
+              sx={{ mb: 2, px: 1 }}
+            >
               Sections
             </Typography>
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+            <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
               {tabs.map((tab) => (
                 <Button
                   key={tab.id}
                   fullWidth
                   startIcon={tab.icon}
                   onClick={() => setActiveTab(tab.id as TabType)}
-                  variant={activeTab === tab.id ? 'contained' : 'text'}
+                  variant={activeTab === tab.id ? "contained" : "text"}
                   sx={{
-                    justifyContent: 'flex-start',
-                    textTransform: 'none',
+                    justifyContent: "flex-start",
+                    textTransform: "none",
                     py: 1.5,
                     px: 2,
                     borderRadius: 2,
                     fontWeight: activeTab === tab.id ? 600 : 500,
-                    color: activeTab === tab.id ? 'white' : theme.palette.text.primary,
-                    bgcolor: activeTab === tab.id ? theme.palette.primary.main : 'transparent',
-                    '&:hover': {
-                      bgcolor: activeTab === tab.id 
-                        ? theme.palette.primary.dark 
-                        : alpha(theme.palette.primary.main, 0.1),
-                    }
+                    color:
+                      activeTab === tab.id
+                        ? "white"
+                        : theme.palette.text.primary,
+                    bgcolor:
+                      activeTab === tab.id
+                        ? theme.palette.primary.main
+                        : "transparent",
+                    "&:hover": {
+                      bgcolor:
+                        activeTab === tab.id
+                          ? theme.palette.primary.dark
+                          : alpha(theme.palette.primary.main, 0.1),
+                    },
                   }}
                 >
                   {tab.label}
@@ -917,7 +1023,10 @@ const AddCompanyPage: React.FC = () => {
           <Card
             sx={{
               borderRadius: 3,
-              boxShadow: `0 4px 20px ${alpha(theme.palette.common.black, 0.08)}`
+              boxShadow: `0 4px 20px ${alpha(
+                theme.palette.common.black,
+                0.08
+              )}`,
             }}
           >
             <CardContent sx={{ p: 4 }}>
@@ -925,16 +1034,25 @@ const AddCompanyPage: React.FC = () => {
                 {renderContent()}
 
                 {/* Navigation Buttons */}
-                <Box sx={{ display: 'flex', gap: 2, justifyContent: 'space-between', mt: 4, pt: 3, borderTop: `1px solid ${theme.palette.divider}` }}>
-                  <Box sx={{ display: 'flex', gap: 2 }}>
+                <Box
+                  sx={{
+                    display: "flex",
+                    gap: 2,
+                    justifyContent: "space-between",
+                    mt: 4,
+                    pt: 3,
+                    borderTop: `1px solid ${theme.palette.divider}`,
+                  }}
+                >
+                  <Box sx={{ display: "flex", gap: 2 }}>
                     <Button
                       variant="outlined"
                       size="large"
-                      onClick={() => navigate('/dashboard/master/company')}
+                      onClick={() => navigate("/dashboard/master/company")}
                       sx={{
                         borderRadius: 2,
-                        textTransform: 'none',
-                        px: 4
+                        textTransform: "none",
+                        px: 4,
                       }}
                     >
                       Cancel
@@ -946,8 +1064,8 @@ const AddCompanyPage: React.FC = () => {
                         onClick={handlePrevious}
                         sx={{
                           borderRadius: 2,
-                          textTransform: 'none',
-                          px: 4
+                          textTransform: "none",
+                          px: 4,
                         }}
                       >
                         Previous
@@ -962,12 +1080,18 @@ const AddCompanyPage: React.FC = () => {
                         onClick={handleNext}
                         sx={{
                           borderRadius: 2,
-                          textTransform: 'none',
+                          textTransform: "none",
                           px: 4,
-                          boxShadow: `0 4px 15px ${alpha(theme.palette.primary.main, 0.4)}`,
-                          '&:hover': {
-                            boxShadow: `0 6px 20px ${alpha(theme.palette.primary.main, 0.5)}`
-                          }
+                          boxShadow: `0 4px 15px ${alpha(
+                            theme.palette.primary.main,
+                            0.4
+                          )}`,
+                          "&:hover": {
+                            boxShadow: `0 6px 20px ${alpha(
+                              theme.palette.primary.main,
+                              0.5
+                            )}`,
+                          },
                         }}
                       >
                         Next
@@ -980,17 +1104,27 @@ const AddCompanyPage: React.FC = () => {
                         disabled={loading || fetchByIdLoading}
                         sx={{
                           borderRadius: 2,
-                          textTransform: 'none',
+                          textTransform: "none",
                           px: 4,
-                          boxShadow: `0 4px 15px ${alpha(theme.palette.success.main, 0.4)}`,
+                          boxShadow: `0 4px 15px ${alpha(
+                            theme.palette.success.main,
+                            0.4
+                          )}`,
                           bgcolor: theme.palette.success.main,
-                          '&:hover': {
+                          "&:hover": {
                             bgcolor: theme.palette.success.dark,
-                            boxShadow: `0 6px 20px ${alpha(theme.palette.success.main, 0.5)}`
-                          }
+                            boxShadow: `0 6px 20px ${alpha(
+                              theme.palette.success.main,
+                              0.5
+                            )}`,
+                          },
                         }}
                       >
-                        {loading ? 'Saving...' : isEditMode ? 'Update Company' : 'Submit & Save'}
+                        {loading
+                          ? "Saving..."
+                          : isEditMode
+                          ? "Update Company"
+                          : "Submit & Save"}
                       </Button>
                     )}
                   </Box>
@@ -1006,14 +1140,14 @@ const AddCompanyPage: React.FC = () => {
         open={showSnackbar}
         autoHideDuration={6000}
         onClose={handleSnackbarClose}
-        anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
+        anchorOrigin={{ vertical: "top", horizontal: "right" }}
       >
-        <Alert 
-          onClose={handleSnackbarClose} 
-          severity={error ? 'error' : 'success'}
-          sx={{ width: '100%' }}
+        <Alert
+          onClose={handleSnackbarClose}
+          severity={error ? "error" : "success"}
+          sx={{ width: "100%" }}
         >
-          {error || 'Company added successfully!'}
+          {error || "Company added successfully!"}
         </Alert>
       </Snackbar>
     </Box>

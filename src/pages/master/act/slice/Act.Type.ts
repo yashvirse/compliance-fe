@@ -11,7 +11,7 @@ export interface ActMaster {
 export interface AddActMasterRequest {
   actId: string;
   actName: string;
-  depaermentID: string;
+  depaermentName: string;
   description: string;
 }
 
