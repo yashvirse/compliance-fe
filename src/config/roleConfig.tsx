@@ -1,16 +1,16 @@
-import type { ReactNode } from 'react';
+import type { ReactNode } from "react";
 
 // User roles
 export const UserRole = {
-  SUPER_ADMIN: 'SuperAdmin',
-  CUSTOMER_ADMIN: 'CustomerAdmin',
-  MAKER: 'Maker',
-  CHECKER: 'Checker',
-  REVIEWER: 'Reviewer',
-  AUDITOR: 'Auditor',
+  SUPER_ADMIN: "SuperAdmin",
+  CUSTOMER_ADMIN: "CustomerAdmin",
+  MAKER: "Maker",
+  CHECKER: "Checker",
+  REVIEWER: "Reviewer",
+  AUDITOR: "Auditor",
 } as const;
 
-export type UserRole = typeof UserRole[keyof typeof UserRole];
+export type UserRole = (typeof UserRole)[keyof typeof UserRole];
 
 // Menu item interface
 export interface MenuItem {
@@ -25,8 +25,8 @@ export interface MenuItem {
 // Role-based menu configuration
 export const menuConfig: MenuItem[] = [
   {
-    id: 'dashboard',
-    label: 'Dashboard',
+    id: "dashboard",
+    label: "Dashboard",
     // No path here - will be dynamically set based on role
     allowedRoles: [
       UserRole.SUPER_ADMIN,
@@ -38,107 +38,111 @@ export const menuConfig: MenuItem[] = [
     ],
   },
   {
-    id: 'master',
-    label: 'Master',
-    allowedRoles: [UserRole.SUPER_ADMIN, UserRole.CUSTOMER_ADMIN, UserRole.MAKER],
+    id: "master",
+    label: "Master",
+    allowedRoles: [
+      UserRole.SUPER_ADMIN,
+      UserRole.CUSTOMER_ADMIN,
+      UserRole.MAKER,
+    ],
     children: [
       {
-        id: 'user',
-        label: 'User',
-        path: '/dashboard/master/user',
+        id: "user",
+        label: "User",
+        path: "/dashboard/master/user",
         allowedRoles: [UserRole.SUPER_ADMIN],
       },
       {
-        id: 'customeradminuser',
-        label: 'User Master',
-        path: '/dashboard/master/customeradminuser',
+        id: "customeradminuser",
+        label: "User Master",
+        path: "/dashboard/master/customeradminuser",
         allowedRoles: [UserRole.CUSTOMER_ADMIN],
       },
       {
-        id: 'company',
-        label: 'Company',
-        path: '/dashboard/master/company',
+        id: "company",
+        label: "Company",
+        path: "/dashboard/master/company",
         allowedRoles: [UserRole.SUPER_ADMIN, UserRole.MAKER],
       },
       {
-        id: 'department',
-        label: 'Department Master',
-        path: '/dashboard/master/department',
+        id: "department",
+        label: "Department Master",
+        path: "/dashboard/master/department",
         allowedRoles: [UserRole.SUPER_ADMIN],
       },
       {
-        id: 'act',
-        label: 'Act Master',
-        path: '/dashboard/master/act',
+        id: "act",
+        label: "Act Master",
+        path: "/dashboard/master/act",
         allowedRoles: [UserRole.SUPER_ADMIN],
       },
       {
-        id: 'activity',
-        label: 'Activity Master',
-        path: '/dashboard/master/activity',
+        id: "activity",
+        label: "Activity Master",
+        path: "/dashboard/master/activity",
         allowedRoles: [UserRole.SUPER_ADMIN],
       },
       {
-        id: 'customeradminactivity',
-        label: 'Activity Master',
-        path: '/dashboard/master/customeradminactivity',
+        id: "customeradminactivity",
+        label: "Activity Master",
+        path: "/dashboard/master/customeradminactivity",
         allowedRoles: [UserRole.CUSTOMER_ADMIN],
       },
       {
-        id: 'site',
-        label: 'Site Master',
-        path: '/dashboard/master/site',
+        id: "site",
+        label: "Site Master",
+        path: "/dashboard/master/site",
         allowedRoles: [UserRole.CUSTOMER_ADMIN],
       },
       {
-        id: 'country',
-        label: 'Country',
-        path: '/dashboard/master/country',
+        id: "country",
+        label: "Country",
+        path: "/dashboard/master/country",
         allowedRoles: [UserRole.SUPER_ADMIN, UserRole.CUSTOMER_ADMIN],
       },
     ],
   },
   {
-    id: 'data-entry',
-    label: 'Data Entry',
+    id: "data-entry",
+    label: "Data Entry",
     allowedRoles: [UserRole.MAKER, UserRole.CHECKER],
     children: [
       {
-        id: 'create-entry',
-        label: 'Create Entry',
-        path: '/dashboard/data-entry/create',
+        id: "create-entry",
+        label: "Create Entry",
+        path: "/dashboard/data-entry/create",
         allowedRoles: [UserRole.MAKER],
       },
       {
-        id: 'pending-entries',
-        label: 'Pending Entries',
-        path: '/dashboard/data-entry/pending',
+        id: "pending-entries",
+        label: "Pending Entries",
+        path: "/dashboard/data-entry/pending",
         allowedRoles: [UserRole.MAKER, UserRole.CHECKER],
       },
     ],
   },
   {
-    id: 'verification',
-    label: 'Verification',
+    id: "verification",
+    label: "Verification",
     allowedRoles: [UserRole.CHECKER, UserRole.REVIEWER],
     children: [
       {
-        id: 'check-entries',
-        label: 'Check Entries',
-        path: '/dashboard/verification/check',
+        id: "check-entries",
+        label: "Check Entries",
+        path: "/dashboard/verification/check",
         allowedRoles: [UserRole.CHECKER],
       },
       {
-        id: 'review-entries',
-        label: 'Review Entries',
-        path: '/dashboard/verification/review',
+        id: "review-entries",
+        label: "Review Entries",
+        path: "/dashboard/verification/review",
         allowedRoles: [UserRole.REVIEWER],
       },
     ],
   },
   {
-    id: 'reports',
-    label: 'Reports',
+    id: "reports",
+    label: "Reports",
     allowedRoles: [
       UserRole.SUPER_ADMIN,
       UserRole.CUSTOMER_ADMIN,
@@ -147,46 +151,55 @@ export const menuConfig: MenuItem[] = [
     ],
     children: [
       {
-        id: 'all-reports',
-        label: 'All Reports',
-        path: '/dashboard/reports/all',
+        id: "all-reports",
+        label: "All Reports",
+        path: "/dashboard/reports/all",
         allowedRoles: [UserRole.SUPER_ADMIN, UserRole.CUSTOMER_ADMIN],
       },
       {
-        id: 'view-reports',
-        label: 'View Reports',
-        path: '/dashboard/reports/view',
+        id: "view-reports",
+        label: "View Reports",
+        path: "/dashboard/reports/view",
         allowedRoles: [UserRole.REVIEWER, UserRole.AUDITOR],
       },
       {
-        id: 'export-reports',
-        label: 'Export Reports',
-        path: '/dashboard/reports/export',
-        allowedRoles: [UserRole.SUPER_ADMIN, UserRole.CUSTOMER_ADMIN, UserRole.REVIEWER],
+        id: "export-reports",
+        label: "Export Reports",
+        path: "/dashboard/reports/export",
+        allowedRoles: [
+          UserRole.SUPER_ADMIN,
+          UserRole.CUSTOMER_ADMIN,
+          UserRole.REVIEWER,
+        ],
       },
     ],
   },
   {
-    id: 'settings',
-    label: 'Settings',
-    path: '/dashboard/settings',
+    id: "settings",
+    label: "Settings",
+    path: "/dashboard/settings",
     allowedRoles: [UserRole.SUPER_ADMIN, UserRole.CUSTOMER_ADMIN],
   },
   {
-    id: 'components',
-    label: 'Components Demo',
-    path: '/dashboard/components',
+    id: "components",
+    label: "Components Demo",
+    path: "/dashboard/components",
     allowedRoles: [UserRole.SUPER_ADMIN], // Demo page only for super admin
   },
 ];
 
 // Helper function to filter menu items based on user role
-export const getMenuItemsForRole = (role: UserRole, items: MenuItem[] = menuConfig): MenuItem[] => {
+export const getMenuItemsForRole = (
+  role: UserRole,
+  items: MenuItem[] = menuConfig
+): MenuItem[] => {
   return items
     .filter((item) => item.allowedRoles.includes(role))
     .map((item) => ({
       ...item,
-      children: item.children ? getMenuItemsForRole(role, item.children) : undefined,
+      children: item.children
+        ? getMenuItemsForRole(role, item.children)
+        : undefined,
     }))
     .filter((item) => !item.children || item.children.length > 0); // Remove parent if no children visible
 };
@@ -211,18 +224,18 @@ export const hasAccessToRoute = (role: UserRole, path: string): boolean => {
 export const getDashboardPathForRole = (role: UserRole): string => {
   switch (role) {
     case UserRole.SUPER_ADMIN:
-      return '/dashboard/super-admin';
+      return "/dashboard/super-admin";
     case UserRole.CUSTOMER_ADMIN:
-      return '/dashboard/customer-admin';
+      return "/dashboard/customer-admin";
     case UserRole.MAKER:
-      return '/dashboard/maker';
+      return "/dashboard/maker";
     case UserRole.CHECKER:
-      return '/dashboard/checker';
+      return "/dashboard/checker";
     case UserRole.REVIEWER:
-      return '/dashboard/reviewer';
+      return "/dashboard/reviewer";
     case UserRole.AUDITOR:
-      return '/dashboard/auditor';
+      return "/dashboard/auditor";
     default:
-      return '/dashboard';
+      return "/dashboard";
   }
 };

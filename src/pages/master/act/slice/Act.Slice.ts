@@ -1,6 +1,6 @@
-import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import { apiService } from '../../../../services/api';
-import type { 
+import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
+import { apiService } from "../../../../services/api";
+import type {
   ActMasterState,
   GetActMasterListResponse,
   AddActMasterRequest,
@@ -9,8 +9,8 @@ import type {
   GetActMasterByIdResponse,
   UpdateActMasterRequest,
   UpdateActMasterResponse,
-  DepartmentDropdownResponse
-} from './Act.Type';
+  DepartmentDropdownResponse,
+} from "./Act.Type";
 
 // Initial state
 const initialState: ActMasterState = {
@@ -34,24 +34,25 @@ export const addActMaster = createAsyncThunk<
   AddActMasterRequest,
   { rejectValue: string }
 >(
-  'actMaster/addActMaster',
+  "actMaster/addActMaster",
   async (actData: AddActMasterRequest, { rejectWithValue }) => {
     try {
       const response = await apiService.post<AddActMasterResponse>(
-        'Master/addActMaster',
+        "Master/addActMaster",
         actData
       );
 
       // Check if add was successful
       if (!response.isSuccess) {
-        return rejectWithValue(response.message || 'Failed to add act master');
+        return rejectWithValue(response.message || "Failed to add act master");
       }
 
       return response;
     } catch (error: any) {
-      const errorMessage = error?.response?.data?.message || 
-                          error?.message || 
-                          'Failed to add act master. Please try again.';
+      const errorMessage =
+        error?.response?.data?.message ||
+        error?.message ||
+        "Failed to add act master. Please try again.";
       return rejectWithValue(errorMessage);
     }
   }
@@ -62,28 +63,26 @@ export const fetchActMasterList = createAsyncThunk<
   GetActMasterListResponse,
   void,
   { rejectValue: string }
->(
-  'actMaster/fetchActMasterList',
-  async (_, { rejectWithValue }) => {
-    try {
-      const response = await apiService.get<GetActMasterListResponse>(
-        'Master/getActMasterList'
-      );
+>("actMaster/fetchActMasterList", async (_, { rejectWithValue }) => {
+  try {
+    const response = await apiService.get<GetActMasterListResponse>(
+      "Master/getActMasterList"
+    );
 
-      // Check if fetch was successful
-      if (!response.isSuccess) {
-        return rejectWithValue(response.message || 'Failed to fetch act masters');
-      }
-
-      return response;
-    } catch (error: any) {
-      const errorMessage = error?.response?.data?.message || 
-                          error?.message || 
-                          'Failed to fetch act masters. Please try again.';
-      return rejectWithValue(errorMessage);
+    // Check if fetch was successful
+    if (!response.isSuccess) {
+      return rejectWithValue(response.message || "Failed to fetch act masters");
     }
+
+    return response;
+  } catch (error: any) {
+    const errorMessage =
+      error?.response?.data?.message ||
+      error?.message ||
+      "Failed to fetch act masters. Please try again.";
+    return rejectWithValue(errorMessage);
   }
-);
+});
 
 // Async thunk for deleting act master
 export const deleteActMaster = createAsyncThunk<
@@ -91,23 +90,26 @@ export const deleteActMaster = createAsyncThunk<
   string,
   { rejectValue: string }
 >(
-  'actMaster/deleteActMaster',
+  "actMaster/deleteActMaster",
   async (actMasterId: string, { rejectWithValue }) => {
     try {
-      const response = await apiService.get<DeleteActMasterResponse>(
+      const response = await apiService.delete<DeleteActMasterResponse>(
         `Master/deleteActMaster/${actMasterId}`
       );
 
       // Check if delete was successful
       if (!response.isSuccess) {
-        return rejectWithValue(response.message || 'Failed to delete act master');
+        return rejectWithValue(
+          response.message || "Failed to delete act master"
+        );
       }
 
       return response;
     } catch (error: any) {
-      const errorMessage = error?.response?.data?.message || 
-                          error?.message || 
-                          'Failed to delete act master. Please try again.';
+      const errorMessage =
+        error?.response?.data?.message ||
+        error?.message ||
+        "Failed to delete act master. Please try again.";
       return rejectWithValue(errorMessage);
     }
   }
@@ -119,7 +121,7 @@ export const fetchActMasterById = createAsyncThunk<
   string,
   { rejectValue: string }
 >(
-  'actMaster/fetchActMasterById',
+  "actMaster/fetchActMasterById",
   async (actMasterId: string, { rejectWithValue }) => {
     try {
       const response = await apiService.get<GetActMasterByIdResponse>(
@@ -128,14 +130,17 @@ export const fetchActMasterById = createAsyncThunk<
 
       // Check if fetch was successful
       if (!response.isSuccess) {
-        return rejectWithValue(response.message || 'Failed to fetch act master details');
+        return rejectWithValue(
+          response.message || "Failed to fetch act master details"
+        );
       }
 
       return response;
     } catch (error: any) {
-      const errorMessage = error?.response?.data?.message || 
-                          error?.message || 
-                          'Failed to fetch act master details. Please try again.';
+      const errorMessage =
+        error?.response?.data?.message ||
+        error?.message ||
+        "Failed to fetch act master details. Please try again.";
       return rejectWithValue(errorMessage);
     }
   }
@@ -147,24 +152,27 @@ export const updateActMaster = createAsyncThunk<
   UpdateActMasterRequest,
   { rejectValue: string }
 >(
-  'actMaster/updateActMaster',
+  "actMaster/updateActMaster",
   async (actData: UpdateActMasterRequest, { rejectWithValue }) => {
     try {
-      const response = await apiService.post<UpdateActMasterResponse>(
-        'Master/editActMaster',
+      const response = await apiService.put<UpdateActMasterResponse>(
+        "Master/editActMaster",
         actData
       );
 
       // Check if update was successful
       if (!response.isSuccess) {
-        return rejectWithValue(response.message || 'Failed to update act master');
+        return rejectWithValue(
+          response.message || "Failed to update act master"
+        );
       }
 
       return response;
     } catch (error: any) {
-      const errorMessage = error?.response?.data?.message || 
-                          error?.message || 
-                          'Failed to update act master. Please try again.';
+      const errorMessage =
+        error?.response?.data?.message ||
+        error?.message ||
+        "Failed to update act master. Please try again.";
       return rejectWithValue(errorMessage);
     }
   }
@@ -175,44 +183,44 @@ export const fetchDepartmentDropdown = createAsyncThunk<
   DepartmentDropdownResponse,
   void,
   { rejectValue: string }
->(
-  'actMaster/fetchDepartmentDropdown',
-  async (_, { rejectWithValue }) => {
-    try {
-      const response = await apiService.get<DepartmentDropdownResponse>(
-        'Master/departmentDropDown'
+>("actMaster/fetchDepartmentDropdown", async (_, { rejectWithValue }) => {
+  try {
+    const response = await apiService.get<DepartmentDropdownResponse>(
+      "Master/getDeptMasterList"
+    );
+
+    if (!response.isSuccess) {
+      return rejectWithValue(
+        response.message || "Failed to fetch department dropdown"
       );
-
-      if (!response.isSuccess) {
-        return rejectWithValue(response.message || 'Failed to fetch department dropdown');
-      }
-
-      return response;
-    } catch (error: any) {
-      const errorMessage = error?.response?.data?.message || 
-                          error?.message || 
-                          'Failed to fetch department dropdown. Please try again.';
-      return rejectWithValue(errorMessage);
     }
+
+    return response;
+  } catch (error: any) {
+    const errorMessage =
+      error?.response?.data?.message ||
+      error?.message ||
+      "Failed to fetch department dropdown. Please try again.";
+    return rejectWithValue(errorMessage);
   }
-);
+});
 
 // Act Master slice
 const actMasterSlice = createSlice({
-  name: 'actMaster',
+  name: "actMaster",
   initialState,
   reducers: {
     // Clear error
     clearError: (state) => {
       state.error = null;
     },
-    
+
     // Clear success
     clearSuccess: (state) => {
       state.success = false;
       state.deleteSuccess = false;
     },
-    
+
     // Reset state
     resetActMasterState: (state) => {
       state.loading = false;
@@ -226,7 +234,7 @@ const actMasterSlice = createSlice({
       state.fetchByIdLoading = false;
       state.fetchByIdError = null;
     },
-    
+
     // Clear current act master
     clearCurrentActMaster: (state) => {
       state.currentActMaster = null;
@@ -251,7 +259,8 @@ const actMasterSlice = createSlice({
       // Add Act Master rejected
       .addCase(addActMaster.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.payload || 'An error occurred while adding act master';
+        state.error =
+          action.payload || "An error occurred while adding act master";
         state.success = false;
       })
       // Fetch Act Master List pending
@@ -268,7 +277,8 @@ const actMasterSlice = createSlice({
       // Fetch Act Master List rejected
       .addCase(fetchActMasterList.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.payload || 'An error occurred while fetching act masters';
+        state.error =
+          action.payload || "An error occurred while fetching act masters";
       })
       // Delete Act Master pending
       .addCase(deleteActMaster.pending, (state) => {
@@ -289,7 +299,8 @@ const actMasterSlice = createSlice({
       // Delete Act Master rejected
       .addCase(deleteActMaster.rejected, (state, action) => {
         state.deleteLoading = false;
-        state.deleteError = action.payload || 'An error occurred while deleting act master';
+        state.deleteError =
+          action.payload || "An error occurred while deleting act master";
         state.deleteSuccess = false;
       })
       // Fetch Act Master By ID pending
@@ -307,7 +318,9 @@ const actMasterSlice = createSlice({
       // Fetch Act Master By ID rejected
       .addCase(fetchActMasterById.rejected, (state, action) => {
         state.fetchByIdLoading = false;
-        state.fetchByIdError = action.payload || 'An error occurred while fetching act master details';
+        state.fetchByIdError =
+          action.payload ||
+          "An error occurred while fetching act master details";
         state.currentActMaster = null;
       })
       // Update Act Master pending
@@ -327,7 +340,8 @@ const actMasterSlice = createSlice({
       // Update Act Master rejected
       .addCase(updateActMaster.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.payload || 'An error occurred while updating act master';
+        state.error =
+          action.payload || "An error occurred while updating act master";
         state.success = false;
       })
       // Fetch Department Dropdown
@@ -336,7 +350,15 @@ const actMasterSlice = createSlice({
       })
       .addCase(fetchDepartmentDropdown.fulfilled, (state, action) => {
         state.departmentDropdownLoading = false;
-        state.departmentDropdown = action.payload.result || {};
+
+        const list = Array.isArray(action.payload.result)
+          ? action.payload.result
+          : [];
+
+        state.departmentDropdown = {};
+        list.forEach((item: any) => {
+          state.departmentDropdown[item.deptId] = item.departmentName;
+        });
       })
       .addCase(fetchDepartmentDropdown.rejected, (state) => {
         state.departmentDropdownLoading = false;
@@ -346,7 +368,12 @@ const actMasterSlice = createSlice({
 });
 
 // Export actions
-export const { clearError, clearSuccess, resetActMasterState, clearCurrentActMaster } = actMasterSlice.actions;
+export const {
+  clearError,
+  clearSuccess,
+  resetActMasterState,
+  clearCurrentActMaster,
+} = actMasterSlice.actions;
 
 // Export reducer
 export default actMasterSlice.reducer;

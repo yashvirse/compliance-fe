@@ -127,3 +127,21 @@ export interface CompanyState {
   fetchByIdLoading: boolean;
   fetchByIdError: string | null;
 }
+// Country-State API response ke liye
+export interface State {
+  stateId: string;
+  stateName: string;
+}
+
+export interface CountryState {
+  tblid: string;
+  countryId: string;
+  countryName: string;
+  states: State[];
+}
+
+export interface GetCountryStateResponse {
+  isSuccess: boolean;
+  message: string;
+  result: CountryState[];
+}

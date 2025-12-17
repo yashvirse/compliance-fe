@@ -1,7 +1,7 @@
-import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useDispatch, useSelector } from 'react-redux';
-import type { AppDispatch } from '../../../app/store';
+import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
+import type { AppDispatch } from "../../../app/store";
 import {
   Box,
   Button,
@@ -16,17 +16,22 @@ import {
   DialogContent,
   DialogContentText,
   DialogActions,
-  Chip
-} from '@mui/material';
-import { DataGrid } from '@mui/x-data-grid';
-import type { GridColDef, GridRenderCellParams } from '@mui/x-data-grid';
+  Chip,
+} from "@mui/material";
+import { DataGrid } from "@mui/x-data-grid";
+import type { GridColDef, GridRenderCellParams } from "@mui/x-data-grid";
 import {
   Add as AddIcon,
   Edit as EditIcon,
   Delete as DeleteIcon,
-  Warning as WarningIcon
-} from '@mui/icons-material';
-import { fetchActivityMasterList, deleteActivityMaster, clearError, clearSuccess, } from './slice/Activity.Slice';
+  Warning as WarningIcon,
+} from "@mui/icons-material";
+import {
+  fetchActivityMasterList,
+  deleteActivityMaster,
+  clearError,
+  clearSuccess,
+} from "./slice/Activity.Slice";
 import {
   selectActivityMasterLoading,
   selectActivityMasterError,
@@ -34,8 +39,7 @@ import {
   selectActivityMasterDeleteLoading,
   selectActivityMasterDeleteSuccess,
   selectActivityMasterDeleteError,
-
-} from './slice/Activity.Selector';
+} from "./slice/Activity.Selector";
 
 const ActivityMasterPage: React.FC = () => {
   const theme = useTheme();
@@ -51,11 +55,13 @@ const ActivityMasterPage: React.FC = () => {
 
   const [showSnackbar, setShowSnackbar] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  const [selectedActivity, setSelectedActivity] = useState<{ id: string; name: string } | null>(null);
+  const [selectedActivity, setSelectedActivity] = useState<{
+    id: string;
+    name: string;
+  } | null>(null);
 
   useEffect(() => {
     dispatch(fetchActivityMasterList());
-
   }, [dispatch]);
 
   useEffect(() => {
@@ -86,7 +92,7 @@ const ActivityMasterPage: React.FC = () => {
   };
 
   const handleAdd = () => {
-    navigate('/dashboard/master/activity/add');
+    navigate("/dashboard/master/activity/add");
   };
 
   const handleEdit = (id: string) => {
@@ -111,124 +117,148 @@ const ActivityMasterPage: React.FC = () => {
 
   const getFrequencyColor = (frequency: string) => {
     switch (frequency) {
-      case 'Weekly': return 'primary';
-      case 'Fortnightly': return 'secondary';
-      case 'Monthly': return 'success';
-      case 'Half Yearly': return 'warning';
-      case 'Annually': return 'error';
-      case 'As Needed': return 'default';
-      default: return 'default';
+      case "Weekly":
+        return "primary";
+      case "Fortnightly":
+        return "secondary";
+      case "Monthly":
+        return "success";
+      case "Half Yearly":
+        return "warning";
+      case "Annually":
+        return "error";
+      case "As Needed":
+        return "default";
+      default:
+        return "default";
     }
   };
 
   const columns: GridColDef[] = [
     {
-      field: 'serialNumber',
-      headerName: 'Sr. No.',
+      field: "serialNumber",
+      headerName: "Sr. No.",
       flex: 0.5,
       minWidth: 80,
       renderCell: (params: GridRenderCellParams) => {
-        const index = activityMasters.findIndex(row => row.activityId === params.row.activityId);
+        const index = activityMasters.findIndex(
+          (row) => row.activityId === params.row.activityId
+        );
         return index + 1;
-      }
+      },
     },
     {
-      field: 'activityName',
-      headerName: 'Activity Name',
+      field: "activityName",
+      headerName: "Activity Name",
       flex: 2,
       minWidth: 250,
     },
     {
-      field: 'actName',
-      headerName: 'Act - Department',
+      field: "actName",
+      headerName: "Act - Department",
       flex: 2,
       minWidth: 220,
-      renderCell: (params: GridRenderCellParams) => {       
-          return `${params.row.actName} - ${params.row.departmentName}`;
-      }
+      renderCell: (params: GridRenderCellParams) => {
+        return `${params.row.actName} - ${params.row.departmentName}`;
+      },
     },
     {
-      field: 'frequency',
-      headerName: 'Frequency',
+      field: "frequency",
+      headerName: "Frequency",
       flex: 1,
       minWidth: 130,
       renderCell: (params: GridRenderCellParams) => (
-        <Chip 
-          label={params.value} 
+        <Chip
+          label={params.value}
           color={getFrequencyColor(params.value as string) as any}
           size="small"
         />
       ),
     },
     {
-      field: 'dueDay',
-      headerName: 'Due Day',
+      field: "dueDay",
+      headerName: "Due Day",
       flex: 0.7,
       minWidth: 100,
-      align: 'center',
-      headerAlign: 'center',
+      align: "center",
+      headerAlign: "center",
     },
     {
-      field: 'gracePeriodDay',
-      headerName: 'Grace Days',
+      field: "gracePeriodDay",
+      headerName: "Grace Days",
       flex: 0.8,
       minWidth: 110,
-      align: 'center',
-      headerAlign: 'center',
+      align: "center",
+      headerAlign: "center",
     },
     {
-      field: 'reminderDay',
-      headerName: 'Reminder Date',
+      field: "reminderDay",
+      headerName: "Reminder Date",
       flex: 1.2,
       minWidth: 150,
       renderCell: (params: GridRenderCellParams) => {
         if (params.value) {
           const date = new Date(params.value as string);
-          return date.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+          return date.toLocaleDateString("en-GB", {
+            day: "2-digit",
+            month: "short",
+            year: "numeric",
+          });
         }
-        return '-';
-      }
+        return "-";
+      },
     },
     {
-      field: 'description',
-      headerName: 'Description',
+      field: "description",
+      headerName: "Description",
       flex: 2,
       minWidth: 200,
     },
     {
-      field: 'actions',
-      headerName: 'Actions',
+      field: "actions",
+      headerName: "Actions",
       flex: 1,
       minWidth: 150,
       sortable: false,
-      headerAlign: 'center',
-      align: 'center',
+      headerAlign: "center",
+      align: "center",
       renderCell: (params: GridRenderCellParams) => (
-        <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', justifyContent: 'center' }}>
+        <Box
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            height: "100%", // 🔑 IMPORTANT
+            width: "100%",
+            gap: 1,
+          }}
+        >
           <Button
             size="small"
             onClick={() => handleEdit(params.row.activityId)}
             sx={{
-              minWidth: 'auto',
+              minWidth: "auto",
               p: 0.5,
               color: theme.palette.primary.main,
-              '&:hover': {
+              "&:hover": {
                 bgcolor: alpha(theme.palette.primary.main, 0.1),
-              }
+              },
             }}
           >
             <EditIcon fontSize="small" />
           </Button>
           <Button
             size="small"
-            onClick={() => handleDelete(params.row.activityId, params.row.activityName)}
+            onClick={() =>
+              handleDelete(params.row.activityId, params.row.activityName)
+            }
             sx={{
-              minWidth: 'auto',
+              minWidth: "auto",
               p: 0.5,
               color: theme.palette.error.main,
-              '&:hover': {
+              "&:hover": {
                 bgcolor: alpha(theme.palette.error.main, 0.1),
-              }
+              },
             }}
           >
             <DeleteIcon fontSize="small" />
@@ -240,7 +270,14 @@ const ActivityMasterPage: React.FC = () => {
 
   return (
     <Box>
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          mb: 3,
+        }}
+      >
         <Box>
           <Typography variant="h4" fontWeight={700} gutterBottom>
             Activity Master
@@ -255,12 +292,12 @@ const ActivityMasterPage: React.FC = () => {
           onClick={handleAdd}
           sx={{
             borderRadius: 2,
-            textTransform: 'none',
+            textTransform: "none",
             px: 3,
             boxShadow: `0 4px 15px ${alpha(theme.palette.primary.main, 0.3)}`,
-            '&:hover': {
-              boxShadow: `0 6px 20px ${alpha(theme.palette.primary.main, 0.4)}`
-            }
+            "&:hover": {
+              boxShadow: `0 6px 20px ${alpha(theme.palette.primary.main, 0.4)}`,
+            },
           }}
         >
           Add Activity
@@ -271,9 +308,9 @@ const ActivityMasterPage: React.FC = () => {
         elevation={0}
         sx={{
           borderRadius: 3,
-          overflow: 'hidden',
+          overflow: "hidden",
           border: `1px solid ${theme.palette.divider}`,
-          boxShadow: `0 4px 20px ${alpha(theme.palette.common.black, 0.05)}`
+          boxShadow: `0 4px 20px ${alpha(theme.palette.common.black, 0.05)}`,
         }}
       >
         <DataGrid
@@ -283,24 +320,24 @@ const ActivityMasterPage: React.FC = () => {
           getRowId={(row) => row.activityId}
           initialState={{
             pagination: {
-              paginationModel: { pageSize: 10, page: 0 }
-            }
+              paginationModel: { pageSize: 10, page: 0 },
+            },
           }}
           pageSizeOptions={[5, 10, 25, 50]}
           disableRowSelectionOnClick
           autoHeight
           sx={{
-            border: 'none',
-            '& .MuiDataGrid-cell': {
+            border: "none",
+            "& .MuiDataGrid-cell": {
               borderColor: theme.palette.divider,
             },
-            '& .MuiDataGrid-columnHeaders': {
+            "& .MuiDataGrid-columnHeaders": {
               bgcolor: alpha(theme.palette.primary.main, 0.05),
               borderColor: theme.palette.divider,
             },
-            '& .MuiDataGrid-footerContainer': {
+            "& .MuiDataGrid-footerContainer": {
               borderColor: theme.palette.divider,
-            }
+            },
           }}
         />
       </Paper>
@@ -311,25 +348,26 @@ const ActivityMasterPage: React.FC = () => {
         PaperProps={{
           sx: {
             borderRadius: 3,
-            p: 1
-          }
+            p: 1,
+          },
         }}
       >
-        <DialogTitle sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+        <DialogTitle sx={{ display: "flex", alignItems: "center", gap: 1 }}>
           <WarningIcon color="warning" />
           Confirm Delete
         </DialogTitle>
         <DialogContent>
           <DialogContentText>
-            Are you sure you want to delete activity <strong>"{selectedActivity?.name}"</strong>?
-            This action cannot be undone.
+            Are you sure you want to delete activity{" "}
+            <strong>"{selectedActivity?.name}"</strong>? This action cannot be
+            undone.
           </DialogContentText>
         </DialogContent>
         <DialogActions sx={{ px: 3, pb: 2 }}>
-          <Button 
+          <Button
             onClick={handleCancelDelete}
             variant="outlined"
-            sx={{ textTransform: 'none' }}
+            sx={{ textTransform: "none" }}
           >
             Cancel
           </Button>
@@ -338,9 +376,9 @@ const ActivityMasterPage: React.FC = () => {
             variant="contained"
             color="error"
             disabled={deleteLoading}
-            sx={{ textTransform: 'none' }}
+            sx={{ textTransform: "none" }}
           >
-            {deleteLoading ? 'Deleting...' : 'Delete'}
+            {deleteLoading ? "Deleting..." : "Delete"}
           </Button>
         </DialogActions>
       </Dialog>
@@ -349,14 +387,16 @@ const ActivityMasterPage: React.FC = () => {
         open={showSnackbar}
         autoHideDuration={6000}
         onClose={handleCloseSnackbar}
-        anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
+        anchorOrigin={{ vertical: "top", horizontal: "right" }}
       >
-        <Alert 
-          onClose={handleCloseSnackbar} 
+        <Alert
+          onClose={handleCloseSnackbar}
           severity={deleteSuccess ? "success" : "error"}
-          sx={{ width: '100%' }}
+          sx={{ width: "100%" }}
         >
-          {deleteSuccess ? 'Activity deleted successfully!' : (deleteError || error)}
+          {deleteSuccess
+            ? "Activity deleted successfully!"
+            : deleteError || error}
         </Alert>
       </Snackbar>
     </Box>

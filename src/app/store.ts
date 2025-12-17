@@ -11,7 +11,7 @@ import makerDashboardReducer from "../pages/dashboards/makerslice/MakerDashboard
 import checkerDashboardReducer from "../pages/dashboards/checkerslice/CheckerDashboard.Slice";
 import reviewerDashboardReducer from "../pages/dashboards/reviewerslice/ReviewerDashboard.Slice";
 import auditorDashboardReducer from "../pages/dashboards/auditorslice/AuditorDashboard.Slice";
-
+import userReducer from "../pages/master/UserPage.slice";
 export const store = configureStore({
   reducer: {
     login: loginReducer,
@@ -26,6 +26,7 @@ export const store = configureStore({
     checkerDashboard: checkerDashboardReducer,
     reviewerDashboard: reviewerDashboardReducer,
     auditorDashboard: auditorDashboardReducer,
+    user: userReducer,
   },
 });
 

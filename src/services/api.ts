@@ -1,7 +1,12 @@
-import axios, { type AxiosInstance, type AxiosRequestConfig, type AxiosResponse } from 'axios';
+import axios, {
+  type AxiosInstance,
+  type AxiosRequestConfig,
+  type AxiosResponse,
+} from "axios";
 
 // API Configuration
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://122.180.254.137:8099/api';
+const API_BASE_URL =
+  import.meta.env.VITE_API_BASE_URL || "https://api.ocmspro.com/api";
 const API_TIMEOUT = 30000; // 30 seconds
 
 // Create axios instance with default config
@@ -9,7 +14,7 @@ const apiClient: AxiosInstance = axios.create({
   baseURL: API_BASE_URL,
   timeout: API_TIMEOUT,
   headers: {
-    'Content-Type': 'application/json',
+    "Content-Type": "application/json",
   },
   withCredentials: true, // IMPORTANT: Enable sending cookies/session tokens with requests
 });
@@ -17,17 +22,17 @@ const apiClient: AxiosInstance = axios.create({
 // Request interceptor - Add auth token to requests
 apiClient.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem('authToken');
+    const token = localStorage.getItem("authToken");
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
-    
+
     // Debug logging
     console.log(`📤 ${config.method?.toUpperCase()} ${config.url}`, {
       withCredentials: config.withCredentials,
       headers: config.headers,
     });
-    
+
     return config;
   },
   (error) => {
@@ -39,43 +44,53 @@ apiClient.interceptors.request.use(
 apiClient.interceptors.response.use(
   (response) => {
     // Debug logging
-    console.log(`📥 ${response.config.method?.toUpperCase()} ${response.config.url} - ${response.status}`, {
-      setCookie: response.headers['set-cookie'],
-      data: response.data,
-    });
+    console.log(
+      `📥 ${response.config.method?.toUpperCase()} ${response.config.url} - ${
+        response.status
+      }`,
+      {
+        setCookie: response.headers["set-cookie"],
+        data: response.data,
+      }
+    );
     return response;
   },
   (error) => {
     if (error.response) {
-      console.error(`❌ ${error.config?.method?.toUpperCase()} ${error.config?.url} - ${error.response.status}`, {
-        data: error.response.data,
-        headers: error.response.headers,
-      });
-      
+      console.error(
+        `❌ ${error.config?.method?.toUpperCase()} ${error.config?.url} - ${
+          error.response.status
+        }`,
+        {
+          data: error.response.data,
+          headers: error.response.headers,
+        }
+      );
+
       // Handle specific error codes
       switch (error.response.status) {
         case 401:
           // Unauthorized - redirect to login
-          localStorage.removeItem('authToken');
-          localStorage.removeItem('user');
-          window.location.href = '/login';
+          localStorage.removeItem("authToken");
+          localStorage.removeItem("user");
+          window.location.href = "/login";
           break;
         case 403:
-          console.error('Forbidden - You do not have permission');
+          console.error("Forbidden - You do not have permission");
           break;
         case 404:
-          console.error('Resource not found');
+          console.error("Resource not found");
           break;
         case 500:
-          console.error('Internal server error');
+          console.error("Internal server error");
           break;
         default:
-          console.error('An error occurred:', error.response.data);
+          console.error("An error occurred:", error.response.data);
       }
     } else if (error.request) {
-      console.error('No response received from server');
+      console.error("No response received from server");
     } else {
-      console.error('Error setting up request:', error.message);
+      console.error("Error setting up request:", error.message);
     }
     return Promise.reject(error);
   }
@@ -101,7 +116,11 @@ class ApiService {
    * @param config - Axios request config
    * @returns Promise with response data
    */
-  async post<T = any>(url: string, data?: any, config?: AxiosRequestConfig): Promise<T> {
+  async post<T = any>(
+    url: string,
+    data?: any,
+    config?: AxiosRequestConfig
+  ): Promise<T> {
     const response: AxiosResponse<T> = await apiClient.post(url, data, config);
     return response.data;
   }
@@ -113,7 +132,11 @@ class ApiService {
    * @param config - Axios request config
    * @returns Promise with response data
    */
-  async put<T = any>(url: string, data?: any, config?: AxiosRequestConfig): Promise<T> {
+  async put<T = any>(
+    url: string,
+    data?: any,
+    config?: AxiosRequestConfig
+  ): Promise<T> {
     const response: AxiosResponse<T> = await apiClient.put(url, data, config);
     return response.data;
   }
@@ -125,7 +148,11 @@ class ApiService {
    * @param config - Axios request config
    * @returns Promise with response data
    */
-  async patch<T = any>(url: string, data?: any, config?: AxiosRequestConfig): Promise<T> {
+  async patch<T = any>(
+    url: string,
+    data?: any,
+    config?: AxiosRequestConfig
+  ): Promise<T> {
     const response: AxiosResponse<T> = await apiClient.patch(url, data, config);
     return response.data;
   }
@@ -164,14 +191,14 @@ class ApiService {
           formData.append(`file${index}`, file);
         });
       } else {
-        formData.append('file', files);
+        formData.append("file", files);
       }
     }
 
     const response: AxiosResponse<T> = await apiClient.post(url, formData, {
       ...config,
       headers: {
-        'Content-Type': 'multipart/form-data',
+        "Content-Type": "multipart/form-data",
         ...config?.headers,
       },
       onUploadProgress,
@@ -187,25 +214,29 @@ class ApiService {
    * @param config - Axios request config
    * @returns Promise that resolves when download starts
    */
-  async download(url: string, filename?: string, config?: AxiosRequestConfig): Promise<void> {
+  async download(
+    url: string,
+    filename?: string,
+    config?: AxiosRequestConfig
+  ): Promise<void> {
     const response: AxiosResponse<Blob> = await apiClient.get(url, {
       ...config,
-      responseType: 'blob',
+      responseType: "blob",
     });
 
     // Create blob link to download
     const blob = new Blob([response.data]);
     const downloadUrl = window.URL.createObjectURL(blob);
-    const link = document.createElement('a');
+    const link = document.createElement("a");
     link.href = downloadUrl;
 
     // Extract filename from response headers or use provided filename
-    const contentDisposition = response.headers['content-disposition'];
+    const contentDisposition = response.headers["content-disposition"];
     const extractedFilename = contentDisposition
-      ? contentDisposition.split('filename=')[1]?.replace(/['"]/g, '')
-      : filename || 'download';
+      ? contentDisposition.split("filename=")[1]?.replace(/['"]/g, "")
+      : filename || "download";
 
-    link.setAttribute('download', extractedFilename);
+    link.setAttribute("download", extractedFilename);
     document.body.appendChild(link);
     link.click();
     link.remove();

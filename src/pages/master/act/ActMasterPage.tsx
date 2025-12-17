@@ -1,7 +1,7 @@
-import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useDispatch, useSelector } from 'react-redux';
-import type { AppDispatch } from '../../../app/store';
+import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
+import type { AppDispatch } from "../../../app/store";
 import {
   Box,
   Button,
@@ -15,17 +15,23 @@ import {
   DialogTitle,
   DialogContent,
   DialogContentText,
-  DialogActions
-} from '@mui/material';
-import { DataGrid } from '@mui/x-data-grid';
-import type { GridColDef, GridRenderCellParams } from '@mui/x-data-grid';
+  DialogActions,
+} from "@mui/material";
+import { DataGrid } from "@mui/x-data-grid";
+import type { GridColDef, GridRenderCellParams } from "@mui/x-data-grid";
 import {
   Add as AddIcon,
   Edit as EditIcon,
   Delete as DeleteIcon,
-  Warning as WarningIcon
-} from '@mui/icons-material';
-import { fetchActMasterList, deleteActMaster, clearError, clearSuccess, fetchDepartmentDropdown } from './slice/Act.Slice';
+  Warning as WarningIcon,
+} from "@mui/icons-material";
+import {
+  fetchActMasterList,
+  deleteActMaster,
+  clearError,
+  clearSuccess,
+  fetchDepartmentDropdown,
+} from "./slice/Act.Slice";
 import {
   selectActMasterLoading,
   selectActMasterError,
@@ -33,8 +39,7 @@ import {
   selectActMasterDeleteLoading,
   selectActMasterDeleteSuccess,
   selectActMasterDeleteError,
-  selectDepartmentDropdown
-} from './slice/Act.Selector';
+} from "./slice/Act.Selector";
 
 const ActMasterPage: React.FC = () => {
   const theme = useTheme();
@@ -47,11 +52,13 @@ const ActMasterPage: React.FC = () => {
   const deleteLoading = useSelector(selectActMasterDeleteLoading);
   const deleteSuccess = useSelector(selectActMasterDeleteSuccess);
   const deleteError = useSelector(selectActMasterDeleteError);
-  const departmentDropdown = useSelector(selectDepartmentDropdown);
 
   const [showSnackbar, setShowSnackbar] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  const [selectedActMaster, setSelectedActMaster] = useState<{ id: string; name: string } | null>(null);
+  const [selectedActMaster, setSelectedActMaster] = useState<{
+    id: string;
+    name: string;
+  } | null>(null);
 
   useEffect(() => {
     dispatch(fetchActMasterList());
@@ -87,7 +94,7 @@ const ActMasterPage: React.FC = () => {
   };
 
   const handleAdd = () => {
-    navigate('/dashboard/master/act/add');
+    navigate("/dashboard/master/act/add");
   };
 
   const handleEdit = (id: string) => {
@@ -112,53 +119,64 @@ const ActMasterPage: React.FC = () => {
 
   const columns: GridColDef[] = [
     {
-      field: 'serialNumber',
-      headerName: 'Sr. No.',
+      field: "serialNumber",
+      headerName: "Sr. No.",
       flex: 0.5,
       minWidth: 80,
       renderCell: (params: GridRenderCellParams) => {
-        const index = actMasters.findIndex(row => row.actId === params.row.actId);
+        const index = actMasters.findIndex(
+          (row) => row.actId === params.row.actId
+        );
         return index + 1;
-      }
+      },
     },
     {
-      field: 'actName',
-      headerName: 'Act Name',
+      field: "actName",
+      headerName: "Act Name",
       flex: 1.5,
       minWidth: 200,
     },
     {
-      field: 'depaermentName',
-      headerName: 'Department',
+      field: "depaermentName",
+      headerName: "Department",
       flex: 1,
       minWidth: 150,
     },
     {
-      field: 'description',
-      headerName: 'Description',
+      field: "description",
+      headerName: "Description",
       flex: 2,
       minWidth: 250,
     },
     {
-      field: 'actions',
-      headerName: 'Actions',
+      field: "actions",
+      headerName: "Actions",
       flex: 1,
       minWidth: 150,
       sortable: false,
-      headerAlign: 'center',
-      align: 'center',
+      headerAlign: "center",
+      align: "center",
       renderCell: (params: GridRenderCellParams) => (
-        <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', justifyContent: 'center' }}>
+        <Box
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            height: "100%", // 🔑 IMPORTANT
+            width: "100%",
+            gap: 1,
+          }}
+        >
           <Button
             size="small"
             onClick={() => handleEdit(params.row.actId)}
             sx={{
-              minWidth: 'auto',
+              minWidth: "auto",
               p: 0.5,
               color: theme.palette.primary.main,
-              '&:hover': {
+              "&:hover": {
                 bgcolor: alpha(theme.palette.primary.main, 0.1),
-              }
+              },
             }}
           >
             <EditIcon fontSize="small" />
@@ -167,12 +185,12 @@ const ActMasterPage: React.FC = () => {
             size="small"
             onClick={() => handleDelete(params.row.actId, params.row.actName)}
             sx={{
-              minWidth: 'auto',
+              minWidth: "auto",
               p: 0.5,
               color: theme.palette.error.main,
-              '&:hover': {
+              "&:hover": {
                 bgcolor: alpha(theme.palette.error.main, 0.1),
-              }
+              },
             }}
           >
             <DeleteIcon fontSize="small" />
@@ -185,12 +203,14 @@ const ActMasterPage: React.FC = () => {
   return (
     <Box>
       {/* Header */}
-      <Box sx={{ 
-        display: 'flex', 
-        justifyContent: 'space-between', 
-        alignItems: 'center',
-        mb: 3 
-      }}>
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          mb: 3,
+        }}
+      >
         <Box>
           <Typography variant="h4" fontWeight={700} gutterBottom>
             Act Master
@@ -205,12 +225,12 @@ const ActMasterPage: React.FC = () => {
           onClick={handleAdd}
           sx={{
             borderRadius: 2,
-            textTransform: 'none',
+            textTransform: "none",
             px: 3,
             boxShadow: `0 4px 15px ${alpha(theme.palette.primary.main, 0.3)}`,
-            '&:hover': {
-              boxShadow: `0 6px 20px ${alpha(theme.palette.primary.main, 0.4)}`
-            }
+            "&:hover": {
+              boxShadow: `0 6px 20px ${alpha(theme.palette.primary.main, 0.4)}`,
+            },
           }}
         >
           Add Act Master
@@ -222,7 +242,7 @@ const ActMasterPage: React.FC = () => {
         sx={{
           borderRadius: 3,
           boxShadow: `0 4px 20px ${alpha(theme.palette.common.black, 0.08)}`,
-          overflow: 'hidden'
+          overflow: "hidden",
         }}
       >
         <DataGrid
@@ -238,16 +258,16 @@ const ActMasterPage: React.FC = () => {
           pageSizeOptions={[5, 10, 25, 50]}
           disableRowSelectionOnClick
           sx={{
-            border: 'none',
-            '& .MuiDataGrid-cell': {
+            border: "none",
+            "& .MuiDataGrid-cell": {
               borderBottom: `1px solid ${theme.palette.divider}`,
             },
-            '& .MuiDataGrid-columnHeaders': {
+            "& .MuiDataGrid-columnHeaders": {
               backgroundColor: alpha(theme.palette.primary.main, 0.05),
               borderBottom: `2px solid ${theme.palette.primary.main}`,
               fontWeight: 600,
             },
-            '& .MuiDataGrid-row:hover': {
+            "& .MuiDataGrid-row:hover": {
               backgroundColor: alpha(theme.palette.primary.main, 0.05),
             },
           }}
@@ -259,14 +279,16 @@ const ActMasterPage: React.FC = () => {
         open={showSnackbar}
         autoHideDuration={6000}
         onClose={handleCloseSnackbar}
-        anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
+        anchorOrigin={{ vertical: "top", horizontal: "right" }}
       >
-        <Alert 
-          onClose={handleCloseSnackbar} 
+        <Alert
+          onClose={handleCloseSnackbar}
           severity={deleteSuccess ? "success" : "error"}
-          sx={{ width: '100%' }}
+          sx={{ width: "100%" }}
         >
-          {deleteSuccess ? 'Act Master deleted successfully!' : (deleteError || error)}
+          {deleteSuccess
+            ? "Act Master deleted successfully!"
+            : deleteError || error}
         </Alert>
       </Snackbar>
 
@@ -277,33 +299,37 @@ const ActMasterPage: React.FC = () => {
         aria-labelledby="delete-dialog-title"
         aria-describedby="delete-dialog-description"
       >
-        <DialogTitle id="delete-dialog-title" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+        <DialogTitle
+          id="delete-dialog-title"
+          sx={{ display: "flex", alignItems: "center", gap: 1 }}
+        >
           <WarningIcon color="warning" />
           Confirm Deletion
         </DialogTitle>
         <DialogContent>
           <DialogContentText id="delete-dialog-description">
-            Are you sure you want to delete the act master <strong>"{selectedActMaster?.name}"</strong>?
+            Are you sure you want to delete the act master{" "}
+            <strong>"{selectedActMaster?.name}"</strong>?
             <br />
             This action cannot be undone.
           </DialogContentText>
         </DialogContent>
         <DialogActions sx={{ px: 3, pb: 2 }}>
-          <Button 
+          <Button
             onClick={handleCancelDelete}
             variant="outlined"
             disabled={deleteLoading}
           >
             Cancel
           </Button>
-          <Button 
+          <Button
             onClick={handleConfirmDelete}
             variant="contained"
             color="error"
             disabled={deleteLoading}
             autoFocus
           >
-            {deleteLoading ? 'Deleting...' : 'Delete'}
+            {deleteLoading ? "Deleting..." : "Delete"}
           </Button>
         </DialogActions>
       </Dialog>

@@ -1,5 +1,5 @@
-import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import { apiService } from '../../../../services/api';
+import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
+import { apiService } from "../../../../services/api";
 import type {
   ActivityMasterState,
   AddActivityMasterRequest,
@@ -9,8 +9,8 @@ import type {
   GetActivityMasterListResponse,
   GetActivityMasterByIdResponse,
   DeleteActivityMasterResponse,
-  GetActMasterListResponse
-} from './Activity.Type';
+  GetActMasterListResponse,
+} from "./Activity.Type";
 
 // Initial state
 const initialState: ActivityMasterState = {
@@ -34,23 +34,26 @@ export const addActivityMaster = createAsyncThunk<
   AddActivityMasterRequest,
   { rejectValue: string }
 >(
-  'activityMaster/addActivityMaster',
+  "activityMaster/addActivityMaster",
   async (activityData: AddActivityMasterRequest, { rejectWithValue }) => {
     try {
       const response = await apiService.post<AddActivityMasterResponse>(
-        'Master/addSupAdmActMast',
+        "Master/addSupAdmActMast",
         activityData
       );
 
       if (!response.isSuccess) {
-        return rejectWithValue(response.message || 'Failed to add activity master');
+        return rejectWithValue(
+          response.message || "Failed to add activity master"
+        );
       }
 
       return response;
     } catch (error: any) {
-      const errorMessage = error?.response?.data?.message || 
-                          error?.message || 
-                          'Failed to add activity master. Please try again.';
+      const errorMessage =
+        error?.response?.data?.message ||
+        error?.message ||
+        "Failed to add activity master. Please try again.";
       return rejectWithValue(errorMessage);
     }
   }
@@ -61,54 +64,54 @@ export const fetchActivityMasterList = createAsyncThunk<
   GetActivityMasterListResponse,
   void,
   { rejectValue: string }
->(
-  'activityMaster/fetchActivityMasterList',
-  async (_, { rejectWithValue }) => {
-    try {
-      const response = await apiService.get<GetActivityMasterListResponse>(
-        'Master/getSupAdmActMastList'
+>("activityMaster/fetchActivityMasterList", async (_, { rejectWithValue }) => {
+  try {
+    const response = await apiService.get<GetActivityMasterListResponse>(
+      "Master/getSupAdmActMastList"
+    );
+
+    if (!response.isSuccess) {
+      return rejectWithValue(
+        response.message || "Failed to fetch activity master list"
       );
-
-      if (!response.isSuccess) {
-        return rejectWithValue(response.message || 'Failed to fetch activity master list');
-      }
-
-      return response;
-    } catch (error: any) {
-      const errorMessage = error?.response?.data?.message || 
-                          error?.message || 
-                          'Failed to fetch activity master list. Please try again.';
-      return rejectWithValue(errorMessage);
     }
+
+    return response;
+  } catch (error: any) {
+    const errorMessage =
+      error?.response?.data?.message ||
+      error?.message ||
+      "Failed to fetch activity master list. Please try again.";
+    return rejectWithValue(errorMessage);
   }
-);
+});
 
 // Async thunk for fetching act master list
 export const fetchActMasterListForActivity = createAsyncThunk<
   GetActMasterListResponse,
   void,
   { rejectValue: string }
->(
-  'activityMaster/fetchActMasterList',
-  async (_, { rejectWithValue }) => {
-    try {
-      const response = await apiService.get<GetActMasterListResponse>(
-        'Master/getActMasterList'
+>("activityMaster/fetchActMasterList", async (_, { rejectWithValue }) => {
+  try {
+    const response = await apiService.get<GetActMasterListResponse>(
+      "Master/getActMasterList"
+    );
+
+    if (!response.isSuccess) {
+      return rejectWithValue(
+        response.message || "Failed to fetch act master list"
       );
-
-      if (!response.isSuccess) {
-        return rejectWithValue(response.message || 'Failed to fetch act master list');
-      }
-
-      return response;
-    } catch (error: any) {
-      const errorMessage = error?.response?.data?.message || 
-                          error?.message || 
-                          'Failed to fetch act master list. Please try again.';
-      return rejectWithValue(errorMessage);
     }
+
+    return response;
+  } catch (error: any) {
+    const errorMessage =
+      error?.response?.data?.message ||
+      error?.message ||
+      "Failed to fetch act master list. Please try again.";
+    return rejectWithValue(errorMessage);
   }
-);
+});
 
 // Async thunk for deleting activity master
 export const deleteActivityMaster = createAsyncThunk<
@@ -116,7 +119,7 @@ export const deleteActivityMaster = createAsyncThunk<
   string,
   { rejectValue: string }
 >(
-  'activityMaster/deleteActivityMaster',
+  "activityMaster/deleteActivityMaster",
   async (activityMasterId: string, { rejectWithValue }) => {
     try {
       const response = await apiService.get<DeleteActivityMasterResponse>(
@@ -124,14 +127,17 @@ export const deleteActivityMaster = createAsyncThunk<
       );
 
       if (!response.isSuccess) {
-        return rejectWithValue(response.message || 'Failed to delete activity master');
+        return rejectWithValue(
+          response.message || "Failed to delete activity master"
+        );
       }
 
       return response;
     } catch (error: any) {
-      const errorMessage = error?.response?.data?.message || 
-                          error?.message || 
-                          'Failed to delete activity master. Please try again.';
+      const errorMessage =
+        error?.response?.data?.message ||
+        error?.message ||
+        "Failed to delete activity master. Please try again.";
       return rejectWithValue(errorMessage);
     }
   }
@@ -143,7 +149,7 @@ export const fetchActivityMasterById = createAsyncThunk<
   string,
   { rejectValue: string }
 >(
-  'activityMaster/fetchActivityMasterById',
+  "activityMaster/fetchActivityMasterById",
   async (activityMasterId: string, { rejectWithValue }) => {
     try {
       const response = await apiService.get<GetActivityMasterByIdResponse>(
@@ -151,14 +157,17 @@ export const fetchActivityMasterById = createAsyncThunk<
       );
 
       if (!response.isSuccess) {
-        return rejectWithValue(response.message || 'Failed to fetch activity master details');
+        return rejectWithValue(
+          response.message || "Failed to fetch activity master details"
+        );
       }
 
       return response;
     } catch (error: any) {
-      const errorMessage = error?.response?.data?.message || 
-                          error?.message || 
-                          'Failed to fetch activity master details. Please try again.';
+      const errorMessage =
+        error?.response?.data?.message ||
+        error?.message ||
+        "Failed to fetch activity master details. Please try again.";
       return rejectWithValue(errorMessage);
     }
   }
@@ -170,23 +179,26 @@ export const updateActivityMaster = createAsyncThunk<
   UpdateActivityMasterRequest,
   { rejectValue: string }
 >(
-  'activityMaster/updateActivityMaster',
+  "activityMaster/updateActivityMaster",
   async (activityData: UpdateActivityMasterRequest, { rejectWithValue }) => {
     try {
-      const response = await apiService.post<UpdateActivityMasterResponse>(
-        'Master/editActivityMaster',
+      const response = await apiService.put<UpdateActivityMasterResponse>(
+        "Master/editSupAdmActMast",
         activityData
       );
 
       if (!response.isSuccess) {
-        return rejectWithValue(response.message || 'Failed to update activity master');
+        return rejectWithValue(
+          response.message || "Failed to update activity master"
+        );
       }
 
       return response;
     } catch (error: any) {
-      const errorMessage = error?.response?.data?.message || 
-                          error?.message || 
-                          'Failed to update activity master. Please try again.';
+      const errorMessage =
+        error?.response?.data?.message ||
+        error?.message ||
+        "Failed to update activity master. Please try again.";
       return rejectWithValue(errorMessage);
     }
   }
@@ -194,7 +206,7 @@ export const updateActivityMaster = createAsyncThunk<
 
 // Create slice
 const activityMasterSlice = createSlice({
-  name: 'activityMaster',
+  name: "activityMaster",
   initialState,
   reducers: {
     clearError: (state) => {
@@ -202,12 +214,12 @@ const activityMasterSlice = createSlice({
       state.deleteError = null;
       state.fetchByIdError = null;
     },
-    
+
     clearSuccess: (state) => {
       state.success = false;
       state.deleteSuccess = false;
     },
-    
+
     resetActivityMasterState: (state) => {
       state.loading = false;
       state.error = null;
@@ -220,7 +232,7 @@ const activityMasterSlice = createSlice({
       state.fetchByIdLoading = false;
       state.fetchByIdError = null;
     },
-    
+
     clearCurrentActivityMaster: (state) => {
       state.currentActivityMaster = null;
       state.fetchByIdLoading = false;
@@ -242,7 +254,8 @@ const activityMasterSlice = createSlice({
       })
       .addCase(addActivityMaster.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.payload || 'An error occurred while adding activity master';
+        state.error =
+          action.payload || "An error occurred while adding activity master";
         state.success = false;
       })
       // Fetch Activity Master List
@@ -257,7 +270,9 @@ const activityMasterSlice = createSlice({
       })
       .addCase(fetchActivityMasterList.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.payload || 'An error occurred while fetching activity master list';
+        state.error =
+          action.payload ||
+          "An error occurred while fetching activity master list";
         state.activityMasters = [];
       })
       // Delete Activity Master
@@ -276,7 +291,8 @@ const activityMasterSlice = createSlice({
       })
       .addCase(deleteActivityMaster.rejected, (state, action) => {
         state.deleteLoading = false;
-        state.deleteError = action.payload || 'An error occurred while deleting activity master';
+        state.deleteError =
+          action.payload || "An error occurred while deleting activity master";
         state.deleteSuccess = false;
       })
       // Fetch Activity Master By ID
@@ -292,7 +308,9 @@ const activityMasterSlice = createSlice({
       })
       .addCase(fetchActivityMasterById.rejected, (state, action) => {
         state.fetchByIdLoading = false;
-        state.fetchByIdError = action.payload || 'An error occurred while fetching activity master details';
+        state.fetchByIdError =
+          action.payload ||
+          "An error occurred while fetching activity master details";
         state.currentActivityMaster = null;
       })
       // Update Activity Master
@@ -308,7 +326,8 @@ const activityMasterSlice = createSlice({
       })
       .addCase(updateActivityMaster.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.payload || 'An error occurred while updating activity master';
+        state.error =
+          action.payload || "An error occurred while updating activity master";
         state.success = false;
       })
       // Fetch Act Master List
@@ -326,6 +345,11 @@ const activityMasterSlice = createSlice({
   },
 });
 
-export const { clearError, clearSuccess, resetActivityMasterState, clearCurrentActivityMaster } = activityMasterSlice.actions;
+export const {
+  clearError,
+  clearSuccess,
+  resetActivityMasterState,
+  clearCurrentActivityMaster,
+} = activityMasterSlice.actions;
 
 export default activityMasterSlice.reducer;
