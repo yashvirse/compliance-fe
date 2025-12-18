@@ -122,7 +122,7 @@ export const deleteActivityMaster = createAsyncThunk<
   "activityMaster/deleteActivityMaster",
   async (activityMasterId: string, { rejectWithValue }) => {
     try {
-      const response = await apiService.get<DeleteActivityMasterResponse>(
+      const response = await apiService.delete<DeleteActivityMasterResponse>(
         `Master/deleteSupAdmActMast/${activityMasterId}`
       );
 

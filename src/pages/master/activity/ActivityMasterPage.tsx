@@ -177,7 +177,7 @@ const ActivityMasterPage: React.FC = () => {
     },
     {
       field: "dueDay",
-      headerName: "Due Day",
+      headerName: "Due Days",
       flex: 0.7,
       minWidth: 100,
       align: "center",
@@ -193,20 +193,23 @@ const ActivityMasterPage: React.FC = () => {
     },
     {
       field: "reminderDay",
-      headerName: "Reminder Date",
+      headerName: "Reminder Days",
       flex: 1.2,
       minWidth: 150,
-      renderCell: (params: GridRenderCellParams) => {
-        if (params.value) {
-          const date = new Date(params.value as string);
-          return date.toLocaleDateString("en-GB", {
-            day: "2-digit",
-            month: "short",
-            year: "numeric",
-          });
-        }
-        return "-";
-      },
+      align: "center",
+      headerAlign: "center",
+
+      // renderCell: (params: GridRenderCellParams) => {
+      //   if (params.value) {
+      //     const date = new Date(params.value as string);
+      //     return date.toLocaleDateString("en-GB", {
+      //       day: "2-digit",
+      //       month: "short",
+      //       year: "numeric",
+      //     });
+      //   }
+      //   return "-";
+      // },
     },
     {
       field: "description",
