@@ -368,7 +368,7 @@ export const updateCompany = createAsyncThunk<
       }
 
       // Make API call
-      const response = await apiService.put<UpdateCompanyResponse>(
+      const response = await apiService.putFormData<UpdateCompanyResponse>(
         "CompanyMaster/editComp",
         formData
       );

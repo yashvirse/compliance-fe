@@ -208,6 +208,54 @@ class ApiService {
   }
 
   /**
+   * PUT request with FormData (multipart/form-data)
+   * @param url - API endpoint
+   * @param formData - FormData object
+   * @param config - Axios request config
+   * @returns Promise with response data
+   */
+  async putFormData<T = any>(
+    url: string,
+    formData: FormData,
+    config?: AxiosRequestConfig
+  ): Promise<T> {
+    const response: AxiosResponse<T> = await apiClient.put(url, formData, {
+      ...config,
+      headers: {
+        // Set to undefined to let axios automatically set multipart/form-data
+        "Content-Type": undefined,
+        ...config?.headers,
+      },
+    });
+
+    return response.data;
+  }
+
+  /**
+   * PATCH request with FormData (multipart/form-data)
+   * @param url - API endpoint
+   * @param formData - FormData object
+   * @param config - Axios request config
+   * @returns Promise with response data
+   */
+  async patchFormData<T = any>(
+    url: string,
+    formData: FormData,
+    config?: AxiosRequestConfig
+  ): Promise<T> {
+    const response: AxiosResponse<T> = await apiClient.patch(url, formData, {
+      ...config,
+      headers: {
+        // Set to undefined to let axios automatically set multipart/form-data
+        "Content-Type": undefined,
+        ...config?.headers,
+      },
+    });
+
+    return response.data;
+  }
+
+  /**
    * Download file
    * @param url - API endpoint
    * @param filename - Name for downloaded file
