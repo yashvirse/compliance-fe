@@ -196,9 +196,10 @@ const AddActivityMasterPage: React.FC = () => {
       return true;
     }
 
+    // For AS_NEEDED, allow any value without restriction
     if (frequency === FrequencyType.AS_NEEDED) {
-      setDueDayError('For "As Needed", use exact date selection');
-      return false;
+      setDueDayError("");
+      return true;
     }
 
     if (dueDayNum < 1 || dueDayNum > frequencyOption.maxDueDay) {
@@ -217,6 +218,12 @@ const AddActivityMasterPage: React.FC = () => {
     gracePeriod: string
   ) => {
     if (!frequency || !gracePeriod) {
+      setGracePeriodError("");
+      return true;
+    }
+
+    // For AS_NEEDED, allow any value without restriction
+    if (frequency === FrequencyType.AS_NEEDED) {
       setGracePeriodError("");
       return true;
     }
@@ -248,6 +255,12 @@ const AddActivityMasterPage: React.FC = () => {
     reminderDays: string
   ) => {
     if (!frequency || !reminderDays) {
+      setReminderDayError("");
+      return true;
+    }
+
+    // For AS_NEEDED, allow any value without restriction
+    if (frequency === FrequencyType.AS_NEEDED) {
       setReminderDayError("");
       return true;
     }
@@ -712,13 +725,15 @@ const AddActivityMasterPage: React.FC = () => {
                           ? "Enter 1-365"
                           : formData.frequency === FrequencyType.HALF_YEARLY
                           ? "Enter 1-183"
+                          : formData.frequency === FrequencyType.AS_NEEDED
+                          ? "Enter any value"
                           : "Enter due day"
                       }
                       error={!!dueDayError}
                       helperText={dueDayError}
                       inputProps={{
                         min: 1,
-                        max: selectedFrequency?.maxDueDay || 365,
+                        max: formData.frequency === FrequencyType.AS_NEEDED ? undefined : (selectedFrequency?.maxDueDay || 365),
                       }}
                     />
                   </Box>
@@ -804,7 +819,7 @@ const AddActivityMasterPage: React.FC = () => {
                   helperText={gracePeriodError}
                   inputProps={{
                     min: 0,
-                    max: selectedFrequency?.maxDueDay || 365,
+                    max: formData.frequency === FrequencyType.AS_NEEDED ? undefined : (selectedFrequency?.maxDueDay || 365),
                   }}
                 />
 
@@ -820,7 +835,7 @@ const AddActivityMasterPage: React.FC = () => {
                   helperText={reminderDayError}
                   inputProps={{
                     min: 0,
-                    max: selectedFrequency?.maxDueDay || 365,
+                    max: formData.frequency === FrequencyType.AS_NEEDED ? undefined : (selectedFrequency?.maxDueDay || 365),
                   }}
                 />
               </Box>
