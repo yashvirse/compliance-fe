@@ -1,9 +1,9 @@
-import React, { useState, useEffect } from 'react';
-import { Outlet, useNavigate, useLocation } from 'react-router-dom';
-import { useDispatch, useSelector } from 'react-redux';
-import type { AppDispatch } from '../app/store';
-import { logout } from '../pages/login/slice/Login.Slice';
-import { selectUser } from '../pages/login/slice/Login.selector';
+import React, { useState, useEffect } from "react";
+import { Outlet, useNavigate, useLocation } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
+import type { AppDispatch } from "../app/store";
+import { logout } from "../pages/login/slice/Login.Slice";
+import { selectUser } from "../pages/login/slice/Login.selector";
 import {
   Box,
   Drawer,
@@ -18,19 +18,19 @@ import {
   useTheme,
   alpha,
   Badge,
-  ListItemIcon
-} from '@mui/material';
+  ListItemIcon,
+} from "@mui/material";
 import {
   Notifications as NotificationsIcon,
   Menu as MenuIcon,
   Logout,
   AccountCircle,
   ChevronLeft,
-  ChevronRight
-} from '@mui/icons-material';
-import Breadcrumb from '../components/Breadcrumb.tsx';
-import RoleBasedSidebar from '../components/RoleBasedSidebar.tsx';
-import { getDashboardPathForRole, UserRole } from '../config/roleConfig.tsx';
+  ChevronRight,
+} from "@mui/icons-material";
+import Breadcrumb from "../components/Breadcrumb.tsx";
+import RoleBasedSidebar from "../components/RoleBasedSidebar.tsx";
+import { getDashboardPathForRole, UserRole } from "../config/roleConfig.tsx";
 
 const drawerWidth = 280;
 const drawerWidthCollapsed = 65;
@@ -47,7 +47,7 @@ const DashboardLayout: React.FC = () => {
 
   // Redirect to role-specific dashboard if on generic /dashboard route
   useEffect(() => {
-    if (location.pathname === '/dashboard' && user) {
+    if (location.pathname === "/dashboard" && user) {
       const userRole = user.role as UserRole;
       const dashboardPath = getDashboardPathForRole(userRole);
       navigate(dashboardPath, { replace: true });
@@ -69,7 +69,7 @@ const DashboardLayout: React.FC = () => {
   const handleLogout = () => {
     dispatch(logout());
     handleMenuClose();
-    navigate('/login', { replace: true });
+    navigate("/login", { replace: true });
   };
 
   const handleSidebarToggle = () => {
@@ -81,20 +81,20 @@ const DashboardLayout: React.FC = () => {
   const drawer = (
     <Box
       sx={{
-        height: '100%',
+        height: "100%",
         background: `linear-gradient(180deg, ${theme.palette.primary.dark} 0%, ${theme.palette.primary.main} 100%)`,
-        color: 'white',
-        display: 'flex',
-        flexDirection: 'column'
+        color: "white",
+        display: "flex",
+        flexDirection: "column",
       }}
     >
       <Box
         sx={{
           p: sidebarOpen ? 3 : 1,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: sidebarOpen ? 'space-between' : 'center',
-          minHeight: 64
+          display: "flex",
+          alignItems: "center",
+          justifyContent: sidebarOpen ? "space-between" : "center",
+          minHeight: 64,
         }}
       >
         {sidebarOpen && (
@@ -102,13 +102,13 @@ const DashboardLayout: React.FC = () => {
             OcmsPro
           </Typography>
         )}
-        <IconButton onClick={handleSidebarToggle} sx={{ color: 'white' }}>
+        <IconButton onClick={handleSidebarToggle} sx={{ color: "white" }}>
           {sidebarOpen ? <ChevronLeft /> : <ChevronRight />}
         </IconButton>
       </Box>
-      
-      <Divider sx={{ bgcolor: alpha('#fff', 0.2), my: 2 }} />
-      
+
+      <Divider sx={{ bgcolor: alpha("#fff", 0.2), my: 2 }} />
+
       <RoleBasedSidebar sidebarOpen={sidebarOpen} />
 
       {sidebarOpen && (
@@ -117,8 +117,8 @@ const DashboardLayout: React.FC = () => {
             sx={{
               p: 2,
               borderRadius: 2,
-              bgcolor: alpha('#fff', 0.1),
-              border: `1px solid ${alpha('#fff', 0.2)}`
+              bgcolor: alpha("#fff", 0.1),
+              border: `1px solid ${alpha("#fff", 0.2)}`,
             }}
           >
             <Typography variant="body2" sx={{ opacity: 0.8, mb: 1 }}>
@@ -137,16 +137,16 @@ const DashboardLayout: React.FC = () => {
   );
 
   return (
-    <Box sx={{ display: 'flex', minHeight: '100vh' }}>
+    <Box sx={{ display: "flex", minHeight: "100vh" }}>
       <AppBar
         position="fixed"
         sx={{
           width: { sm: `calc(100% - ${currentDrawerWidth}px)` },
           ml: { sm: `${currentDrawerWidth}px` },
-          bgcolor: 'background.paper',
-          color: 'text.primary',
+          bgcolor: "background.paper",
+          color: "text.primary",
           boxShadow: `0 1px 3px ${alpha(theme.palette.common.black, 0.1)}`,
-          transition: theme.transitions.create(['width', 'margin'], {
+          transition: theme.transitions.create(["width", "margin"], {
             easing: theme.transitions.easing.sharp,
             duration: theme.transitions.duration.leavingScreen,
           }),
@@ -157,12 +157,17 @@ const DashboardLayout: React.FC = () => {
             color="inherit"
             edge="start"
             onClick={handleDrawerToggle}
-            sx={{ mr: 2, display: { sm: 'none' } }}
+            sx={{ mr: 2, display: { sm: "none" } }}
           >
             <MenuIcon />
           </IconButton>
-          
-          <Typography variant="h6" noWrap component="div" sx={{ flexGrow: 1, fontWeight: 600 }}>
+
+          <Typography
+            variant="h6"
+            noWrap
+            component="div"
+            sx={{ flexGrow: 1, fontWeight: 600 }}
+          >
             Dashboard
           </Typography>
 
@@ -172,15 +177,12 @@ const DashboardLayout: React.FC = () => {
             </Badge>
           </IconButton>
 
-          <IconButton
-            onClick={handleMenuOpen}
-            color="inherit"
-          >
+          <IconButton onClick={handleMenuOpen} color="inherit">
             <Avatar
               sx={{
                 width: 35,
                 height: 35,
-                bgcolor: theme.palette.primary.main
+                bgcolor: theme.palette.primary.main,
               }}
             >
               {user?.name.charAt(0)}
@@ -191,8 +193,8 @@ const DashboardLayout: React.FC = () => {
             anchorEl={anchorEl}
             open={Boolean(anchorEl)}
             onClose={handleMenuClose}
-            transformOrigin={{ horizontal: 'right', vertical: 'top' }}
-            anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
+            transformOrigin={{ horizontal: "right", vertical: "top" }}
+            anchorOrigin={{ horizontal: "right", vertical: "bottom" }}
           >
             <MenuItem onClick={handleMenuClose}>
               <ListItemIcon>
@@ -212,10 +214,10 @@ const DashboardLayout: React.FC = () => {
 
       <Box
         component="nav"
-        sx={{ 
-          width: { sm: currentDrawerWidth }, 
+        sx={{
+          width: { sm: currentDrawerWidth },
           flexShrink: { sm: 0 },
-          transition: theme.transitions.create('width', {
+          transition: theme.transitions.create("width", {
             easing: theme.transitions.easing.sharp,
             duration: theme.transitions.duration.leavingScreen,
           }),
@@ -229,11 +231,11 @@ const DashboardLayout: React.FC = () => {
             keepMounted: true,
           }}
           sx={{
-            display: { xs: 'block', sm: 'none' },
-            '& .MuiDrawer-paper': {
-              boxSizing: 'border-box',
+            display: { xs: "block", sm: "none" },
+            "& .MuiDrawer-paper": {
+              boxSizing: "border-box",
               width: drawerWidth,
-              border: 'none'
+              border: "none",
             },
           }}
         >
@@ -242,12 +244,12 @@ const DashboardLayout: React.FC = () => {
         <Drawer
           variant="permanent"
           sx={{
-            display: { xs: 'none', sm: 'block' },
-            '& .MuiDrawer-paper': {
-              boxSizing: 'border-box',
+            display: { xs: "none", sm: "block" },
+            "& .MuiDrawer-paper": {
+              boxSizing: "border-box",
               width: currentDrawerWidth,
-              border: 'none',
-              transition: theme.transitions.create('width', {
+              border: "none",
+              transition: theme.transitions.create("width", {
                 easing: theme.transitions.easing.sharp,
                 duration: theme.transitions.duration.leavingScreen,
               }),
@@ -266,8 +268,8 @@ const DashboardLayout: React.FC = () => {
           p: 3,
           width: { sm: `calc(100% - ${currentDrawerWidth}px)` },
           bgcolor: theme.palette.grey[50],
-          minHeight: '100vh',
-          transition: theme.transitions.create(['width', 'margin'], {
+          minHeight: "100vh",
+          transition: theme.transitions.create(["width", "margin"], {
             easing: theme.transitions.easing.sharp,
             duration: theme.transitions.duration.leavingScreen,
           }),

@@ -54,7 +54,7 @@ const AddCompanyPage: React.FC = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch<AppDispatch>();
   const { id } = useParams();
-
+  const IMAGE_BASE_URL = "https://api.ocmspro.com";
   // Redux selectors
   const loading = useSelector(selectCompanyLoading);
   const error = useSelector(selectCompanyError);
@@ -244,7 +244,10 @@ const AddCompanyPage: React.FC = () => {
       setCompanyData({
         name: currentCompany.companyName || "",
         companyLogo: null,
-        companyLogoPreview: currentCompany.companyLogo || "",
+        // companyLogoPreview: currentCompany.companyLogo || "",
+        companyLogoPreview: currentCompany.companyLogo
+          ? `${IMAGE_BASE_URL}${currentCompany.companyLogo}`
+          : "",
         companyType: currentCompany.companyType || "",
         country: currentCompany.companyAddress?.companyCountry || "",
         state: currentCompany.companyAddress?.companyState || "",
@@ -263,7 +266,10 @@ const AddCompanyPage: React.FC = () => {
         password: "", // Don't populate password for security
         mobile: currentCompany.user?.userMobile || "",
         userImage: null,
-        userImagePreview: currentCompany.user?.userImg || "",
+        // userImagePreview: currentCompany.user?.userImage || "",
+        userImagePreview: currentCompany.user?.userImage
+          ? `${IMAGE_BASE_URL}${currentCompany.user?.userImage}`
+          : "",
         isActive: currentCompany.user?.isActive ?? true,
       });
 

@@ -24,7 +24,7 @@ import {
   Add as AddIcon,
   Edit as EditIcon,
   Delete as DeleteIcon,
-  Visibility as ViewIcon,
+  // Visibility as ViewIcon,
   Warning as WarningIcon,
 } from "@mui/icons-material";
 import { DataGrid } from "@mui/x-data-grid";
@@ -111,9 +111,9 @@ const CompanyPage: React.FC = () => {
     setCompanyToDelete(null);
   };
 
-  const handleView = (id: string) => {
-    console.log("View Company:", id);
-  };
+  // const handleView = (id: string) => {
+  //   console.log("View Company:", id);
+  // };
 
   const handleSnackbarClose = () => {
     setShowSnackbar(false);
@@ -121,9 +121,19 @@ const CompanyPage: React.FC = () => {
 
   const columns: GridColDef[] = [
     {
+      field: "serialNumber",
+      headerName: "Sr. No.",
+      flex: 0.5,
+      minWidth: 40,
+      renderCell: (params: GridRenderCellParams) => {
+        const index = companies.findIndex((row) => row.cid === params.row.cid);
+        return index + 1;
+      },
+    },
+    {
       field: "companyName",
       headerName: "Company Name",
-      width: 200,
+      width: 300,
       flex: 1,
     },
     {
@@ -145,12 +155,12 @@ const CompanyPage: React.FC = () => {
     {
       field: "companyCurrency",
       headerName: "Currency",
-      width: 120,
+      width: 80,
     },
     {
       field: "paN_No",
       headerName: "PAN No",
-      width: 150,
+      width: 100,
     },
     {
       field: "plan_type",
@@ -195,7 +205,7 @@ const CompanyPage: React.FC = () => {
             gap: 1,
           }}
         >
-          <IconButton
+          {/* <IconButton
             size="small"
             onClick={() => handleView(params.row.cid)}
             sx={{
@@ -204,7 +214,7 @@ const CompanyPage: React.FC = () => {
             }}
           >
             <ViewIcon fontSize="small" />
-          </IconButton>
+          </IconButton> */}
           <IconButton
             size="small"
             onClick={() => handleEdit(params.row.cid)}

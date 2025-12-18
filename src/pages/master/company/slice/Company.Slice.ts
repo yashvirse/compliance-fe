@@ -268,6 +268,7 @@ export const updateCompany = createAsyncThunk<
 >(
   "company/updateCompany",
   async (companyData: UpdateCompanyRequest, { rejectWithValue }) => {
+    // alert("data" + JSON.stringify(companyData));
     try {
       // Create FormData for multipart/form-data
       const formData = new FormData();
@@ -371,7 +372,6 @@ export const updateCompany = createAsyncThunk<
         "CompanyMaster/editComp",
         formData
       );
-
       // Check if company update was successful
       if (!response.isSuccess) {
         return rejectWithValue(response.message || "Failed to update company");
