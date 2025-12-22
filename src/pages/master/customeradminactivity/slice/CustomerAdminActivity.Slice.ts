@@ -1,5 +1,5 @@
-import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import { apiClient } from '../../../../services/api';
+import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
+import { apiClient } from "../../../../services/api";
 import type {
   CustomerAdminActivityState,
   GetActivityMasterListResponse,
@@ -8,205 +8,219 @@ import type {
   UpdateActivityRequest,
   EditCompAdminActivityRequest,
   UpdateActivityResponse,
-  DeleteActivityResponse
-} from './CustomerAdminActivity.Type';
+  DeleteActivityResponse,
+} from "./CustomerAdminActivity.Type";
 
 const initialState: CustomerAdminActivityState = {
   activities: [],
   loading: false,
-  error: null
+  error: null,
 };
 
 // Async thunks
 export const fetchActivityMasterList = createAsyncThunk(
-  'customerAdminActivity/fetchActivityMasterList',
+  "customerAdminActivity/fetchActivityMasterList",
   async (_, { rejectWithValue }) => {
     try {
       const response = await apiClient.get<GetActivityMasterListResponse>(
-        'Master/getSupAdmActMastList'
+        "Master/getSupAdmActMastList"
       );
-      
+
       if (response.data.isSuccess) {
         return response.data.result;
       } else {
-        return rejectWithValue(response.data.message || 'Failed to fetch activity masters');
+        return rejectWithValue(
+          response.data.message || "Failed to fetch activity masters"
+        );
       }
     } catch (error: any) {
       return rejectWithValue(
-        error.response?.data?.message || 
-        error.message || 
-        'An error occurred while fetching activity masters'
+        error.response?.data?.message ||
+          error.message ||
+          "An error occurred while fetching activity masters"
       );
     }
   }
 );
 
 export const fetchCompanyActivityList = createAsyncThunk(
-  'customerAdminActivity/fetchCompanyActivityList',
+  "customerAdminActivity/fetchCompanyActivityList",
   async (_, { rejectWithValue }) => {
     try {
       // Get companyId from localStorage
-      const companyId = localStorage.getItem('companyID') || '';
-      
+      const companyId = localStorage.getItem("companyID") || "";
+
       const response = await apiClient.get<GetActivityMasterListResponse>(
         `CompanyActivityMaster/getCompActivityMasterList/${companyId}`
       );
-      
+
       if (response.data.isSuccess) {
         return response.data.result;
       } else {
-        return rejectWithValue(response.data.message || 'Failed to fetch company activities');
+        return rejectWithValue(
+          response.data.message || "Failed to fetch company activities"
+        );
       }
     } catch (error: any) {
       return rejectWithValue(
-        error.response?.data?.message || 
-        error.message || 
-        'An error occurred while fetching company activities'
+        error.response?.data?.message ||
+          error.message ||
+          "An error occurred while fetching company activities"
       );
     }
   }
 );
 
 export const importActivities = createAsyncThunk(
-  'customerAdminActivity/importActivities',
+  "customerAdminActivity/importActivities",
   async (activityIds: string[], { rejectWithValue }) => {
     try {
       const response = await apiClient.post<ImportActivitiesResponse>(
-        'CompanyActivityMaster/addCompActivityMaster',
+        "CompanyActivityMaster/addCompActivityMaster",
         activityIds,
         {
           headers: {
-            'Content-Type': 'application/json'
-          }
+            "Content-Type": "application/json",
+          },
         }
       );
-      
+
       if (response.data.isSuccess) {
         return response.data;
       } else {
-        return rejectWithValue(response.data.message || 'Failed to import activities');
+        return rejectWithValue(
+          response.data.message || "Failed to import activities"
+        );
       }
     } catch (error: any) {
       return rejectWithValue(
-        error.response?.data?.message || 
-        error.message || 
-        'An error occurred while importing activities'
+        error.response?.data?.message ||
+          error.message ||
+          "An error occurred while importing activities"
       );
     }
   }
 );
 
 export const fetchActivityById = createAsyncThunk(
-  'customerAdminActivity/fetchActivityById',
+  "customerAdminActivity/fetchActivityById",
   async (activityId: string, { rejectWithValue }) => {
     try {
       const response = await apiClient.get<GetActivityByIdResponse>(
         `CompanyActivityMaster/getCompActivityById/${activityId}?id=${activityId}`
       );
-      
+
       if (response.data.isSuccess) {
         return response.data.result;
       } else {
-        return rejectWithValue(response.data.message || 'Failed to fetch activity details');
+        return rejectWithValue(
+          response.data.message || "Failed to fetch activity details"
+        );
       }
     } catch (error: any) {
       return rejectWithValue(
-        error.response?.data?.message || 
-        error.message || 
-        'An error occurred while fetching activity details'
+        error.response?.data?.message ||
+          error.message ||
+          "An error occurred while fetching activity details"
       );
     }
   }
 );
 
 export const updateActivity = createAsyncThunk(
-  'customerAdminActivity/updateActivity',
+  "customerAdminActivity/updateActivity",
   async (data: UpdateActivityRequest, { rejectWithValue }) => {
     try {
       const response = await apiClient.post<UpdateActivityResponse>(
-        'CompanyActivityMaster/updateCompActivityMaster',
+        "CompanyActivityMaster/updateCompActivityMaster",
         data,
         {
           headers: {
-            'Content-Type': 'application/json'
-          }
+            "Content-Type": "application/json",
+          },
         }
       );
-      
+
       if (response.data.isSuccess) {
         return response.data;
       } else {
-        return rejectWithValue(response.data.message || 'Failed to update activity');
+        return rejectWithValue(
+          response.data.message || "Failed to update activity"
+        );
       }
     } catch (error: any) {
       return rejectWithValue(
-        error.response?.data?.message || 
-        error.message || 
-        'An error occurred while updating activity'
+        error.response?.data?.message ||
+          error.message ||
+          "An error occurred while updating activity"
       );
     }
   }
 );
 
 export const editCompAdminActivity = createAsyncThunk(
-  'customerAdminActivity/editCompAdminActivity',
+  "customerAdminActivity/editCompAdminActivity",
   async (data: EditCompAdminActivityRequest, { rejectWithValue }) => {
     try {
       const response = await apiClient.put<UpdateActivityResponse>(
-        'CompanyActivityMaster/editCompAdminActivity',
+        "CompanyActivityMaster/editCompAdminActivity",
         data,
         {
           headers: {
-            'Content-Type': 'application/json'
-          }
+            "Content-Type": "application/json",
+          },
         }
       );
-      
+
       if (response.data.isSuccess) {
         return response.data;
       } else {
-        return rejectWithValue(response.data.message || 'Failed to edit activity');
+        return rejectWithValue(
+          response.data.message || "Failed to edit activity"
+        );
       }
     } catch (error: any) {
       return rejectWithValue(
-        error.response?.data?.message || 
-        error.message || 
-        'An error occurred while editing activity'
+        error.response?.data?.message ||
+          error.message ||
+          "An error occurred while editing activity"
       );
     }
   }
 );
 
 export const deleteActivity = createAsyncThunk(
-  'customerAdminActivity/deleteActivity',
+  "customerAdminActivity/deleteActivity",
   async (activityId: string, { rejectWithValue }) => {
     try {
-      const response = await apiClient.get<DeleteActivityResponse>(
+      const response = await apiClient.delete<DeleteActivityResponse>(
         `CompanyActivityMaster/deleteCompAdminActivity/${activityId}`
       );
-      
+
       if (response.data.isSuccess) {
         return activityId;
       } else {
-        return rejectWithValue(response.data.message || 'Failed to delete activity');
+        return rejectWithValue(
+          response.data.message || "Failed to delete activity"
+        );
       }
     } catch (error: any) {
       return rejectWithValue(
-        error.response?.data?.message || 
-        error.message || 
-        'An error occurred while deleting activity'
+        error.response?.data?.message ||
+          error.message ||
+          "An error occurred while deleting activity"
       );
     }
   }
 );
 
 const customerAdminActivitySlice = createSlice({
-  name: 'customerAdminActivity',
+  name: "customerAdminActivity",
   initialState,
   reducers: {
     clearError: (state) => {
       state.error = null;
-    }
+    },
   },
   extraReducers: (builder) => {
     builder
@@ -292,14 +306,14 @@ const customerAdminActivitySlice = createSlice({
       .addCase(deleteActivity.fulfilled, (state, action) => {
         state.loading = false;
         state.activities = state.activities.filter(
-          activity => activity.activityId !== action.payload
+          (activity) => activity.activityId !== action.payload
         );
       })
       .addCase(deleteActivity.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload as string;
       });
-  }
+  },
 });
 
 export const { clearError } = customerAdminActivitySlice.actions;

@@ -1,7 +1,7 @@
-import React, { useEffect, useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import { useNavigate } from 'react-router-dom';
-import type { AppDispatch } from '../../../app/store';
+import React, { useEffect, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { useNavigate } from "react-router-dom";
+import type { AppDispatch } from "../../../app/store";
 import {
   Box,
   Typography,
@@ -17,22 +17,25 @@ import {
   DialogTitle,
   DialogContent,
   DialogContentText,
-  DialogActions
-} from '@mui/material';
+  DialogActions,
+} from "@mui/material";
 import {
   Add as AddIcon,
   Edit as EditIcon,
   Delete as DeleteIcon,
-  Visibility as ViewIcon
-} from '@mui/icons-material';
-import { DataGrid } from '@mui/x-data-grid';
-import type { GridColDef, GridRenderCellParams } from '@mui/x-data-grid';
-import { fetchUserList, deleteUser, clearError } from './slice/CustomerAdminUser.Slice';
+} from "@mui/icons-material";
+import { DataGrid } from "@mui/x-data-grid";
+import type { GridColDef, GridRenderCellParams } from "@mui/x-data-grid";
+import {
+  fetchUserList,
+  deleteUser,
+  clearError,
+} from "./slice/CustomerAdminUser.Slice";
 import {
   selectUsers,
   selectUserLoading,
-  selectUserError
-} from './slice/CustomerAdminUser.Selector';
+  selectUserError,
+} from "./slice/CustomerAdminUser.Selector";
 
 const CustomerAdminUserPage: React.FC = () => {
   const theme = useTheme();
@@ -44,10 +47,12 @@ const CustomerAdminUserPage: React.FC = () => {
   const error = useSelector(selectUserError);
 
   const [showSnackbar, setShowSnackbar] = useState(false);
-  const [snackbarMessage, setSnackbarMessage] = useState('');
-  const [snackbarSeverity, setSnackbarSeverity] = useState<'success' | 'error'>('success');
+  const [snackbarMessage, setSnackbarMessage] = useState("");
+  const [snackbarSeverity, setSnackbarSeverity] = useState<"success" | "error">(
+    "success"
+  );
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  const [selectedUserId, setSelectedUserId] = useState<string>('');
+  const [selectedUserId, setSelectedUserId] = useState<string>("");
 
   useEffect(() => {
     dispatch(fetchUserList());
@@ -56,7 +61,7 @@ const CustomerAdminUserPage: React.FC = () => {
   useEffect(() => {
     if (error) {
       setSnackbarMessage(error);
-      setSnackbarSeverity('error');
+      setSnackbarSeverity("error");
       setShowSnackbar(true);
     }
   }, [error]);
@@ -67,7 +72,7 @@ const CustomerAdminUserPage: React.FC = () => {
   };
 
   const handleAdd = () => {
-    navigate('/dashboard/master/customeradminuser/add');
+    navigate("/dashboard/master/customeradminuser/add");
   };
 
   const handleEdit = (id: string) => {
@@ -82,14 +87,14 @@ const CustomerAdminUserPage: React.FC = () => {
   const handleDeleteConfirm = async () => {
     try {
       await dispatch(deleteUser(selectedUserId)).unwrap();
-      setSnackbarMessage('User deleted successfully');
-      setSnackbarSeverity('success');
+      setSnackbarMessage("User deleted successfully");
+      setSnackbarSeverity("success");
       setShowSnackbar(true);
       setDeleteDialogOpen(false);
-      setSelectedUserId('');
+      setSelectedUserId("");
     } catch (err) {
-      setSnackbarMessage(error || 'Failed to delete user');
-      setSnackbarSeverity('error');
+      setSnackbarMessage(error || "Failed to delete user");
+      setSnackbarSeverity("error");
       setShowSnackbar(true);
       setDeleteDialogOpen(false);
     }
@@ -97,95 +102,91 @@ const CustomerAdminUserPage: React.FC = () => {
 
   const handleDeleteCancel = () => {
     setDeleteDialogOpen(false);
-    setSelectedUserId('');
-  };
-
-  const handleView = (id: string) => {
-    console.log('View User:', id);
-    // TODO: Implement view functionality
+    setSelectedUserId("");
   };
 
   const columns: GridColDef[] = [
-    { 
-      field: 'sno', 
-      headerName: 'S.No.', 
+    {
+      field: "sno",
+      headerName: "S.No.",
       width: 70,
       sortable: false,
       renderCell: (params: GridRenderCellParams) => {
-        const index = users.findIndex(user => user.userID === params.row.userID);
+        const index = users.findIndex(
+          (user) => user.userID === params.row.userID
+        );
         return index + 1;
-      }
+      },
     },
-    { 
-      field: 'userName', 
-      headerName: 'Name', 
+    {
+      field: "userName",
+      headerName: "Name",
       width: 200,
-      flex: 1
+      flex: 1,
     },
-    { 
-      field: 'userEmail', 
-      headerName: 'Email', 
+    {
+      field: "userEmail",
+      headerName: "Email",
       width: 250,
-      flex: 1
+      flex: 1,
     },
-    { 
-      field: 'userMobile', 
-      headerName: 'Mobile', 
-      width: 150
+    {
+      field: "userMobile",
+      headerName: "Mobile",
+      width: 150,
     },
-    { 
-      field: 'userRole', 
-      headerName: 'Role', 
+    {
+      field: "userRole",
+      headerName: "Role",
       width: 130,
       renderCell: (params: GridRenderCellParams) => (
-        <Chip 
-          label={params.value} 
+        <Chip
+          label={params.value}
           size="small"
           color="primary"
           variant="outlined"
         />
-      )
-    },
-    { 
-      field: 'companyDomain', 
-      headerName: 'Company Domain', 
-      width: 180
-    },
-    { 
-      field: 'isActive', 
-      headerName: 'Status', 
-      width: 130,
-      renderCell: (params: GridRenderCellParams) => (
-        <Chip 
-          label={params.value ? 'Active' : 'Inactive'}
-          size="small"
-          color={params.value ? 'success' : 'default'}
-        />
-      )
+      ),
     },
     {
-      field: 'actions',
-      headerName: 'Actions',
+      field: "companyDomain",
+      headerName: "Company Domain",
       width: 180,
+    },
+    {
+      field: "isActive",
+      headerName: "Status",
+      width: 130,
+      renderCell: (params: GridRenderCellParams) => (
+        <Chip
+          label={params.value ? "Active" : "Inactive"}
+          size="small"
+          color={params.value ? "success" : "default"}
+        />
+      ),
+    },
+    {
+      field: "actions",
+      headerName: "Actions",
+      width: 150,
       sortable: false,
       renderCell: (params: GridRenderCellParams) => (
-        <Box sx={{ display: 'flex', gap: 1 }}>
-          <IconButton
-            size="small"
-            onClick={() => handleView(params.row.userID)}
-            sx={{
-              color: theme.palette.info.main,
-              '&:hover': { bgcolor: alpha(theme.palette.info.main, 0.1) }
-            }}
-          >
-            <ViewIcon fontSize="small" />
-          </IconButton>
+        <Box
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "flex-start",
+            height: "100%", // 🔑 IMPORTANT
+            width: "100%",
+            gap: 1,
+          }}
+        >
           <IconButton
             size="small"
             onClick={() => handleEdit(params.row.userID)}
             sx={{
               color: theme.palette.primary.main,
-              '&:hover': { bgcolor: alpha(theme.palette.primary.main, 0.1) }
+              "&:hover": { bgcolor: alpha(theme.palette.primary.main, 0.1) },
             }}
           >
             <EditIcon fontSize="small" />
@@ -195,7 +196,7 @@ const CustomerAdminUserPage: React.FC = () => {
             onClick={() => handleDelete(params.row.userID)}
             sx={{
               color: theme.palette.error.main,
-              '&:hover': { bgcolor: alpha(theme.palette.error.main, 0.1) }
+              "&:hover": { bgcolor: alpha(theme.palette.error.main, 0.1) },
             }}
           >
             <DeleteIcon fontSize="small" />
@@ -207,7 +208,14 @@ const CustomerAdminUserPage: React.FC = () => {
 
   return (
     <Box>
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          mb: 3,
+        }}
+      >
         <Box>
           <Typography variant="h4" fontWeight={700} gutterBottom>
             User Management
@@ -222,14 +230,14 @@ const CustomerAdminUserPage: React.FC = () => {
           onClick={handleAdd}
           sx={{
             borderRadius: 2,
-            textTransform: 'none',
+            textTransform: "none",
             px: 3,
             py: 1.5,
             fontWeight: 600,
             boxShadow: `0 4px 15px ${alpha(theme.palette.primary.main, 0.4)}`,
-            '&:hover': {
-              boxShadow: `0 6px 20px ${alpha(theme.palette.primary.main, 0.5)}`
-            }
+            "&:hover": {
+              boxShadow: `0 6px 20px ${alpha(theme.palette.primary.main, 0.5)}`,
+            },
           }}
         >
           Add User
@@ -240,7 +248,7 @@ const CustomerAdminUserPage: React.FC = () => {
         sx={{
           borderRadius: 3,
           boxShadow: `0 4px 20px ${alpha(theme.palette.common.black, 0.08)}`,
-          overflow: 'hidden'
+          overflow: "hidden",
         }}
       >
         <DataGrid
@@ -256,14 +264,14 @@ const CustomerAdminUserPage: React.FC = () => {
           pageSizeOptions={[5, 10, 25]}
           disableRowSelectionOnClick
           sx={{
-            border: 'none',
-            '& .MuiDataGrid-cell': {
-              borderColor: theme.palette.grey[200]
+            border: "none",
+            "& .MuiDataGrid-cell": {
+              borderColor: theme.palette.grey[200],
             },
-            '& .MuiDataGrid-columnHeaders': {
+            "& .MuiDataGrid-columnHeaders": {
               bgcolor: theme.palette.grey[50],
-              fontWeight: 600
-            }
+              fontWeight: 600,
+            },
           }}
         />
       </Paper>
@@ -273,13 +281,13 @@ const CustomerAdminUserPage: React.FC = () => {
         open={showSnackbar}
         autoHideDuration={6000}
         onClose={handleCloseSnackbar}
-        anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
+        anchorOrigin={{ vertical: "top", horizontal: "right" }}
       >
-        <Alert 
-          onClose={handleCloseSnackbar} 
+        <Alert
+          onClose={handleCloseSnackbar}
           severity={snackbarSeverity}
           variant="filled"
-          sx={{ width: '100%' }}
+          sx={{ width: "100%" }}
         >
           {snackbarMessage}
         </Alert>
@@ -292,26 +300,22 @@ const CustomerAdminUserPage: React.FC = () => {
         maxWidth="sm"
         fullWidth
       >
-        <DialogTitle sx={{ fontWeight: 600 }}>
-          Confirm Delete
-        </DialogTitle>
+        <DialogTitle sx={{ fontWeight: 600 }}>Confirm Delete</DialogTitle>
         <DialogContent>
           <DialogContentText>
-            Are you sure you want to delete this user? This action cannot be undone.
+            Are you sure you want to delete this user? This action cannot be
+            undone.
           </DialogContentText>
         </DialogContent>
         <DialogActions sx={{ px: 3, pb: 2 }}>
-          <Button 
-            onClick={handleDeleteCancel}
-            sx={{ textTransform: 'none' }}
-          >
+          <Button onClick={handleDeleteCancel} sx={{ textTransform: "none" }}>
             Cancel
           </Button>
-          <Button 
+          <Button
             onClick={handleDeleteConfirm}
             variant="contained"
             color="error"
-            sx={{ textTransform: 'none' }}
+            sx={{ textTransform: "none" }}
           >
             Delete
           </Button>

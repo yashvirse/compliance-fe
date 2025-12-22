@@ -18,6 +18,8 @@ export interface Site {
   siteLocation: string;
   state: string;
   country: string;
+  latitude: string;
+  longtitude: string;
   defaultUser: DefaultUser;
   createdDate?: string;
   updatedDate?: string;
@@ -28,4 +30,22 @@ export interface SiteState {
   loading: boolean;
   error: string | null;
   successMessage: string | null;
+}
+// Country-State API response ke liye
+export interface State {
+  stateId: string;
+  stateName: string;
+}
+
+export interface CountryState {
+  tblid: string;
+  countryId: string;
+  countryName: string;
+  states: State[];
+}
+
+export interface GetCountryStateResponse {
+  isSuccess: boolean;
+  message: string;
+  result: CountryState[];
 }

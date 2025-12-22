@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from "react";
 import {
   Box,
   Typography,
@@ -20,11 +20,18 @@ import {
   TableContainer,
   TableHead,
   TableRow,
-} from '@mui/material';
-import { HourglassEmpty, CheckCircle, Cancel as CancelIcon, Close as CloseIcon, AssignmentTwoTone as Assignment, Visibility as EyeIcon } from '@mui/icons-material';
-import { useDispatch, useSelector } from 'react-redux';
-import type { AppDispatch } from '../../app/store';
-import { selectUser } from '../login/slice/Login.selector';
+} from "@mui/material";
+import {
+  HourglassEmpty,
+  CheckCircle,
+  Cancel as CancelIcon,
+  Close as CloseIcon,
+  AssignmentTwoTone as Assignment,
+  Visibility as EyeIcon,
+} from "@mui/icons-material";
+import { useDispatch, useSelector } from "react-redux";
+import type { AppDispatch } from "../../app/store";
+import { selectUser } from "../login/slice/Login.selector";
 import {
   fetchReviewerTaskCount,
   fetchPendingReviewTasks,
@@ -32,7 +39,7 @@ import {
   fetchRejectedReviewTasks,
   approveReviewTask,
   rejectReviewTask,
-} from './reviewerslice/ReviewerDashboard.Slice';
+} from "./reviewerslice/ReviewerDashboard.Slice";
 import {
   selectReviewerPendingCount,
   selectReviewerApprovedCount,
@@ -44,7 +51,7 @@ import {
   selectApprovedReviewTasksLoading,
   selectRejectedReviewTasksLoading,
   selectReviewerTaskActionsLoading,
-} from './reviewerslice/ReviewerDashboard.Selector';
+} from "./reviewerslice/ReviewerDashboard.Selector";
 
 const ReviewerDashboard: React.FC = () => {
   const theme = useTheme();
@@ -59,7 +66,7 @@ const ReviewerDashboard: React.FC = () => {
   const [approveDialogOpen, setApproveDialogOpen] = useState(false);
   const [rejectDialogOpen, setRejectDialogOpen] = useState(false);
   const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
-  const [remark, setRemark] = useState('');
+  const [remark, setRemark] = useState("");
 
   const pendingCount = useSelector(selectReviewerPendingCount);
   const approvedCount = useSelector(selectReviewerApprovedCount);
@@ -67,9 +74,15 @@ const ReviewerDashboard: React.FC = () => {
   const pendingReviewTasks = useSelector(selectPendingReviewTasks);
   const approvedReviewTasks = useSelector(selectApprovedReviewTasks);
   const rejectedReviewTasks = useSelector(selectRejectedReviewTasks);
-  const pendingReviewTasksLoading = useSelector(selectPendingReviewTasksLoading);
-  const approvedReviewTasksLoading = useSelector(selectApprovedReviewTasksLoading);
-  const rejectedReviewTasksLoading = useSelector(selectRejectedReviewTasksLoading);
+  const pendingReviewTasksLoading = useSelector(
+    selectPendingReviewTasksLoading
+  );
+  const approvedReviewTasksLoading = useSelector(
+    selectApprovedReviewTasksLoading
+  );
+  const rejectedReviewTasksLoading = useSelector(
+    selectRejectedReviewTasksLoading
+  );
   const taskActionsLoading = useSelector(selectReviewerTaskActionsLoading);
 
   // Initial data fetch - only fetch counts
@@ -130,14 +143,14 @@ const ReviewerDashboard: React.FC = () => {
   // Handle approve click
   const handleApproveClick = (taskId: string) => {
     setSelectedTaskId(taskId);
-    setRemark('');
+    setRemark("");
     setApproveDialogOpen(true);
   };
 
   // Handle reject click
   const handleRejectClick = (taskId: string) => {
     setSelectedTaskId(taskId);
-    setRemark('');
+    setRemark("");
     setRejectDialogOpen(true);
   };
 
@@ -158,7 +171,7 @@ const ReviewerDashboard: React.FC = () => {
     if (selectedTaskId && remark.trim()) {
       await dispatch(approveReviewTask({ taskID: selectedTaskId, remark }));
       setApproveDialogOpen(false);
-      setRemark('');
+      setRemark("");
       setSelectedTaskId(null);
       // Refresh pending tasks
       if (user?.id) {
@@ -173,7 +186,7 @@ const ReviewerDashboard: React.FC = () => {
     if (selectedTaskId && remark.trim()) {
       await dispatch(rejectReviewTask({ taskID: selectedTaskId, remark }));
       setRejectDialogOpen(false);
-      setRemark('');
+      setRemark("");
       setSelectedTaskId(null);
       // Refresh pending tasks
       if (user?.id) {
@@ -185,21 +198,21 @@ const ReviewerDashboard: React.FC = () => {
 
   const stats = [
     {
-      label: 'Pending Review',
+      label: "Pending Review",
       value: pendingCount,
       icon: <HourglassEmpty />,
       color: theme.palette.warning.main,
       onClick: handlePendingReviewTasksClick,
     },
     {
-      label: 'Approved',
+      label: "Approved",
       value: approvedCount,
       icon: <CheckCircle />,
       color: theme.palette.success.main,
       onClick: handleApprovedReviewTasksClick,
     },
     {
-      label: 'Rejected',
+      label: "Rejected",
       value: rejectedCount,
       icon: <CancelIcon />,
       color: theme.palette.error.main,
@@ -208,10 +221,15 @@ const ReviewerDashboard: React.FC = () => {
   ];
 
   // Render tasks table
-  const renderTasksTable = (tasks: any[], isLoading: boolean, hasActions: boolean = false, hasViewButton: boolean = false) => {
+  const renderTasksTable = (
+    tasks: any[],
+    isLoading: boolean,
+    hasActions: boolean = false,
+    hasViewButton: boolean = false
+  ) => {
     if (isLoading) {
       return (
-        <Box sx={{ display: 'flex', justifyContent: 'center', p: 4 }}>
+        <Box sx={{ display: "flex", justifyContent: "center", p: 4 }}>
           <CircularProgress />
         </Box>
       );
@@ -219,8 +237,8 @@ const ReviewerDashboard: React.FC = () => {
 
     if (!tasks || tasks.length === 0) {
       return (
-        <Box sx={{ textAlign: 'center', py: 8 }}>
-          <Assignment sx={{ fontSize: 60, color: 'text.disabled', mb: 2 }} />
+        <Box sx={{ textAlign: "center", py: 8 }}>
+          <Assignment sx={{ fontSize: 60, color: "text.disabled", mb: 2 }} />
           <Typography variant="body1" color="text.secondary">
             No tasks to display
           </Typography>
@@ -229,7 +247,10 @@ const ReviewerDashboard: React.FC = () => {
     }
 
     return (
-      <TableContainer component={Box} sx={{ borderRadius: 2, overflow: 'hidden' }}>
+      <TableContainer
+        component={Box}
+        sx={{ borderRadius: 2, overflow: "hidden" }}
+      >
         <Table>
           <TableHead>
             <TableRow sx={{ bgcolor: alpha(theme.palette.primary.main, 0.05) }}>
@@ -246,6 +267,11 @@ const ReviewerDashboard: React.FC = () => {
               <TableCell>
                 <Typography variant="subtitle2" fontWeight={600}>
                   Department
+                </Typography>
+              </TableCell>
+              <TableCell>
+                <Typography variant="subtitle2" fontWeight={600}>
+                  Site Name
                 </Typography>
               </TableCell>
               <TableCell>
@@ -284,7 +310,7 @@ const ReviewerDashboard: React.FC = () => {
               <TableRow
                 key={task.tblId || index}
                 hover
-                sx={{ '&:last-child td': { borderBottom: 0 } }}
+                sx={{ "&:last-child td": { borderBottom: 0 } }}
               >
                 <TableCell>
                   <Typography variant="body2" fontWeight={500}>
@@ -294,7 +320,7 @@ const ReviewerDashboard: React.FC = () => {
                     <Typography
                       variant="caption"
                       color="text.secondary"
-                      sx={{ display: 'block', mt: 0.5 }}
+                      sx={{ display: "block", mt: 0.5 }}
                     >
                       {task.description}
                     </Typography>
@@ -307,6 +333,9 @@ const ReviewerDashboard: React.FC = () => {
                   <Typography variant="body2">{task.departmentName}</Typography>
                 </TableCell>
                 <TableCell>
+                  <Typography variant="body2">{task.siteName}</Typography>
+                </TableCell>
+                <TableCell>
                   <Typography variant="body2">{task.dueDate}</Typography>
                 </TableCell>
                 <TableCell>
@@ -317,7 +346,14 @@ const ReviewerDashboard: React.FC = () => {
                 </TableCell>
                 {hasActions && (
                   <TableCell align="center">
-                    <Box sx={{ display: 'flex', gap: 1, justifyContent: 'center', flexWrap: 'wrap' }}>
+                    <Box
+                      sx={{
+                        display: "flex",
+                        gap: 1,
+                        justifyContent: "center",
+                        flexWrap: "wrap",
+                      }}
+                    >
                       <Button
                         variant="contained"
                         color="success"
@@ -348,10 +384,10 @@ const ReviewerDashboard: React.FC = () => {
                       onClick={() => handleViewTaskMovement(task)}
                       sx={{
                         color: theme.palette.primary.main,
-                        textTransform: 'none',
-                        '&:hover': {
+                        textTransform: "none",
+                        "&:hover": {
                           bgcolor: alpha(theme.palette.primary.main, 0.1),
-                        }
+                        },
                       }}
                     >
                       View
@@ -369,68 +405,85 @@ const ReviewerDashboard: React.FC = () => {
   return (
     <Box>
       {/* Dashboard View - Show stat cards */}
-      {!pendingReviewTasksOpen && !approvedReviewTasksOpen && !rejectedReviewTasksOpen && (
-        <>
-          <Box sx={{ mb: 4 }}>
-            <Typography variant="h4" fontWeight={700} gutterBottom>
-              Reviewer Dashboard
-            </Typography>
-            <Typography variant="body1" color="text.secondary">
-              Final review and approval workflow
-            </Typography>
-          </Box>
+      {!pendingReviewTasksOpen &&
+        !approvedReviewTasksOpen &&
+        !rejectedReviewTasksOpen && (
+          <>
+            <Box sx={{ mb: 4 }}>
+              <Typography variant="h4" fontWeight={700} gutterBottom>
+                Reviewer Dashboard
+              </Typography>
+              <Typography variant="body1" color="text.secondary">
+                Final review and approval workflow
+              </Typography>
+            </Box>
 
-          {/* Stat Cards */}
-          <Grid container spacing={3}>
-            {stats.map((stat, index) => (
-              <Grid key={index} size={{ xs: 12, sm: 6, md: 4 }}>
-                <Card
-                  onClick={stat.onClick}
-                  sx={{
-                    borderRadius: 3,
-                    boxShadow: `0 4px 20px ${alpha(theme.palette.common.black, 0.08)}`,
-                    cursor: 'pointer',
-                    transition: 'all 0.3s ease',
-                    '&:hover': {
-                      boxShadow: `0 8px 30px ${alpha(theme.palette.common.black, 0.15)}`,
-                      transform: 'translateY(-4px)',
-                    },
-                  }}
-                >
-                  <CardContent>
-                    <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+            {/* Stat Cards */}
+            <Grid container spacing={3}>
+              {stats.map((stat, index) => (
+                <Grid key={index} size={{ xs: 12, sm: 6, md: 4 }}>
+                  <Card
+                    onClick={stat.onClick}
+                    sx={{
+                      borderRadius: 3,
+                      boxShadow: `0 4px 20px ${alpha(
+                        theme.palette.common.black,
+                        0.08
+                      )}`,
+                      cursor: "pointer",
+                      transition: "all 0.3s ease",
+                      "&:hover": {
+                        boxShadow: `0 8px 30px ${alpha(
+                          theme.palette.common.black,
+                          0.15
+                        )}`,
+                        transform: "translateY(-4px)",
+                      },
+                    }}
+                  >
+                    <CardContent>
                       <Box
-                        sx={{
-                          p: 1.5,
-                          borderRadius: 2,
-                          bgcolor: alpha(stat.color, 0.1),
-                          color: stat.color,
-                          mr: 2,
-                        }}
+                        sx={{ display: "flex", alignItems: "center", mb: 2 }}
                       >
-                        {stat.icon}
+                        <Box
+                          sx={{
+                            p: 1.5,
+                            borderRadius: 2,
+                            bgcolor: alpha(stat.color, 0.1),
+                            color: stat.color,
+                            mr: 2,
+                          }}
+                        >
+                          {stat.icon}
+                        </Box>
+                        <Box>
+                          <Typography variant="h4" fontWeight={700}>
+                            {stat.value}
+                          </Typography>
+                          <Typography variant="body2" color="text.secondary">
+                            {stat.label}
+                          </Typography>
+                        </Box>
                       </Box>
-                      <Box>
-                        <Typography variant="h4" fontWeight={700}>
-                          {stat.value}
-                        </Typography>
-                        <Typography variant="body2" color="text.secondary">
-                          {stat.label}
-                        </Typography>
-                      </Box>
-                    </Box>
-                  </CardContent>
-                </Card>
-              </Grid>
-            ))}
-          </Grid>
-        </>
-      )}
+                    </CardContent>
+                  </Card>
+                </Grid>
+              ))}
+            </Grid>
+          </>
+        )}
 
       {/* Pending Review Tasks Screen - Full Page */}
       {pendingReviewTasksOpen && (
         <Box>
-          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 3 }}>
+          <Box
+            sx={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              mb: 3,
+            }}
+          >
             <Box>
               <Typography variant="h4" fontWeight={700} gutterBottom>
                 Pending Review Tasks
@@ -448,9 +501,21 @@ const ReviewerDashboard: React.FC = () => {
             </Button>
           </Box>
 
-          <Card sx={{ borderRadius: 3, boxShadow: `0 4px 20px ${alpha(theme.palette.common.black, 0.08)}` }}>
+          <Card
+            sx={{
+              borderRadius: 3,
+              boxShadow: `0 4px 20px ${alpha(
+                theme.palette.common.black,
+                0.08
+              )}`,
+            }}
+          >
             <CardContent sx={{ p: 3 }}>
-              {renderTasksTable(pendingReviewTasks, pendingReviewTasksLoading, true)}
+              {renderTasksTable(
+                pendingReviewTasks,
+                pendingReviewTasksLoading,
+                true
+              )}
             </CardContent>
           </Card>
         </Box>
@@ -459,7 +524,14 @@ const ReviewerDashboard: React.FC = () => {
       {/* Approved Review Tasks Screen - Full Page */}
       {approvedReviewTasksOpen && (
         <Box>
-          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 3 }}>
+          <Box
+            sx={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              mb: 3,
+            }}
+          >
             <Box>
               <Typography variant="h4" fontWeight={700} gutterBottom>
                 Approved Review Tasks
@@ -477,9 +549,22 @@ const ReviewerDashboard: React.FC = () => {
             </Button>
           </Box>
 
-          <Card sx={{ borderRadius: 3, boxShadow: `0 4px 20px ${alpha(theme.palette.common.black, 0.08)}` }}>
+          <Card
+            sx={{
+              borderRadius: 3,
+              boxShadow: `0 4px 20px ${alpha(
+                theme.palette.common.black,
+                0.08
+              )}`,
+            }}
+          >
             <CardContent sx={{ p: 3 }}>
-              {renderTasksTable(approvedReviewTasks, approvedReviewTasksLoading, false, true)}
+              {renderTasksTable(
+                approvedReviewTasks,
+                approvedReviewTasksLoading,
+                false,
+                true
+              )}
             </CardContent>
           </Card>
         </Box>
@@ -488,7 +573,14 @@ const ReviewerDashboard: React.FC = () => {
       {/* Rejected Review Tasks Screen - Full Page */}
       {rejectedReviewTasksOpen && (
         <Box>
-          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 3 }}>
+          <Box
+            sx={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              mb: 3,
+            }}
+          >
             <Box>
               <Typography variant="h4" fontWeight={700} gutterBottom>
                 Rejected Review Tasks
@@ -506,16 +598,33 @@ const ReviewerDashboard: React.FC = () => {
             </Button>
           </Box>
 
-          <Card sx={{ borderRadius: 3, boxShadow: `0 4px 20px ${alpha(theme.palette.common.black, 0.08)}` }}>
+          <Card
+            sx={{
+              borderRadius: 3,
+              boxShadow: `0 4px 20px ${alpha(
+                theme.palette.common.black,
+                0.08
+              )}`,
+            }}
+          >
             <CardContent sx={{ p: 3 }}>
-              {renderTasksTable(rejectedReviewTasks, rejectedReviewTasksLoading, false)}
+              {renderTasksTable(
+                rejectedReviewTasks,
+                rejectedReviewTasksLoading,
+                false
+              )}
             </CardContent>
           </Card>
         </Box>
       )}
 
       {/* Approve Remarks Dialog */}
-      <Dialog open={approveDialogOpen} onClose={() => setApproveDialogOpen(false)} maxWidth="sm" fullWidth>
+      <Dialog
+        open={approveDialogOpen}
+        onClose={() => setApproveDialogOpen(false)}
+        maxWidth="sm"
+        fullWidth
+      >
         <DialogTitle>Approve Review Task</DialogTitle>
         <DialogContent sx={{ pt: 3 }}>
           <TextField
@@ -536,13 +645,18 @@ const ReviewerDashboard: React.FC = () => {
             color="success"
             disabled={!remark.trim() || taskActionsLoading}
           >
-            {taskActionsLoading ? <CircularProgress size={24} /> : 'Approve'}
+            {taskActionsLoading ? <CircularProgress size={24} /> : "Approve"}
           </Button>
         </DialogActions>
       </Dialog>
 
       {/* Reject Remarks Dialog */}
-      <Dialog open={rejectDialogOpen} onClose={() => setRejectDialogOpen(false)} maxWidth="sm" fullWidth>
+      <Dialog
+        open={rejectDialogOpen}
+        onClose={() => setRejectDialogOpen(false)}
+        maxWidth="sm"
+        fullWidth
+      >
         <DialogTitle>Reject Review Task</DialogTitle>
         <DialogContent sx={{ pt: 3 }}>
           <TextField
@@ -563,7 +677,7 @@ const ReviewerDashboard: React.FC = () => {
             color="error"
             disabled={!remark.trim() || taskActionsLoading}
           >
-            {taskActionsLoading ? <CircularProgress size={24} /> : 'Reject'}
+            {taskActionsLoading ? <CircularProgress size={24} /> : "Reject"}
           </Button>
         </DialogActions>
       </Dialog>
@@ -575,19 +689,30 @@ const ReviewerDashboard: React.FC = () => {
         maxWidth="md"
         fullWidth
       >
-        <DialogTitle sx={{ fontWeight: 600, fontSize: '1.3rem', pb: 1 }}>
+        <DialogTitle sx={{ fontWeight: 600, fontSize: "1.3rem", pb: 1 }}>
           Task Movement Details
         </DialogTitle>
         <DialogContent sx={{ py: 2 }}>
           {selectedTask && (
             <Box>
-              <Box sx={{ mb: 3, p: 2, bgcolor: alpha(theme.palette.primary.main, 0.05), borderRadius: 2 }}>
+              <Box
+                sx={{
+                  mb: 3,
+                  p: 2,
+                  bgcolor: alpha(theme.palette.primary.main, 0.05),
+                  borderRadius: 2,
+                }}
+              >
                 <Typography variant="subtitle2" fontWeight={600} gutterBottom>
                   Activity Information
                 </Typography>
                 <Grid container spacing={2} sx={{ mt: 0.5 }}>
                   <Grid size={{ xs: 12, sm: 6 }}>
-                    <Typography variant="caption" color="text.secondary" display="block">
+                    <Typography
+                      variant="caption"
+                      color="text.secondary"
+                      display="block"
+                    >
                       Activity Name
                     </Typography>
                     <Typography variant="body2" fontWeight={500}>
@@ -595,7 +720,11 @@ const ReviewerDashboard: React.FC = () => {
                     </Typography>
                   </Grid>
                   <Grid size={{ xs: 12, sm: 6 }}>
-                    <Typography variant="caption" color="text.secondary" display="block">
+                    <Typography
+                      variant="caption"
+                      color="text.secondary"
+                      display="block"
+                    >
                       Act Name
                     </Typography>
                     <Typography variant="body2" fontWeight={500}>
@@ -603,7 +732,11 @@ const ReviewerDashboard: React.FC = () => {
                     </Typography>
                   </Grid>
                   <Grid size={{ xs: 12, sm: 6 }}>
-                    <Typography variant="caption" color="text.secondary" display="block">
+                    <Typography
+                      variant="caption"
+                      color="text.secondary"
+                      display="block"
+                    >
                       Department
                     </Typography>
                     <Typography variant="body2" fontWeight={500}>
@@ -611,20 +744,43 @@ const ReviewerDashboard: React.FC = () => {
                     </Typography>
                   </Grid>
                   <Grid size={{ xs: 12, sm: 6 }}>
-                    <Typography variant="caption" color="text.secondary" display="block">
+                    <Typography
+                      variant="caption"
+                      color="text.secondary"
+                      display="block"
+                    >
                       Due Date
                     </Typography>
                     <Typography variant="body2" fontWeight={500}>
-                      {selectedTask.dueDate ? new Date(selectedTask.dueDate).toLocaleDateString() : '-'}
+                      {selectedTask.dueDate
+                        ? new Date(selectedTask.dueDate).toLocaleDateString()
+                        : "-"}
+                    </Typography>
+                  </Grid>
+                  <Grid size={{ xs: 12, sm: 6 }}>
+                    <Typography
+                      variant="caption"
+                      color="text.secondary"
+                      display="block"
+                    >
+                      Site Name
+                    </Typography>
+                    <Typography variant="body2" fontWeight={500}>
+                      {selectedTask.siteName}
                     </Typography>
                   </Grid>
                 </Grid>
               </Box>
 
-              <Typography variant="subtitle2" fontWeight={600} gutterBottom sx={{ mt: 3, mb: 2 }}>
+              <Typography
+                variant="subtitle2"
+                fontWeight={600}
+                gutterBottom
+                sx={{ mt: 3, mb: 2 }}
+              >
                 Task Movement History
               </Typography>
-              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+              <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
                 {selectedTask.details && selectedTask.details.length > 0 ? (
                   selectedTask.details.map((detail: any, index: number) => (
                     <Box
@@ -634,35 +790,52 @@ const ReviewerDashboard: React.FC = () => {
                         border: `1px solid ${theme.palette.divider}`,
                         borderRadius: 2,
                         bgcolor: alpha(
-                          detail.status === 'Approved'
+                          detail.status === "Approved"
                             ? theme.palette.success.main
-                            : detail.status === 'Rejected'
+                            : detail.status === "Rejected"
                             ? theme.palette.error.main
                             : theme.palette.warning.main,
                           0.05
                         ),
                       }}
                     >
-                      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start', mb: 1 }}>
+                      <Box
+                        sx={{
+                          display: "flex",
+                          justifyContent: "space-between",
+                          alignItems: "start",
+                          mb: 1,
+                        }}
+                      >
                         <Box>
                           <Typography variant="subtitle2" fontWeight={600}>
                             {detail.userName}
                           </Typography>
                           <Typography variant="caption" color="text.secondary">
-                            {index === 0 ? 'Maker' : index === 1 ? 'Checker' : 'Reviewer'}
+                            {index === 0
+                              ? "Maker"
+                              : index === 1
+                              ? "Checker"
+                              : "Reviewer"}
                           </Typography>
                         </Box>
-                        <Box 
+                        <Box
                           sx={{
                             px: 1.5,
                             py: 0.5,
                             borderRadius: 1,
-                            bgcolor: detail.status === 'Approved' ? alpha(theme.palette.success.main, 0.2) : 
-                                     detail.status === 'Rejected' ? alpha(theme.palette.error.main, 0.2) : 
-                                     alpha(theme.palette.warning.main, 0.2),
-                            color: detail.status === 'Approved' ? theme.palette.success.dark : 
-                                   detail.status === 'Rejected' ? theme.palette.error.dark : 
-                                   theme.palette.warning.dark,
+                            bgcolor:
+                              detail.status === "Approved"
+                                ? alpha(theme.palette.success.main, 0.2)
+                                : detail.status === "Rejected"
+                                ? alpha(theme.palette.error.main, 0.2)
+                                : alpha(theme.palette.warning.main, 0.2),
+                            color:
+                              detail.status === "Approved"
+                                ? theme.palette.success.dark
+                                : detail.status === "Rejected"
+                                ? theme.palette.error.dark
+                                : theme.palette.warning.dark,
                           }}
                         >
                           <Typography variant="caption" fontWeight={600}>
@@ -671,29 +844,54 @@ const ReviewerDashboard: React.FC = () => {
                         </Box>
                       </Box>
 
-                      <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: 2, my: 2 }}>
+                      <Box
+                        sx={{
+                          display: "grid",
+                          gridTemplateColumns:
+                            "repeat(auto-fit, minmax(150px, 1fr))",
+                          gap: 2,
+                          my: 2,
+                        }}
+                      >
                         <Box>
-                          <Typography variant="caption" color="text.secondary" display="block" sx={{ mb: 0.5 }}>
+                          <Typography
+                            variant="caption"
+                            color="text.secondary"
+                            display="block"
+                            sx={{ mb: 0.5 }}
+                          >
                             In Date
                           </Typography>
                           <Typography variant="body2" fontWeight={500}>
-                            {detail.inDate && detail.inDate !== '0001-01-01T00:00:00Z'
-                              ? new Date(detail.inDate).toLocaleString()
-                              : '-'}
+                            {detail.inDate &&
+                            detail.inDate !== "0001-01-01T00:00:00Z"
+                              ? new Date(detail.inDate).toLocaleDateString()
+                              : "-"}
                           </Typography>
                         </Box>
                         <Box>
-                          <Typography variant="caption" color="text.secondary" display="block" sx={{ mb: 0.5 }}>
+                          <Typography
+                            variant="caption"
+                            color="text.secondary"
+                            display="block"
+                            sx={{ mb: 0.5 }}
+                          >
                             Out Date
                           </Typography>
                           <Typography variant="body2" fontWeight={500}>
-                            {detail.outDate && detail.outDate !== '0001-01-01T00:00:00Z'
-                              ? new Date(detail.outDate).toLocaleString()
-                              : '-'}
+                            {detail.outDate &&
+                            detail.outDate !== "0001-01-01T00:00:00Z"
+                              ? new Date(detail.outDate).toLocaleDateString()
+                              : "-"}
                           </Typography>
                         </Box>
                         <Box>
-                          <Typography variant="caption" color="text.secondary" display="block" sx={{ mb: 0.5 }}>
+                          <Typography
+                            variant="caption"
+                            color="text.secondary"
+                            display="block"
+                            sx={{ mb: 0.5 }}
+                          >
                             P.TAT (Days)
                           </Typography>
                           <Typography variant="body2" fontWeight={500}>
@@ -701,7 +899,12 @@ const ReviewerDashboard: React.FC = () => {
                           </Typography>
                         </Box>
                         <Box>
-                          <Typography variant="caption" color="text.secondary" display="block" sx={{ mb: 0.5 }}>
+                          <Typography
+                            variant="caption"
+                            color="text.secondary"
+                            display="block"
+                            sx={{ mb: 0.5 }}
+                          >
                             A.TAT (Days)
                           </Typography>
                           <Typography variant="body2" fontWeight={500}>
@@ -711,8 +914,19 @@ const ReviewerDashboard: React.FC = () => {
                       </Box>
 
                       {detail.remarks && (
-                        <Box sx={{ mt: 2, pt: 2, borderTop: `1px solid ${theme.palette.divider}` }}>
-                          <Typography variant="caption" color="text.secondary" display="block" sx={{ mb: 0.5 }}>
+                        <Box
+                          sx={{
+                            mt: 2,
+                            pt: 2,
+                            borderTop: `1px solid ${theme.palette.divider}`,
+                          }}
+                        >
+                          <Typography
+                            variant="caption"
+                            color="text.secondary"
+                            display="block"
+                            sx={{ mb: 0.5 }}
+                          >
                             Remarks
                           </Typography>
                           <Typography variant="body2">
@@ -722,8 +936,19 @@ const ReviewerDashboard: React.FC = () => {
                       )}
 
                       {detail.rejectionRemark && (
-                        <Box sx={{ mt: 2, pt: 2, borderTop: `1px solid ${theme.palette.divider}` }}>
-                          <Typography variant="caption" color="error" display="block" sx={{ mb: 0.5, fontWeight: 600 }}>
+                        <Box
+                          sx={{
+                            mt: 2,
+                            pt: 2,
+                            borderTop: `1px solid ${theme.palette.divider}`,
+                          }}
+                        >
+                          <Typography
+                            variant="caption"
+                            color="error"
+                            display="block"
+                            sx={{ mb: 0.5, fontWeight: 600 }}
+                          >
                             Rejection Remark
                           </Typography>
                           <Typography variant="body2" color="error">
@@ -734,7 +959,11 @@ const ReviewerDashboard: React.FC = () => {
                     </Box>
                   ))
                 ) : (
-                  <Typography variant="body2" color="text.secondary" sx={{ textAlign: 'center', py: 4 }}>
+                  <Typography
+                    variant="body2"
+                    color="text.secondary"
+                    sx={{ textAlign: "center", py: 4 }}
+                  >
                     No movement details available
                   </Typography>
                 )}

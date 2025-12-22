@@ -1,7 +1,7 @@
-import React, { useEffect, useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import { useNavigate } from 'react-router-dom';
-import type { AppDispatch } from '../../../app/store';
+import React, { useEffect, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { useNavigate } from "react-router-dom";
+import type { AppDispatch } from "../../../app/store";
 import {
   Box,
   Typography,
@@ -21,18 +21,22 @@ import {
   alpha,
   Chip,
   Checkbox,
-  Button
-} from '@mui/material';
+  Button,
+} from "@mui/material";
 import {
   KeyboardArrowDown as KeyboardArrowDownIcon,
-  ArrowBack as ArrowBackIcon
-} from '@mui/icons-material';
-import { fetchActivityMasterList, importActivities, clearError } from './slice/CustomerAdminActivity.Slice';
+  ArrowBack as ArrowBackIcon,
+} from "@mui/icons-material";
+import {
+  fetchActivityMasterList,
+  importActivities,
+  clearError,
+} from "./slice/CustomerAdminActivity.Slice";
 import {
   selectActivityMasterLoading,
   selectActivityMasterError,
-  selectGroupedActivityMasters
-} from './slice/CustomerAdminActivity.Selector';
+  selectGroupedActivityMasters,
+} from "./slice/CustomerAdminActivity.Selector";
 
 const ImportActivityList: React.FC = () => {
   const theme = useTheme();
@@ -45,9 +49,13 @@ const ImportActivityList: React.FC = () => {
 
   const [expandedRows, setExpandedRows] = useState<Set<string>>(new Set());
   const [showSnackbar, setShowSnackbar] = useState(false);
-  const [snackbarMessage, setSnackbarMessage] = useState('');
-  const [snackbarSeverity, setSnackbarSeverity] = useState<'success' | 'error'>('success');
-  const [selectedActivities, setSelectedActivities] = useState<Set<string>>(new Set());
+  const [snackbarMessage, setSnackbarMessage] = useState("");
+  const [snackbarSeverity, setSnackbarSeverity] = useState<"success" | "error">(
+    "success"
+  );
+  const [selectedActivities, setSelectedActivities] = useState<Set<string>>(
+    new Set()
+  );
 
   useEffect(() => {
     dispatch(fetchActivityMasterList());
@@ -56,7 +64,7 @@ const ImportActivityList: React.FC = () => {
   useEffect(() => {
     if (error) {
       setSnackbarMessage(error);
-      setSnackbarSeverity('error');
+      setSnackbarSeverity("error");
       setShowSnackbar(true);
     }
   }, [error]);
@@ -67,7 +75,7 @@ const ImportActivityList: React.FC = () => {
   };
 
   const toggleRow = (key: string) => {
-    setExpandedRows(prev => {
+    setExpandedRows((prev) => {
       const newSet = new Set(prev);
       if (newSet.has(key)) {
         newSet.delete(key);
@@ -79,7 +87,7 @@ const ImportActivityList: React.FC = () => {
   };
 
   const handleSelectActivity = (activityId: string) => {
-    setSelectedActivities(prev => {
+    setSelectedActivities((prev) => {
       const newSet = new Set(prev);
       if (newSet.has(activityId)) {
         newSet.delete(activityId);
@@ -91,15 +99,15 @@ const ImportActivityList: React.FC = () => {
   };
 
   const handleSelectAll = (activities: any[]) => {
-    const allIds = activities.map(a => a.activityId);
-    const allSelected = allIds.every(id => selectedActivities.has(id));
-    
-    setSelectedActivities(prev => {
+    const allIds = activities.map((a) => a.activityId);
+    const allSelected = allIds.every((id) => selectedActivities.has(id));
+
+    setSelectedActivities((prev) => {
       const newSet = new Set(prev);
       if (allSelected) {
-        allIds.forEach(id => newSet.delete(id));
+        allIds.forEach((id) => newSet.delete(id));
       } else {
-        allIds.forEach(id => newSet.add(id));
+        allIds.forEach((id) => newSet.add(id));
       }
       return newSet;
     });
@@ -109,33 +117,35 @@ const ImportActivityList: React.FC = () => {
     try {
       const activityIdsArray = Array.from(selectedActivities);
       await dispatch(importActivities(activityIdsArray)).unwrap();
-      setSnackbarMessage(`Successfully imported ${activityIdsArray.length} activities`);
-      setSnackbarSeverity('success');
+      setSnackbarMessage(
+        `Successfully imported ${activityIdsArray.length} activities`
+      );
+      setSnackbarSeverity("success");
       setShowSnackbar(true);
       setTimeout(() => {
-        navigate('/dashboard/master/customeradminactivity');
+        navigate("/dashboard/master/customeradminactivity");
       }, 1500);
     } catch (err) {
-      setSnackbarMessage(error || 'Failed to import activities');
-      setSnackbarSeverity('error');
+      setSnackbarMessage(error || "Failed to import activities");
+      setSnackbarSeverity("error");
       setShowSnackbar(true);
     }
   };
 
   const handleBack = () => {
-    navigate('/dashboard/master/customeradminactivity');
+    navigate("/dashboard/master/customeradminactivity");
   };
 
   if (loading) {
     return (
-      <Box 
-        sx={{ 
-          display: 'flex', 
-          justifyContent: 'center', 
-          alignItems: 'center', 
-          minHeight: '60vh',
-          flexDirection: 'column',
-          gap: 2 
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          minHeight: "60vh",
+          flexDirection: "column",
+          gap: 2,
         }}
       >
         <CircularProgress size={50} />
@@ -149,15 +159,22 @@ const ImportActivityList: React.FC = () => {
   return (
     <Box>
       {/* Header */}
-      <Box sx={{ mb: 3, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+      <Box
+        sx={{
+          mb: 3,
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "flex-start",
+        }}
+      >
         <Box>
           <Button
             startIcon={<ArrowBackIcon />}
             onClick={handleBack}
             sx={{
               mb: 2,
-              textTransform: 'none',
-              fontWeight: 600
+              textTransform: "none",
+              fontWeight: 600,
             }}
           >
             Back to Activity Master
@@ -175,10 +192,10 @@ const ImportActivityList: React.FC = () => {
           disabled={selectedActivities.size === 0}
           sx={{
             borderRadius: 2,
-            textTransform: 'none',
+            textTransform: "none",
             fontWeight: 600,
             px: 3,
-            boxShadow: `0 4px 12px ${alpha(theme.palette.primary.main, 0.3)}`
+            boxShadow: `0 4px 12px ${alpha(theme.palette.primary.main, 0.3)}`,
           }}
         >
           Import Selected ({selectedActivities.size})
@@ -190,13 +207,15 @@ const ImportActivityList: React.FC = () => {
         sx={{
           borderRadius: 3,
           boxShadow: `0 4px 20px ${alpha(theme.palette.common.black, 0.08)}`,
-          overflow: 'hidden'
+          overflow: "hidden",
         }}
       >
         <TableContainer>
           <Table>
             <TableHead>
-              <TableRow sx={{ bgcolor: alpha(theme.palette.primary.main, 0.05) }}>
+              <TableRow
+                sx={{ bgcolor: alpha(theme.palette.primary.main, 0.05) }}
+              >
                 <TableCell sx={{ width: 50 }} />
                 <TableCell>
                   <Typography variant="subtitle2" fontWeight={600}>
@@ -227,22 +246,26 @@ const ImportActivityList: React.FC = () => {
                   return (
                     <React.Fragment key={rowKey}>
                       {/* Parent Row */}
-                      <TableRow 
+                      <TableRow
                         hover
-                        sx={{ 
-                          cursor: 'pointer',
-                          '& > *': { borderBottom: 'unset' },
-                          bgcolor: isExpanded ? alpha(theme.palette.primary.main, 0.02) : 'inherit',
-                          transition: 'background-color 0.2s'
+                        sx={{
+                          cursor: "pointer",
+                          "& > *": { borderBottom: "unset" },
+                          bgcolor: isExpanded
+                            ? alpha(theme.palette.primary.main, 0.02)
+                            : "inherit",
+                          transition: "background-color 0.2s",
                         }}
                         onClick={() => toggleRow(rowKey)}
                       >
                         <TableCell>
-                          <IconButton 
+                          <IconButton
                             size="small"
                             sx={{
-                              transition: 'transform 0.2s',
-                              transform: isExpanded ? 'rotate(0deg)' : 'rotate(-90deg)'
+                              transition: "transform 0.2s",
+                              transform: isExpanded
+                                ? "rotate(0deg)"
+                                : "rotate(-90deg)",
                             }}
                           >
                             <KeyboardArrowDownIcon />
@@ -254,14 +277,14 @@ const ImportActivityList: React.FC = () => {
                           </Typography>
                         </TableCell>
                         <TableCell>
-                          <Chip 
-                            label={group.departmentName} 
+                          <Chip
+                            label={group.departmentName}
                             size="small"
-                            sx={{ 
+                            sx={{
                               bgcolor: alpha(theme.palette.info.main, 0.1),
                               color: theme.palette.info.main,
                               fontWeight: 500,
-                              borderRadius: 2
+                              borderRadius: 2,
                             }}
                           />
                         </TableCell>
@@ -269,31 +292,44 @@ const ImportActivityList: React.FC = () => {
 
                       {/* Nested Table Row */}
                       <TableRow>
-                        <TableCell 
-                          style={{ paddingBottom: 0, paddingTop: 0 }} 
+                        <TableCell
+                          style={{ paddingBottom: 0, paddingTop: 0 }}
                           colSpan={3}
                         >
-                          <Collapse in={isExpanded} timeout="auto" unmountOnExit>
-                            <Box 
-                              sx={{ 
+                          <Collapse
+                            in={isExpanded}
+                            timeout="auto"
+                            unmountOnExit
+                          >
+                            <Box
+                              sx={{
                                 margin: 2,
                                 borderRadius: 2,
-                                border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
-                                overflow: 'hidden'
+                                border: `1px solid ${alpha(
+                                  theme.palette.divider,
+                                  0.1
+                                )}`,
+                                overflow: "hidden",
                               }}
                             >
-                              <Box 
-                                sx={{ 
+                              <Box
+                                sx={{
                                   bgcolor: alpha(theme.palette.grey[500], 0.03),
                                   px: 2,
                                   py: 1.5,
-                                  borderBottom: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
-                                  display: 'flex',
-                                  justifyContent: 'space-between',
-                                  alignItems: 'center'
+                                  borderBottom: `1px solid ${alpha(
+                                    theme.palette.divider,
+                                    0.1
+                                  )}`,
+                                  display: "flex",
+                                  justifyContent: "space-between",
+                                  alignItems: "center",
                                 }}
                               >
-                                <Typography variant="subtitle2" fontWeight={600}>
+                                <Typography
+                                  variant="subtitle2"
+                                  fontWeight={600}
+                                >
                                   Activities ({group.activities.length})
                                 </Typography>
                                 <Button
@@ -302,69 +338,111 @@ const ImportActivityList: React.FC = () => {
                                     e.stopPropagation();
                                     handleSelectAll(group.activities);
                                   }}
-                                  sx={{ textTransform: 'none' }}
+                                  sx={{ textTransform: "none" }}
                                 >
-                                  {group.activities.every(a => selectedActivities.has(a.activityId))
-                                    ? 'Deselect All'
-                                    : 'Select All'}
+                                  {group.activities.every((a) =>
+                                    selectedActivities.has(a.activityId)
+                                  )
+                                    ? "Deselect All"
+                                    : "Select All"}
                                 </Button>
                               </Box>
                               <Table size="small">
                                 <TableHead>
-                                  <TableRow sx={{ bgcolor: alpha(theme.palette.grey[500], 0.02) }}>
+                                  <TableRow
+                                    sx={{
+                                      bgcolor: alpha(
+                                        theme.palette.grey[500],
+                                        0.02
+                                      ),
+                                    }}
+                                  >
                                     <TableCell sx={{ width: 50 }}>
-                                      <Typography variant="caption" fontWeight={600}>
+                                      <Typography
+                                        variant="caption"
+                                        fontWeight={600}
+                                      >
                                         Select
                                       </Typography>
                                     </TableCell>
                                     <TableCell>
-                                      <Typography variant="caption" fontWeight={600}>
+                                      <Typography
+                                        variant="caption"
+                                        fontWeight={600}
+                                      >
                                         Activity Name
                                       </Typography>
                                     </TableCell>
                                     <TableCell>
-                                      <Typography variant="caption" fontWeight={600}>
+                                      <Typography
+                                        variant="caption"
+                                        fontWeight={600}
+                                      >
                                         Description
                                       </Typography>
                                     </TableCell>
                                     <TableCell>
-                                      <Typography variant="caption" fontWeight={600}>
+                                      <Typography
+                                        variant="caption"
+                                        fontWeight={600}
+                                      >
                                         Frequency
                                       </Typography>
                                     </TableCell>
                                     <TableCell align="center">
-                                      <Typography variant="caption" fontWeight={600}>
-                                        Due Day
+                                      <Typography
+                                        variant="caption"
+                                        fontWeight={600}
+                                      >
+                                        Due Days
                                       </Typography>
                                     </TableCell>
                                     <TableCell align="center">
-                                      <Typography variant="caption" fontWeight={600}>
+                                      <Typography
+                                        variant="caption"
+                                        fontWeight={600}
+                                      >
                                         Grace Days
                                       </Typography>
                                     </TableCell>
                                     <TableCell>
-                                      <Typography variant="caption" fontWeight={600}>
-                                        Reminder Date
+                                      <Typography
+                                        variant="caption"
+                                        fontWeight={600}
+                                      >
+                                        Reminder Days
                                       </Typography>
                                     </TableCell>
                                   </TableRow>
                                 </TableHead>
                                 <TableBody>
                                   {group.activities.map((activity) => (
-                                    <TableRow 
+                                    <TableRow
                                       key={activity.activityId}
                                       hover
-                                      selected={selectedActivities.has(activity.activityId)}
+                                      selected={selectedActivities.has(
+                                        activity.activityId
+                                      )}
                                       sx={{
-                                        '&:last-child td': { borderBottom: 0 },
-                                        cursor: 'pointer'
+                                        "&:last-child td": { borderBottom: 0 },
+                                        cursor: "pointer",
                                       }}
-                                      onClick={() => handleSelectActivity(activity.activityId)}
+                                      onClick={() =>
+                                        handleSelectActivity(
+                                          activity.activityId
+                                        )
+                                      }
                                     >
                                       <TableCell>
                                         <Checkbox
-                                          checked={selectedActivities.has(activity.activityId)}
-                                          onChange={() => handleSelectActivity(activity.activityId)}
+                                          checked={selectedActivities.has(
+                                            activity.activityId
+                                          )}
+                                          onChange={() =>
+                                            handleSelectActivity(
+                                              activity.activityId
+                                            )
+                                          }
                                           onClick={(e) => e.stopPropagation()}
                                         />
                                       </TableCell>
@@ -374,13 +452,16 @@ const ImportActivityList: React.FC = () => {
                                         </Typography>
                                       </TableCell>
                                       <TableCell>
-                                        <Typography variant="body2" color="text.secondary">
+                                        <Typography
+                                          variant="body2"
+                                          color="text.secondary"
+                                        >
                                           {activity.description}
                                         </Typography>
                                       </TableCell>
                                       <TableCell>
-                                        <Chip 
-                                          label={activity.frequency || 'N/A'} 
+                                        <Chip
+                                          label={activity.frequency || "N/A"}
                                           size="small"
                                           color="primary"
                                           variant="outlined"
@@ -388,23 +469,17 @@ const ImportActivityList: React.FC = () => {
                                       </TableCell>
                                       <TableCell align="center">
                                         <Typography variant="body2">
-                                          {activity.dueDay || '-'}
+                                          {activity.dueDay || "-"}
                                         </Typography>
                                       </TableCell>
                                       <TableCell align="center">
                                         <Typography variant="body2">
-                                          {activity.gracePeriodDay || '-'}
+                                          {activity.gracePeriodDay || "-"}
                                         </Typography>
                                       </TableCell>
                                       <TableCell>
                                         <Typography variant="body2">
-                                          {activity.reminderDay 
-                                            ? new Date(activity.reminderDay).toLocaleDateString('en-GB', { 
-                                                day: '2-digit', 
-                                                month: 'short', 
-                                                year: 'numeric' 
-                                              })
-                                            : '-'}
+                                          {activity.reminderDay || "-"}
                                         </Typography>
                                       </TableCell>
                                     </TableRow>
@@ -429,13 +504,13 @@ const ImportActivityList: React.FC = () => {
         open={showSnackbar}
         autoHideDuration={6000}
         onClose={handleCloseSnackbar}
-        anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
+        anchorOrigin={{ vertical: "top", horizontal: "right" }}
       >
-        <Alert 
-          onClose={handleCloseSnackbar} 
+        <Alert
+          onClose={handleCloseSnackbar}
           severity={snackbarSeverity}
           variant="filled"
-          sx={{ width: '100%' }}
+          sx={{ width: "100%" }}
         >
           {snackbarMessage}
         </Alert>

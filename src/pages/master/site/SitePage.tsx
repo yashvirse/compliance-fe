@@ -1,7 +1,7 @@
-import React, { useEffect, useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import { useNavigate } from 'react-router-dom';
-import type { AppDispatch } from '../../../app/store';
+import React, { useEffect, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { useNavigate } from "react-router-dom";
+import type { AppDispatch } from "../../../app/store";
 import {
   Box,
   Typography,
@@ -17,16 +17,20 @@ import {
   DialogContent,
   DialogContentText,
   DialogActions,
-} from '@mui/material';
+} from "@mui/material";
 import {
   Add as AddIcon,
   Edit as EditIcon,
   Delete as DeleteIcon,
-} from '@mui/icons-material';
-import type { GridColDef, GridRenderCellParams } from '@mui/x-data-grid';
-import { DataGrid } from '@mui/x-data-grid';
-import { fetchSiteList, deleteSite, clearError } from './slice/Site.Slice';
-import { selectSites, selectSiteLoading, selectSiteError } from './slice/Site.Selector';
+} from "@mui/icons-material";
+import type { GridColDef, GridRenderCellParams } from "@mui/x-data-grid";
+import { DataGrid } from "@mui/x-data-grid";
+import { fetchSiteList, deleteSite, clearError } from "./slice/Site.Slice";
+import {
+  selectSites,
+  selectSiteLoading,
+  selectSiteError,
+} from "./slice/Site.Selector";
 
 const SitePage: React.FC = () => {
   const theme = useTheme();
@@ -38,16 +42,18 @@ const SitePage: React.FC = () => {
   const error = useSelector(selectSiteError);
 
   useEffect(() => {
-    console.log('Sites from Redux:', sites);
-    console.log('Loading:', loading);
-    console.log('Error:', error);
+    console.log("Sites from Redux:", sites);
+    console.log("Loading:", loading);
+    console.log("Error:", error);
   }, [sites, loading, error]);
 
   const [showSnackbar, setShowSnackbar] = useState(false);
-  const [snackbarMessage, setSnackbarMessage] = useState('');
-  const [snackbarSeverity, setSnackbarSeverity] = useState<'success' | 'error'>('success');
+  const [snackbarMessage, setSnackbarMessage] = useState("");
+  const [snackbarSeverity, setSnackbarSeverity] = useState<"success" | "error">(
+    "success"
+  );
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  const [selectedSiteId, setSelectedSiteId] = useState<string>('');
+  const [selectedSiteId, setSelectedSiteId] = useState<string>("");
 
   useEffect(() => {
     dispatch(fetchSiteList());
@@ -56,7 +62,7 @@ const SitePage: React.FC = () => {
   useEffect(() => {
     if (error) {
       setSnackbarMessage(error);
-      setSnackbarSeverity('error');
+      setSnackbarSeverity("error");
       setShowSnackbar(true);
     }
   }, [error]);
@@ -67,7 +73,7 @@ const SitePage: React.FC = () => {
   };
 
   const handleAdd = () => {
-    navigate('/dashboard/master/site/add');
+    navigate("/dashboard/master/site/add");
   };
 
   const handleEdit = (id: string) => {
@@ -85,61 +91,73 @@ const SitePage: React.FC = () => {
         await dispatch(deleteSite(selectedSiteId)).unwrap();
         // Close dialog and show success message
         setDeleteDialogOpen(false);
-        setSelectedSiteId('');
-        setSnackbarMessage('Site deleted successfully');
-        setSnackbarSeverity('success');
+        setSelectedSiteId("");
+        setSnackbarMessage("Site deleted successfully");
+        setSnackbarSeverity("success");
         setShowSnackbar(true);
       } catch (error: any) {
         // Show error message if delete fails
-        setSnackbarMessage(error || 'Failed to delete site');
-        setSnackbarSeverity('error');
+        setSnackbarMessage(error || "Failed to delete site");
+        setSnackbarSeverity("error");
         setShowSnackbar(true);
         // Close dialog anyway
         setDeleteDialogOpen(false);
-        setSelectedSiteId('');
+        setSelectedSiteId("");
       }
     }
   };
 
   const columns: GridColDef[] = [
     {
-      field: 'siteName',
-      headerName: 'Site Name',
+      field: "sno",
+      headerName: "S.No.",
+      width: 70,
+      sortable: false,
+      renderCell: (params: GridRenderCellParams) => {
+        const index = sites.findIndex(
+          (user) => user.siteId === params.row.siteId
+        );
+        return index + 1;
+      },
+    },
+    {
+      field: "siteName",
+      headerName: "Site Name",
       flex: 1,
       minWidth: 150,
     },
     {
-      field: 'siteLocation',
-      headerName: 'Location',
+      field: "siteLocation",
+      headerName: "Location",
       flex: 1,
       minWidth: 150,
     },
     {
-      field: 'state',
-      headerName: 'State',
+      field: "state",
+      headerName: "State",
       flex: 0.8,
       minWidth: 100,
     },
     {
-      field: 'country',
-      headerName: 'Country',
+      field: "country",
+      headerName: "Country",
       flex: 0.8,
       minWidth: 100,
     },
     {
-      field: 'description',
-      headerName: 'Description',
+      field: "description",
+      headerName: "Description",
       flex: 1,
       minWidth: 150,
     },
     {
-      field: 'actions',
-      headerName: 'Actions',
+      field: "actions",
+      headerName: "Actions",
       flex: 1,
       minWidth: 150,
       sortable: false,
       renderCell: (params: GridRenderCellParams) => (
-        <Box sx={{ display: 'flex', gap: 1 }}>
+        <Box sx={{ display: "flex", gap: 1 }}>
           <IconButton
             size="small"
             color="primary"
@@ -163,7 +181,14 @@ const SitePage: React.FC = () => {
 
   return (
     <Box>
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          mb: 3,
+        }}
+      >
         <Box>
           <Typography variant="h4" fontWeight={700} gutterBottom>
             Site Master
@@ -176,14 +201,14 @@ const SitePage: React.FC = () => {
           variant="contained"
           startIcon={<AddIcon />}
           onClick={handleAdd}
-          sx={{ textTransform: 'none', borderRadius: 2 }}
+          sx={{ textTransform: "none", borderRadius: 2 }}
         >
           Add Site
         </Button>
       </Box>
 
-      <Paper sx={{ borderRadius: 2, overflow: 'hidden' }}>
-        <Box sx={{ height: 500, width: '100%' }}>
+      <Paper sx={{ borderRadius: 2, overflow: "hidden" }}>
+        <Box sx={{ height: 500, width: "100%" }}>
           {error && (
             <Box sx={{ p: 2 }}>
               <Alert severity="error">{error}</Alert>
@@ -204,42 +229,67 @@ const SitePage: React.FC = () => {
               }}
               loading={loading}
               sx={{
-                '& .MuiDataGrid-root': {
-                  border: 'none',
+                "& .MuiDataGrid-root": {
+                  border: "none",
                 },
-                '& .MuiDataGrid-cell': {
-                  padding: '12px',
+                "& .MuiDataGrid-cell": {
+                  padding: "12px",
                 },
-                '& .MuiDataGrid-columnHeaders': {
+                "& .MuiDataGrid-columnHeaders": {
                   backgroundColor: alpha(theme.palette.primary.main, 0.05),
                   borderBottom: `1px solid ${theme.palette.divider}`,
                 },
               }}
             />
           ) : (
-            <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%' }}>
+            <Box
+              sx={{
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+                height: "100%",
+              }}
+            >
               <Typography color="text.secondary">
-                {loading ? 'Loading sites...' : 'No sites found'}
+                {loading ? "Loading sites..." : "No sites found"}
               </Typography>
             </Box>
           )}
         </Box>
       </Paper>
 
-      <Snackbar open={showSnackbar} autoHideDuration={6000} onClose={handleCloseSnackbar}>
-        <Alert onClose={handleCloseSnackbar} severity={snackbarSeverity} sx={{ width: '100%' }}>
+      <Snackbar
+        open={showSnackbar}
+        autoHideDuration={6000}
+        onClose={handleCloseSnackbar}
+      >
+        <Alert
+          onClose={handleCloseSnackbar}
+          severity={snackbarSeverity}
+          sx={{ width: "100%" }}
+        >
           {snackbarMessage}
         </Alert>
       </Snackbar>
 
-      <Dialog open={deleteDialogOpen} onClose={() => setDeleteDialogOpen(false)}>
+      <Dialog
+        open={deleteDialogOpen}
+        onClose={() => setDeleteDialogOpen(false)}
+      >
         <DialogTitle>Delete Site</DialogTitle>
         <DialogContent>
-          <DialogContentText>Are you sure you want to delete this site? This action cannot be undone.</DialogContentText>
+          <DialogContentText>
+            Are you sure you want to delete this site? This action cannot be
+            undone.
+          </DialogContentText>
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setDeleteDialogOpen(false)}>Cancel</Button>
-          <Button onClick={handleConfirmDelete} color="error" variant="contained">
+          <Button
+            onClick={handleConfirmDelete}
+            color="error"
+            variant="contained"
+          >
             Delete
           </Button>
         </DialogActions>

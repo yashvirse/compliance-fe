@@ -18,6 +18,7 @@ export interface PendingReviewTask {
   activityId: string;
   actName: string;
   departmentName: string;
+  siteName: string;
   activityName: string;
   description: string;
   dueDate: string;

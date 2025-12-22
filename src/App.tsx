@@ -55,6 +55,7 @@ import AddCustomerAdminUserPage from "./pages/master/customeradminuser/AddCustom
 import SitePage from "./pages/master/site/SitePage.tsx";
 import AddSitePage from "./pages/master/site/AddSitePage.tsx";
 import ComponentDemoPage from "./pages/ComponentDemoPage.tsx";
+import Task from "./pages/master/task/Task.tsx";
 
 const theme = createTheme({
   palette: {
@@ -357,7 +358,14 @@ function App() {
                   </RoleBasedRoute>
                 }
               />
-
+              <Route
+                path="master/task"
+                element={
+                  <RoleBasedRoute allowedRoles={[UserRole.CUSTOMER_ADMIN]}>
+                    <Task />
+                  </RoleBasedRoute>
+                }
+              />
               {/* Other routes */}
               <Route path="form" element={<FormPage />} />
               <Route

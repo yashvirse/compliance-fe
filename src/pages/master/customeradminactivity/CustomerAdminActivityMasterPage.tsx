@@ -1,7 +1,7 @@
-import React, { useEffect, useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import { useNavigate } from 'react-router-dom';
-import type { AppDispatch } from '../../../app/store';
+import React, { useEffect, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { useNavigate } from "react-router-dom";
+import type { AppDispatch } from "../../../app/store";
 import {
   Box,
   Typography,
@@ -31,25 +31,31 @@ import {
   Select,
   MenuItem,
   FormControl,
-  InputLabel
-} from '@mui/material';
+  InputLabel,
+} from "@mui/material";
 import {
   KeyboardArrowDown as KeyboardArrowDownIcon,
   Edit as EditIcon,
   Delete as DeleteIcon,
-  Upload as UploadIcon
-} from '@mui/icons-material';
-import { fetchCompanyActivityList, fetchActivityById, editCompAdminActivity, deleteActivity, clearError } from './slice/CustomerAdminActivity.Slice';
-import { fetchUserList } from '../customeradminuser/slice/CustomerAdminUser.Slice';
+  Upload as UploadIcon,
+} from "@mui/icons-material";
+import {
+  fetchCompanyActivityList,
+  fetchActivityById,
+  editCompAdminActivity,
+  deleteActivity,
+  clearError,
+} from "./slice/CustomerAdminActivity.Slice";
+import { fetchUserList } from "../customeradminuser/slice/CustomerAdminUser.Slice";
 import {
   selectActivityMasterLoading,
   selectActivityMasterError,
-  selectGroupedActivityMasters
-} from './slice/CustomerAdminActivity.Selector';
-import { selectSites } from '../site/slice/Site.Selector';
-import { fetchSiteList } from '../site/slice/Site.Slice';
-import CustomMultiSelect from '../../../components/common/CustomMultiSelect';
-import type { ActivityDetail } from './slice/CustomerAdminActivity.Type';
+  selectGroupedActivityMasters,
+} from "./slice/CustomerAdminActivity.Selector";
+import { selectSites } from "../site/slice/Site.Selector";
+import { fetchSiteList } from "../site/slice/Site.Slice";
+import CustomMultiSelect from "../../../components/common/CustomMultiSelect";
+import type { ActivityDetail } from "./slice/CustomerAdminActivity.Type";
 
 const CustomerAdminActivityMasterPage: React.FC = () => {
   const theme = useTheme();
@@ -63,27 +69,32 @@ const CustomerAdminActivityMasterPage: React.FC = () => {
 
   const [expandedRows, setExpandedRows] = useState<Set<string>>(new Set());
   const [showSnackbar, setShowSnackbar] = useState(false);
-  const [snackbarMessage, setSnackbarMessage] = useState('');
-  const [snackbarSeverity, setSnackbarSeverity] = useState<'success' | 'error'>('success');
+  const [snackbarMessage, setSnackbarMessage] = useState("");
+  const [snackbarSeverity, setSnackbarSeverity] = useState<"success" | "error">(
+    "success"
+  );
   const [editDialogOpen, setEditDialogOpen] = useState(false);
-  const [selectedActivity, setSelectedActivity] = useState<ActivityDetail | null>(null);
+  const [selectedActivity, setSelectedActivity] =
+    useState<ActivityDetail | null>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [activityToDelete, setActivityToDelete] = useState<string | null>(null);
-  const [userList, setUserList] = useState<Array<{userID: string, userName: string, userRole: string}>>([]);
+  const [userList, setUserList] = useState<
+    Array<{ userID: string; userName: string; userRole: string }>
+  >([]);
   const [editFormData, setEditFormData] = useState({
-    maker: '',
-    makerID: '',
-    checker: '',
-    checkerID: '',
-    reviewer: '',
-    reviewerID: '',
-    auditor: '',
-    auditorID: '',
-    frequency: '',
+    maker: "",
+    makerID: "",
+    checker: "",
+    checkerID: "",
+    reviewer: "",
+    reviewerID: "",
+    auditor: "",
+    auditorID: "",
+    frequency: "",
     dueDay: 0,
     gracePeriodDay: 0,
     reminderDay: 0,
-    selectedSites: [] as string[]
+    selectedSites: [] as string[],
   });
 
   useEffect(() => {
@@ -97,14 +108,14 @@ const CustomerAdminActivityMasterPage: React.FC = () => {
       const result = await dispatch(fetchUserList()).unwrap();
       setUserList(result);
     } catch (err) {
-      console.error('Failed to fetch user list:', err);
+      console.error("Failed to fetch user list:", err);
     }
   };
 
   useEffect(() => {
     if (error) {
       setSnackbarMessage(error);
-      setSnackbarSeverity('error');
+      setSnackbarSeverity("error");
       setShowSnackbar(true);
     }
   }, [error]);
@@ -115,7 +126,7 @@ const CustomerAdminActivityMasterPage: React.FC = () => {
   };
 
   const toggleRow = (key: string) => {
-    setExpandedRows(prev => {
+    setExpandedRows((prev) => {
       const newSet = new Set(prev);
       if (newSet.has(key)) {
         newSet.delete(key);
@@ -130,33 +141,33 @@ const CustomerAdminActivityMasterPage: React.FC = () => {
     try {
       const activity = await dispatch(fetchActivityById(actId)).unwrap();
       setSelectedActivity(activity);
-      
+
       // Extract site IDs from sites array
-      const siteIds = activity.sites?.map(site => site.siteId) || [];
-      
+      const siteIds = activity.sites?.map((site) => site.siteId) || [];
+
       // Handle both 'auditor' and 'auditer' (API uses 'auditer')
-      const auditorName = activity.auditor || activity.auditer || '';
-      const auditorId = activity.auditorID || activity.auditerID || '';
-      
+      const auditorName = activity.auditor || activity.auditer || "";
+      const auditorId = activity.auditorID || activity.auditerID || "";
+
       setEditFormData({
-        maker: activity.maker || '',
-        makerID: activity.makerID || '',
-        checker: activity.checker || '',
-        checkerID: activity.checkerID || '',
-        reviewer: activity.reviewer || '',
-        reviewerID: activity.reviewerID || '',
+        maker: activity.maker || "",
+        makerID: activity.makerID || "",
+        checker: activity.checker || "",
+        checkerID: activity.checkerID || "",
+        reviewer: activity.reviewer || "",
+        reviewerID: activity.reviewerID || "",
         auditor: auditorName,
         auditorID: auditorId,
-        frequency: activity.frequency || '',
+        frequency: activity.frequency || "",
         dueDay: activity.dueDay || 0,
         gracePeriodDay: activity.gracePeriodDay || 0,
         reminderDay: activity.reminderDay || 0,
-        selectedSites: siteIds
+        selectedSites: siteIds,
       });
       setEditDialogOpen(true);
     } catch (err) {
-      setSnackbarMessage('Failed to fetch activity details');
-      setSnackbarSeverity('error');
+      setSnackbarMessage("Failed to fetch activity details");
+      setSnackbarSeverity("error");
       setShowSnackbar(true);
     }
   };
@@ -165,39 +176,40 @@ const CustomerAdminActivityMasterPage: React.FC = () => {
     setEditDialogOpen(false);
     setSelectedActivity(null);
     setEditFormData({
-      maker: '',
-      makerID: '',
-      checker: '',
-      checkerID: '',
-      reviewer: '',
-      reviewerID: '',
-      auditor: '',
-      auditorID: '',
-      frequency: '',
+      maker: "",
+      makerID: "",
+      checker: "",
+      checkerID: "",
+      reviewer: "",
+      reviewerID: "",
+      auditor: "",
+      auditorID: "",
+      frequency: "",
       dueDay: 0,
       gracePeriodDay: 0,
       reminderDay: 0,
-      selectedSites: []
+      selectedSites: [],
     });
   };
 
-  const handleEditFormChange = (field: string) => (event: React.ChangeEvent<HTMLInputElement> | any) => {
-    const value = event.target.value;
-    
-    // Handle user field changes - capture both name and ID
-    if (['maker', 'checker', 'reviewer', 'auditor'].includes(field)) {
-      const user = userList.find(u => u.userName === value);
-      const idField = field + 'ID';
-      
-      setEditFormData(prev => ({
-        ...prev,
-        [field]: value,
-        [idField]: user?.userID || ''
-      }));
-    } else {
-      setEditFormData(prev => ({ ...prev, [field]: value }));
-    }
-  };
+  const handleEditFormChange =
+    (field: string) => (event: React.ChangeEvent<HTMLInputElement> | any) => {
+      const value = event.target.value;
+
+      // Handle user field changes - capture both name and ID
+      if (["maker", "checker", "reviewer", "auditor"].includes(field)) {
+        const user = userList.find((u) => u.userName === value);
+        const idField = field + "ID";
+
+        setEditFormData((prev) => ({
+          ...prev,
+          [field]: value,
+          [idField]: user?.userID || "",
+        }));
+      } else {
+        setEditFormData((prev) => ({ ...prev, [field]: value }));
+      }
+    };
 
   const handleSaveEdit = async () => {
     if (!selectedActivity) return;
@@ -205,43 +217,45 @@ const CustomerAdminActivityMasterPage: React.FC = () => {
     try {
       // Transform selectedSites from array of IDs to array of objects with siteId and siteName
       const sitesData = editFormData.selectedSites
-        .map(siteId => {
-          const site = sites.find(s => s.siteId === siteId);
+        .map((siteId) => {
+          const site = sites.find((s) => s.siteId === siteId);
           return site ? { siteId: site.siteId, siteName: site.siteName } : null;
         })
         .filter((site) => site !== null);
 
-      await dispatch(editCompAdminActivity({
-        activityId: selectedActivity.activityId,
-        actName: selectedActivity.actName,
-        departmentName: selectedActivity.departmentName,
-        activityName: selectedActivity.activityName,
-        description: selectedActivity.description,
-        frequency: editFormData.frequency,
-        dueDay: editFormData.dueDay,
-        gracePeriodDay: editFormData.gracePeriodDay,
-        reminderDay: editFormData.reminderDay,
-        maker: editFormData.maker,
-        makerID: editFormData.makerID,
-        checker: editFormData.checker,
-        checkerID: editFormData.checkerID,
-        reviewer: editFormData.reviewer,
-        reviewerID: editFormData.reviewerID,
-        auditer: editFormData.auditor,
-        auditerID: editFormData.auditorID,
-        companyId: selectedActivity.companyId,
-        companyDomain: selectedActivity.companyDomain,
-        sites: sitesData as Array<{siteId: string, siteName: string}>
-      })).unwrap();
-      
-      setSnackbarMessage('Activity updated successfully');
-      setSnackbarSeverity('success');
+      await dispatch(
+        editCompAdminActivity({
+          activityId: selectedActivity.activityId,
+          actName: selectedActivity.actName,
+          departmentName: selectedActivity.departmentName,
+          activityName: selectedActivity.activityName,
+          description: selectedActivity.description,
+          frequency: editFormData.frequency,
+          dueDay: editFormData.dueDay,
+          gracePeriodDay: editFormData.gracePeriodDay,
+          reminderDay: editFormData.reminderDay,
+          maker: editFormData.maker,
+          makerID: editFormData.makerID,
+          checker: editFormData.checker,
+          checkerID: editFormData.checkerID,
+          reviewer: editFormData.reviewer,
+          reviewerID: editFormData.reviewerID,
+          auditer: editFormData.auditor,
+          auditerID: editFormData.auditorID,
+          companyId: selectedActivity.companyId,
+          companyDomain: selectedActivity.companyDomain,
+          sites: sitesData as Array<{ siteId: string; siteName: string }>,
+        })
+      ).unwrap();
+
+      setSnackbarMessage("Activity updated successfully");
+      setSnackbarSeverity("success");
       setShowSnackbar(true);
       handleCloseEditDialog();
       dispatch(fetchCompanyActivityList());
     } catch (err) {
-      setSnackbarMessage('Failed to update activity');
-      setSnackbarSeverity('error');
+      setSnackbarMessage("Failed to update activity");
+      setSnackbarSeverity("error");
       setShowSnackbar(true);
     }
   };
@@ -256,15 +270,15 @@ const CustomerAdminActivityMasterPage: React.FC = () => {
 
     try {
       await dispatch(deleteActivity(activityToDelete)).unwrap();
-      setSnackbarMessage('Activity deleted successfully');
-      setSnackbarSeverity('success');
+      setSnackbarMessage("Activity deleted successfully");
+      setSnackbarSeverity("success");
       setShowSnackbar(true);
       setDeleteDialogOpen(false);
       setActivityToDelete(null);
       dispatch(fetchCompanyActivityList());
     } catch (err) {
-      setSnackbarMessage('Failed to delete activity');
-      setSnackbarSeverity('error');
+      setSnackbarMessage("Failed to delete activity");
+      setSnackbarSeverity("error");
       setShowSnackbar(true);
     }
   };
@@ -275,19 +289,19 @@ const CustomerAdminActivityMasterPage: React.FC = () => {
   };
 
   const handleImportActivity = () => {
-    navigate('/dashboard/master/customeradminactivity/import');
+    navigate("/dashboard/master/customeradminactivity/import");
   };
 
   if (loading) {
     return (
-      <Box 
-        sx={{ 
-          display: 'flex', 
-          justifyContent: 'center', 
-          alignItems: 'center', 
-          minHeight: '60vh',
-          flexDirection: 'column',
-          gap: 2 
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          minHeight: "60vh",
+          flexDirection: "column",
+          gap: 2,
         }}
       >
         <CircularProgress size={50} />
@@ -301,7 +315,14 @@ const CustomerAdminActivityMasterPage: React.FC = () => {
   return (
     <Box>
       {/* Header */}
-      <Box sx={{ mb: 3, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+      <Box
+        sx={{
+          mb: 3,
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "flex-start",
+        }}
+      >
         <Box>
           <Typography variant="h4" fontWeight={700} gutterBottom>
             Activity Master
@@ -317,10 +338,10 @@ const CustomerAdminActivityMasterPage: React.FC = () => {
             onClick={handleImportActivity}
             sx={{
               borderRadius: 2,
-              textTransform: 'none',
+              textTransform: "none",
               fontWeight: 600,
               px: 3,
-              boxShadow: `0 4px 12px ${alpha(theme.palette.primary.main, 0.3)}`
+              boxShadow: `0 4px 12px ${alpha(theme.palette.primary.main, 0.3)}`,
             }}
           >
             Import Activity
@@ -333,13 +354,15 @@ const CustomerAdminActivityMasterPage: React.FC = () => {
         sx={{
           borderRadius: 3,
           boxShadow: `0 4px 20px ${alpha(theme.palette.common.black, 0.08)}`,
-          overflow: 'hidden'
+          overflow: "hidden",
         }}
       >
         <TableContainer>
           <Table>
             <TableHead>
-              <TableRow sx={{ bgcolor: alpha(theme.palette.primary.main, 0.05) }}>
+              <TableRow
+                sx={{ bgcolor: alpha(theme.palette.primary.main, 0.05) }}
+              >
                 <TableCell sx={{ width: 50 }} />
                 <TableCell>
                   <Typography variant="subtitle2" fontWeight={600}>
@@ -370,22 +393,26 @@ const CustomerAdminActivityMasterPage: React.FC = () => {
                   return (
                     <React.Fragment key={rowKey}>
                       {/* Parent Row */}
-                      <TableRow 
+                      <TableRow
                         hover
-                        sx={{ 
-                          cursor: 'pointer',
-                          '& > *': { borderBottom: 'unset' },
-                          bgcolor: isExpanded ? alpha(theme.palette.primary.main, 0.02) : 'inherit',
-                          transition: 'background-color 0.2s'
+                        sx={{
+                          cursor: "pointer",
+                          "& > *": { borderBottom: "unset" },
+                          bgcolor: isExpanded
+                            ? alpha(theme.palette.primary.main, 0.02)
+                            : "inherit",
+                          transition: "background-color 0.2s",
                         }}
                         onClick={() => toggleRow(rowKey)}
                       >
                         <TableCell>
-                          <IconButton 
+                          <IconButton
                             size="small"
                             sx={{
-                              transition: 'transform 0.2s',
-                              transform: isExpanded ? 'rotate(0deg)' : 'rotate(-90deg)'
+                              transition: "transform 0.2s",
+                              transform: isExpanded
+                                ? "rotate(0deg)"
+                                : "rotate(-90deg)",
                             }}
                           >
                             <KeyboardArrowDownIcon />
@@ -397,14 +424,14 @@ const CustomerAdminActivityMasterPage: React.FC = () => {
                           </Typography>
                         </TableCell>
                         <TableCell>
-                          <Chip 
-                            label={group.departmentName} 
+                          <Chip
+                            label={group.departmentName}
                             size="small"
-                            sx={{ 
+                            sx={{
                               bgcolor: alpha(theme.palette.info.main, 0.1),
                               color: theme.palette.info.main,
                               fontWeight: 500,
-                              borderRadius: 2
+                              borderRadius: 2,
                             }}
                           />
                         </TableCell>
@@ -412,61 +439,102 @@ const CustomerAdminActivityMasterPage: React.FC = () => {
 
                       {/* Nested Table Row */}
                       <TableRow>
-                        <TableCell 
-                          style={{ paddingBottom: 0, paddingTop: 0 }} 
+                        <TableCell
+                          style={{ paddingBottom: 0, paddingTop: 0 }}
                           colSpan={3}
                         >
-                          <Collapse in={isExpanded} timeout="auto" unmountOnExit>
-                            <Box 
-                              sx={{ 
+                          <Collapse
+                            in={isExpanded}
+                            timeout="auto"
+                            unmountOnExit
+                          >
+                            <Box
+                              sx={{
                                 margin: 2,
                                 borderRadius: 2,
-                                border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
-                                overflow: 'hidden'
+                                border: `1px solid ${alpha(
+                                  theme.palette.divider,
+                                  0.1
+                                )}`,
+                                overflow: "hidden",
                               }}
                             >
-                              <Box 
-                                sx={{ 
+                              <Box
+                                sx={{
                                   bgcolor: alpha(theme.palette.grey[500], 0.03),
                                   px: 2,
                                   py: 1.5,
-                                  borderBottom: `1px solid ${alpha(theme.palette.divider, 0.1)}`
+                                  borderBottom: `1px solid ${alpha(
+                                    theme.palette.divider,
+                                    0.1
+                                  )}`,
                                 }}
                               >
-                                <Typography variant="subtitle2" fontWeight={600}>
+                                <Typography
+                                  variant="subtitle2"
+                                  fontWeight={600}
+                                >
                                   Activities ({group.activities.length})
                                 </Typography>
                               </Box>
                               <Table size="small">
                                 <TableHead>
-                                  <TableRow sx={{ bgcolor: alpha(theme.palette.grey[500], 0.02) }}>
+                                  <TableRow
+                                    sx={{
+                                      bgcolor: alpha(
+                                        theme.palette.grey[500],
+                                        0.02
+                                      ),
+                                    }}
+                                  >
                                     <TableCell>
-                                      <Typography variant="caption" fontWeight={600}>
+                                      <Typography
+                                        variant="caption"
+                                        fontWeight={600}
+                                      >
                                         Activity Name
                                       </Typography>
                                     </TableCell>
                                     <TableCell>
-                                      <Typography variant="caption" fontWeight={600}>
+                                      <Typography
+                                        variant="caption"
+                                        fontWeight={600}
+                                      >
                                         Frequency
                                       </Typography>
                                     </TableCell>
                                     <TableCell align="center">
-                                      <Typography variant="caption" fontWeight={600}>
+                                      <Typography
+                                        variant="caption"
+                                        fontWeight={600}
+                                      >
                                         Due Day
                                       </Typography>
                                     </TableCell>
                                     <TableCell align="center">
-                                      <Typography variant="caption" fontWeight={600}>
+                                      <Typography
+                                        variant="caption"
+                                        fontWeight={600}
+                                      >
                                         Grace Days
                                       </Typography>
                                     </TableCell>
                                     <TableCell align="center">
-                                      <Typography variant="caption" fontWeight={600}>
+                                      <Typography
+                                        variant="caption"
+                                        fontWeight={600}
+                                      >
                                         Reminder Day
                                       </Typography>
                                     </TableCell>
-                                    <TableCell align="center" sx={{ width: 120 }}>
-                                      <Typography variant="caption" fontWeight={600}>
+                                    <TableCell
+                                      align="center"
+                                      sx={{ width: 120 }}
+                                    >
+                                      <Typography
+                                        variant="caption"
+                                        fontWeight={600}
+                                      >
                                         Actions
                                       </Typography>
                                     </TableCell>
@@ -474,11 +542,11 @@ const CustomerAdminActivityMasterPage: React.FC = () => {
                                 </TableHead>
                                 <TableBody>
                                   {group.activities.map((activity) => (
-                                    <TableRow 
+                                    <TableRow
                                       key={activity.activityId}
                                       hover
                                       sx={{
-                                        '&:last-child td': { borderBottom: 0 }
+                                        "&:last-child td": { borderBottom: 0 },
                                       }}
                                     >
                                       <TableCell>
@@ -487,8 +555,8 @@ const CustomerAdminActivityMasterPage: React.FC = () => {
                                         </Typography>
                                       </TableCell>
                                       <TableCell>
-                                        <Chip 
-                                          label={activity.frequency || 'N/A'} 
+                                        <Chip
+                                          label={activity.frequency || "N/A"}
                                           size="small"
                                           color="primary"
                                           variant="outlined"
@@ -496,21 +564,30 @@ const CustomerAdminActivityMasterPage: React.FC = () => {
                                       </TableCell>
                                       <TableCell align="center">
                                         <Typography variant="body2">
-                                          {activity.dueDay || '-'}
+                                          {activity.dueDay || "-"}
                                         </Typography>
                                       </TableCell>
                                       <TableCell align="center">
                                         <Typography variant="body2">
-                                          {activity.gracePeriodDay || '-'}
+                                          {activity.gracePeriodDay || "-"}
                                         </Typography>
                                       </TableCell>
                                       <TableCell align="center">
                                         <Typography variant="body2">
-                                          {activity.reminderDay !== null && activity.reminderDay !== undefined ? activity.reminderDay : '-'}
+                                          {activity.reminderDay !== null &&
+                                          activity.reminderDay !== undefined
+                                            ? activity.reminderDay
+                                            : "-"}
                                         </Typography>
                                       </TableCell>
                                       <TableCell align="center">
-                                        <Box sx={{ display: 'flex', gap: 1, justifyContent: 'center' }}>
+                                        <Box
+                                          sx={{
+                                            display: "flex",
+                                            gap: 1,
+                                            justifyContent: "center",
+                                          }}
+                                        >
                                           <Tooltip title="Edit Activity">
                                             <IconButton
                                               size="small"
@@ -519,10 +596,14 @@ const CustomerAdminActivityMasterPage: React.FC = () => {
                                                 handleEdit(activity.activityId);
                                               }}
                                               sx={{
-                                                color: theme.palette.primary.main,
-                                                '&:hover': {
-                                                  bgcolor: alpha(theme.palette.primary.main, 0.1)
-                                                }
+                                                color:
+                                                  theme.palette.primary.main,
+                                                "&:hover": {
+                                                  bgcolor: alpha(
+                                                    theme.palette.primary.main,
+                                                    0.1
+                                                  ),
+                                                },
                                               }}
                                             >
                                               <EditIcon fontSize="small" />
@@ -533,13 +614,18 @@ const CustomerAdminActivityMasterPage: React.FC = () => {
                                               size="small"
                                               onClick={(e) => {
                                                 e.stopPropagation();
-                                                handleDelete(activity.activityId);
+                                                handleDelete(
+                                                  activity.activityId
+                                                );
                                               }}
                                               sx={{
                                                 color: theme.palette.error.main,
-                                                '&:hover': {
-                                                  bgcolor: alpha(theme.palette.error.main, 0.1)
-                                                }
+                                                "&:hover": {
+                                                  bgcolor: alpha(
+                                                    theme.palette.error.main,
+                                                    0.1
+                                                  ),
+                                                },
                                               }}
                                             >
                                               <DeleteIcon fontSize="small" />
@@ -569,13 +655,13 @@ const CustomerAdminActivityMasterPage: React.FC = () => {
         open={showSnackbar}
         autoHideDuration={6000}
         onClose={handleCloseSnackbar}
-        anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
+        anchorOrigin={{ vertical: "top", horizontal: "right" }}
       >
-        <Alert 
-          onClose={handleCloseSnackbar} 
+        <Alert
+          onClose={handleCloseSnackbar}
           severity={snackbarSeverity}
           variant="filled"
-          sx={{ width: '100%' }}
+          sx={{ width: "100%" }}
         >
           {snackbarMessage}
         </Alert>
@@ -588,14 +674,25 @@ const CustomerAdminActivityMasterPage: React.FC = () => {
         maxWidth="md"
         fullWidth
       >
-        <DialogTitle sx={{ fontWeight: 600, borderBottom: `1px solid ${theme.palette.divider}` }}>
+        <DialogTitle
+          sx={{
+            fontWeight: 600,
+            borderBottom: `1px solid ${theme.palette.divider}`,
+          }}
+        >
           Edit Activity Assignment
         </DialogTitle>
         <DialogContent sx={{ mt: 2 }}>
           {selectedActivity && (
             <Box>
               {/* Activity Info - Read Only */}
-              <Paper sx={{ p: 2, mb: 3, bgcolor: alpha(theme.palette.primary.main, 0.05) }}>
+              <Paper
+                sx={{
+                  p: 2,
+                  mb: 3,
+                  bgcolor: alpha(theme.palette.primary.main, 0.05),
+                }}
+              >
                 <Grid container spacing={2}>
                   <Grid size={{ xs: 12, md: 6 }}>
                     <Typography variant="caption" color="text.secondary">
@@ -633,7 +730,12 @@ const CustomerAdminActivityMasterPage: React.FC = () => {
               </Paper>
 
               {/* Editable Fields */}
-              <Typography variant="subtitle2" fontWeight={600} gutterBottom sx={{ mb: 2 }}>
+              <Typography
+                variant="subtitle2"
+                fontWeight={600}
+                gutterBottom
+                sx={{ mb: 2 }}
+              >
                 Activity Details
               </Typography>
               <Grid container spacing={2} sx={{ mb: 3 }}>
@@ -642,13 +744,14 @@ const CustomerAdminActivityMasterPage: React.FC = () => {
                     <InputLabel>Frequency</InputLabel>
                     <Select
                       value={editFormData.frequency}
-                      onChange={handleEditFormChange('frequency')}
+                      onChange={handleEditFormChange("frequency")}
                       label="Frequency"
                     >
                       <MenuItem value="Weekly">Weekly</MenuItem>
                       <MenuItem value="Fortnightly">Fortnightly</MenuItem>
                       <MenuItem value="Monthly">Monthly</MenuItem>
                       <MenuItem value="Half Yearly">Half Yearly</MenuItem>
+                      <MenuItem value="Quarterly">Quarterly</MenuItem>
                       <MenuItem value="Annually">Annually</MenuItem>
                       <MenuItem value="As Needed">As Needed</MenuItem>
                     </Select>
@@ -660,7 +763,7 @@ const CustomerAdminActivityMasterPage: React.FC = () => {
                     label="Due Day"
                     type="number"
                     value={editFormData.dueDay}
-                    onChange={handleEditFormChange('dueDay')}
+                    onChange={handleEditFormChange("dueDay")}
                     placeholder="Enter due day"
                     inputProps={{ min: 0 }}
                   />
@@ -671,7 +774,7 @@ const CustomerAdminActivityMasterPage: React.FC = () => {
                     label="Grace Period Days"
                     type="number"
                     value={editFormData.gracePeriodDay}
-                    onChange={handleEditFormChange('gracePeriodDay')}
+                    onChange={handleEditFormChange("gracePeriodDay")}
                     placeholder="Enter grace period days"
                     inputProps={{ min: 0 }}
                   />
@@ -682,14 +785,19 @@ const CustomerAdminActivityMasterPage: React.FC = () => {
                     label="Reminder Day"
                     type="number"
                     value={editFormData.reminderDay}
-                    onChange={handleEditFormChange('reminderDay')}
+                    onChange={handleEditFormChange("reminderDay")}
                     placeholder="Enter reminder day"
                     inputProps={{ min: 0 }}
                   />
                 </Grid>
               </Grid>
 
-              <Typography variant="subtitle2" fontWeight={600} gutterBottom sx={{ mb: 2 }}>
+              <Typography
+                variant="subtitle2"
+                fontWeight={600}
+                gutterBottom
+                sx={{ mb: 2 }}
+              >
                 Assign Users
               </Typography>
               <Grid container spacing={2}>
@@ -698,15 +806,15 @@ const CustomerAdminActivityMasterPage: React.FC = () => {
                     <InputLabel>Maker</InputLabel>
                     <Select
                       value={editFormData.maker}
-                      onChange={handleEditFormChange('maker')}
+                      onChange={handleEditFormChange("maker")}
                       label="Maker"
                     >
                       <MenuItem value="">
                         <em>None</em>
                       </MenuItem>
                       {userList
-                        .filter(user => user.userRole === 'Maker')
-                        .map(user => (
+                        .filter((user) => user.userRole === "Maker")
+                        .map((user) => (
                           <MenuItem key={user.userID} value={user.userName}>
                             {user.userName}
                           </MenuItem>
@@ -719,15 +827,15 @@ const CustomerAdminActivityMasterPage: React.FC = () => {
                     <InputLabel>Checker</InputLabel>
                     <Select
                       value={editFormData.checker}
-                      onChange={handleEditFormChange('checker')}
+                      onChange={handleEditFormChange("checker")}
                       label="Checker"
                     >
                       <MenuItem value="">
                         <em>None</em>
                       </MenuItem>
                       {userList
-                        .filter(user => user.userRole === 'Checker')
-                        .map(user => (
+                        .filter((user) => user.userRole === "Checker")
+                        .map((user) => (
                           <MenuItem key={user.userID} value={user.userName}>
                             {user.userName}
                           </MenuItem>
@@ -740,15 +848,15 @@ const CustomerAdminActivityMasterPage: React.FC = () => {
                     <InputLabel>Reviewer</InputLabel>
                     <Select
                       value={editFormData.reviewer}
-                      onChange={handleEditFormChange('reviewer')}
+                      onChange={handleEditFormChange("reviewer")}
                       label="Reviewer"
                     >
                       <MenuItem value="">
                         <em>None</em>
                       </MenuItem>
                       {userList
-                        .filter(user => user.userRole === 'Reviewer')
-                        .map(user => (
+                        .filter((user) => user.userRole === "Reviewer")
+                        .map((user) => (
                           <MenuItem key={user.userID} value={user.userName}>
                             {user.userName}
                           </MenuItem>
@@ -761,15 +869,15 @@ const CustomerAdminActivityMasterPage: React.FC = () => {
                     <InputLabel>Auditor</InputLabel>
                     <Select
                       value={editFormData.auditor}
-                      onChange={handleEditFormChange('auditor')}
+                      onChange={handleEditFormChange("auditor")}
                       label="Auditor"
                     >
                       <MenuItem value="">
                         <em>None</em>
                       </MenuItem>
                       {userList
-                        .filter(user => user.userRole === 'Auditor')
-                        .map(user => (
+                        .filter((user) => user.userRole === "Auditor")
+                        .map((user) => (
                           <MenuItem key={user.userID} value={user.userName}>
                             {user.userName}
                           </MenuItem>
@@ -779,20 +887,28 @@ const CustomerAdminActivityMasterPage: React.FC = () => {
                 </Grid>
               </Grid>
 
-              <Typography variant="subtitle2" fontWeight={600} gutterBottom sx={{ mb: 2, mt: 3 }}>
+              <Typography
+                variant="subtitle2"
+                fontWeight={600}
+                gutterBottom
+                sx={{ mb: 2, mt: 3 }}
+              >
                 Applicable Sites
               </Typography>
               <Grid container spacing={2}>
                 <Grid size={{ xs: 12 }}>
                   <CustomMultiSelect
                     label="Select Sites"
-                    options={sites.map(site => ({
+                    options={sites.map((site) => ({
                       label: site.siteName,
-                      value: site.siteId || ''
+                      value: site.siteId || "",
                     }))}
                     value={editFormData.selectedSites || []}
                     onChange={(selected) => {
-                      setEditFormData(prev => ({ ...prev, selectedSites: selected as string[] }));
+                      setEditFormData((prev) => ({
+                        ...prev,
+                        selectedSites: selected as string[],
+                      }));
                     }}
                   />
                 </Grid>
@@ -800,23 +916,25 @@ const CustomerAdminActivityMasterPage: React.FC = () => {
             </Box>
           )}
         </DialogContent>
-        <DialogActions sx={{ px: 3, pb: 2, borderTop: `1px solid ${theme.palette.divider}` }}>
-          <Button 
+        <DialogActions
+          sx={{ px: 3, pb: 2, borderTop: `1px solid ${theme.palette.divider}` }}
+        >
+          <Button
             onClick={handleCloseEditDialog}
-            sx={{ textTransform: 'none' }}
+            sx={{ textTransform: "none" }}
           >
             Cancel
           </Button>
-          <Button 
+          <Button
             onClick={handleSaveEdit}
             variant="contained"
             disabled={loading}
-            sx={{ 
-              textTransform: 'none',
-              minWidth: 100
+            sx={{
+              textTransform: "none",
+              minWidth: 100,
             }}
           >
-            {loading ? <CircularProgress size={20} /> : 'Save Changes'}
+            {loading ? <CircularProgress size={20} /> : "Save Changes"}
           </Button>
         </DialogActions>
       </Dialog>
@@ -828,32 +946,28 @@ const CustomerAdminActivityMasterPage: React.FC = () => {
         maxWidth="xs"
         fullWidth
       >
-        <DialogTitle sx={{ fontWeight: 600 }}>
-          Confirm Delete
-        </DialogTitle>
+        <DialogTitle sx={{ fontWeight: 600 }}>Confirm Delete</DialogTitle>
         <DialogContent>
           <Typography>
-            Are you sure you want to delete this activity? This action cannot be undone.
+            Are you sure you want to delete this activity? This action cannot be
+            undone.
           </Typography>
         </DialogContent>
         <DialogActions sx={{ px: 3, pb: 2 }}>
-          <Button 
-            onClick={handleDeleteCancel}
-            sx={{ textTransform: 'none' }}
-          >
+          <Button onClick={handleDeleteCancel} sx={{ textTransform: "none" }}>
             Cancel
           </Button>
-          <Button 
+          <Button
             onClick={handleDeleteConfirm}
             variant="contained"
             color="error"
             disabled={loading}
-            sx={{ 
-              textTransform: 'none',
-              minWidth: 100
+            sx={{
+              textTransform: "none",
+              minWidth: 100,
             }}
           >
-            {loading ? <CircularProgress size={20} /> : 'Delete'}
+            {loading ? <CircularProgress size={20} /> : "Delete"}
           </Button>
         </DialogActions>
       </Dialog>
