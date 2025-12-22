@@ -1,7 +1,7 @@
 // Auditor Dashboard Types
 
 // ===== Task Counts (Dashboard Stats) =====
-export interface TaskCountResult {
+export interface AuditorTaskCountResult {
   pendingCount: number;
   approvedCount: number;
   rejectedCount: number;
@@ -10,10 +10,10 @@ export interface TaskCountResult {
 export interface GetTaskCountResponse {
   isSuccess: boolean;
   message: string;
-  result: TaskCountResult;
+  result: AuditorTaskCountResult;
 }
 
-// ===== Pending Task Detail =====
+// ===== Pending Tasks =====
 export interface PendingTaskDetail {
   userId: string;
   userName: string;
@@ -39,6 +39,7 @@ export interface PendingTask {
   currentUserID: string;
   currentUserName: string;
   currentUserInDate: string;
+  siteName?: string; // optional अगर कुछ tasks में न हो
   maker: string;
   makerID: string;
   checker: string;
@@ -59,14 +60,71 @@ export interface GetPendingTasksResponse {
   message: string;
   result: PendingTask[];
 }
+// ===== Task Action Requests & Responses =====
+export interface ApproveTaskRequest {
+  taskID: string;
+  remark: string;
+}
 
-// ===== Auditor Dashboard State =====
+export interface ApproveTaskResponse {
+  isSuccess: boolean;
+  message: string;
+  result: number;
+}
+
+export interface RejectTaskRequest {
+  taskID: string;
+  remark: string;
+}
+
+export interface RejectTaskResponse {
+  isSuccess: boolean;
+  message: string;
+  result: number;
+}
+
+// ===== Approved Tasks (same structure as Pending) =====
+export type ApprovedTaskDetail = PendingTaskDetail;
+export type ApprovedTask = PendingTask;
+
+export interface GetApprovedTasksResponse {
+  isSuccess: boolean;
+  message: string;
+  result: ApprovedTask[];
+}
+
+// ===== Rejected Tasks (same structure as Pending) =====
+export type RejectedTaskDetail = PendingTaskDetail;
+export type RejectedTask = PendingTask;
+
+export interface GetRejectedTasksResponse {
+  isSuccess: boolean;
+  message: string;
+  result: RejectedTask[];
+}
+
+// ===== Redux State =====
 export interface AuditorDashboardState {
-  taskCounts: TaskCountResult | null;
+  // Tasks
   pendingTasks: PendingTask[];
-  loading: boolean;
+  approvedTasks: ApprovedTask[];
+  rejectedTasks: RejectedTask[];
+
+  // Dashboard Counts
+  counts: AuditorTaskCountResult | null;
+
+  // Loading states
+  loading: boolean; // for task count
   pendingTasksLoading: boolean;
+  approvedTasksLoading: boolean;
+  rejectedTasksLoading: boolean;
+  taskActionsLoading: boolean;
+  taskActionsError: string | null;
+  // Error states
   error: string | null;
   pendingTasksError: string | null;
-  successMessage: string | null;
+  approvedTasksError: string | null;
+  rejectedTasksError: string | null;
+
+  successMessage?: string | null;
 }

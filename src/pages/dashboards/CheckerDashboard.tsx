@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import type { AppDispatch } from '../../app/store';
+import React, { useState, useEffect } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import type { AppDispatch } from "../../app/store";
 import {
   Box,
   Typography,
@@ -25,7 +25,7 @@ import {
   DialogContent,
   DialogActions,
   TextField,
-} from '@mui/material';
+} from "@mui/material";
 import {
   CheckCircle,
   Assignment,
@@ -33,8 +33,8 @@ import {
   Close as CloseIcon,
   ThumbUp as ApproveIcon,
   ThumbDown as RejectIcon,
-  Visibility as EyeIcon
-} from '@mui/icons-material';
+  Visibility as EyeIcon,
+} from "@mui/icons-material";
 import {
   fetchCheckerTaskCount,
   fetchPendingCheckTasks,
@@ -43,7 +43,7 @@ import {
   approveCheckTask,
   rejectCheckTask,
   clearTaskActionError,
-} from './checkerslice/CheckerDashboard.Slice';
+} from "./checkerslice/CheckerDashboard.Slice";
 import {
   selectCheckerTaskCounts,
   selectCheckerTaskActionsLoading,
@@ -57,8 +57,8 @@ import {
   selectRejectedCheckTasks,
   selectRejectedCheckTasksLoading,
   selectRejectedCheckTasksError,
-} from './checkerslice/CheckerDashboard.Selector';
-import { selectUser } from '../login/slice/Login.selector';
+} from "./checkerslice/CheckerDashboard.Selector";
+import { selectUser } from "../login/slice/Login.selector";
 
 const CheckerDashboard: React.FC = () => {
   const theme = useTheme();
@@ -71,10 +71,14 @@ const CheckerDashboard: React.FC = () => {
   const pendingCheckTasksLoading = useSelector(selectPendingCheckTasksLoading);
   const pendingCheckTasksError = useSelector(selectPendingCheckTasksError);
   const approvedCheckTasks = useSelector(selectApprovedCheckTasks);
-  const approvedCheckTasksLoading = useSelector(selectApprovedCheckTasksLoading);
+  const approvedCheckTasksLoading = useSelector(
+    selectApprovedCheckTasksLoading
+  );
   const approvedCheckTasksError = useSelector(selectApprovedCheckTasksError);
   const rejectedCheckTasks = useSelector(selectRejectedCheckTasks);
-  const rejectedCheckTasksLoading = useSelector(selectRejectedCheckTasksLoading);
+  const rejectedCheckTasksLoading = useSelector(
+    selectRejectedCheckTasksLoading
+  );
   const rejectedCheckTasksError = useSelector(selectRejectedCheckTasksError);
 
   const [pendingCheckTasksOpen, setPendingCheckTasksOpen] = useState(false);
@@ -85,7 +89,7 @@ const CheckerDashboard: React.FC = () => {
   const [approveDialogOpen, setApproveDialogOpen] = useState(false);
   const [rejectDialogOpen, setRejectDialogOpen] = useState(false);
   const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
-  const [remark, setRemark] = useState('');
+  const [remark, setRemark] = useState("");
 
   const handlePendingCheckTasksClick = async () => {
     if (user?.id) {
@@ -134,13 +138,13 @@ const CheckerDashboard: React.FC = () => {
 
   const handleApproveClick = (taskId: string) => {
     setSelectedTaskId(taskId);
-    setRemark('');
+    setRemark("");
     setApproveDialogOpen(true);
   };
 
   const handleRejectClick = (taskId: string) => {
     setSelectedTaskId(taskId);
-    setRemark('');
+    setRemark("");
     setRejectDialogOpen(true);
   };
 
@@ -158,7 +162,7 @@ const CheckerDashboard: React.FC = () => {
     if (selectedTaskId && remark.trim()) {
       await dispatch(approveCheckTask({ taskID: selectedTaskId, remark }));
       setApproveDialogOpen(false);
-      setRemark('');
+      setRemark("");
       setSelectedTaskId(null);
       // Refresh pending tasks grid after approval
       if (user?.id) {
@@ -171,7 +175,7 @@ const CheckerDashboard: React.FC = () => {
     if (selectedTaskId && remark.trim()) {
       await dispatch(rejectCheckTask({ taskID: selectedTaskId, remark }));
       setRejectDialogOpen(false);
-      setRemark('');
+      setRemark("");
       setSelectedTaskId(null);
       // Refresh pending tasks grid after rejection
       if (user?.id) {
@@ -182,14 +186,14 @@ const CheckerDashboard: React.FC = () => {
 
   const handleCloseApproveDialog = () => {
     setApproveDialogOpen(false);
-    setRemark('');
+    setRemark("");
     setSelectedTaskId(null);
     dispatch(clearTaskActionError());
   };
 
   const handleCloseRejectDialog = () => {
     setRejectDialogOpen(false);
-    setRemark('');
+    setRemark("");
     setSelectedTaskId(null);
     dispatch(clearTaskActionError());
   };
@@ -206,14 +210,34 @@ const CheckerDashboard: React.FC = () => {
   const rejectedCount = counts?.rejectedCount ?? 0;
 
   const stats = [
-    { label: 'Pending Check', value: pendingCheckCount.toString(), icon: <Assignment />, color: theme.palette.warning.main, onClick: handlePendingCheckTasksClick },
-    { label: 'Approved', value: approvedCount.toString(), icon: <CheckCircle />, color: theme.palette.success.main, onClick: handleApprovedCheckTasksClick },
-    { label: 'Rejected', value: rejectedCount.toString(), icon: <Cancel />, color: theme.palette.error.main, onClick: handleRejectedCheckTasksClick },
+    {
+      label: "Pending Check",
+      value: pendingCheckCount.toString(),
+      icon: <Assignment />,
+      color: theme.palette.warning.main,
+      onClick: handlePendingCheckTasksClick,
+    },
+    {
+      label: "Approved",
+      value: approvedCount.toString(),
+      icon: <CheckCircle />,
+      color: theme.palette.success.main,
+      onClick: handleApprovedCheckTasksClick,
+    },
+    {
+      label: "Rejected",
+      value: rejectedCount.toString(),
+      icon: <Cancel />,
+      color: theme.palette.error.main,
+      onClick: handleRejectedCheckTasksClick,
+    },
   ];
 
   return (
     <Box>
-      {!pendingCheckTasksOpen && !approvedCheckTasksOpen && !rejectedCheckTasksOpen ? (
+      {!pendingCheckTasksOpen &&
+      !approvedCheckTasksOpen &&
+      !rejectedCheckTasksOpen ? (
         <>
           {/* Main Dashboard View */}
           <Box sx={{ mb: 4 }}>
@@ -231,18 +255,24 @@ const CheckerDashboard: React.FC = () => {
                 <Card
                   sx={{
                     borderRadius: 3,
-                    boxShadow: `0 4px 20px ${alpha(theme.palette.common.black, 0.08)}`,
-                    cursor: 'pointer',
-                    transition: 'transform 0.2s, box-shadow 0.2s',
-                    '&:hover': {
-                      transform: 'translateY(-4px)',
-                      boxShadow: `0 8px 30px ${alpha(theme.palette.common.black, 0.12)}`,
+                    boxShadow: `0 4px 20px ${alpha(
+                      theme.palette.common.black,
+                      0.08
+                    )}`,
+                    cursor: "pointer",
+                    transition: "transform 0.2s, box-shadow 0.2s",
+                    "&:hover": {
+                      transform: "translateY(-4px)",
+                      boxShadow: `0 8px 30px ${alpha(
+                        theme.palette.common.black,
+                        0.12
+                      )}`,
                     },
                   }}
                   onClick={stat.onClick}
                 >
                   <CardContent>
-                    <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+                    <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
                       <Box
                         sx={{
                           p: 1.5,
@@ -273,7 +303,10 @@ const CheckerDashboard: React.FC = () => {
             sx={{
               mt: 3,
               borderRadius: 3,
-              boxShadow: `0 4px 20px ${alpha(theme.palette.common.black, 0.08)}`,
+              boxShadow: `0 4px 20px ${alpha(
+                theme.palette.common.black,
+                0.08
+              )}`,
             }}
           >
             <CardContent sx={{ p: 4 }}>
@@ -295,7 +328,14 @@ const CheckerDashboard: React.FC = () => {
       ) : pendingCheckTasksOpen ? (
         <>
           {/* Pending Check Tasks View */}
-          <Box sx={{ mb: 3, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+          <Box
+            sx={{
+              mb: 3,
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "flex-start",
+            }}
+          >
             <Box>
               <Typography variant="h4" fontWeight={700} gutterBottom>
                 Pending Check Tasks
@@ -310,7 +350,7 @@ const CheckerDashboard: React.FC = () => {
               onClick={handleClosePendingCheckTasksDialog}
               sx={{
                 borderRadius: 2,
-                textTransform: 'none',
+                textTransform: "none",
                 fontWeight: 600,
                 px: 3,
               }}
@@ -322,12 +362,24 @@ const CheckerDashboard: React.FC = () => {
           <Paper
             sx={{
               borderRadius: 3,
-              boxShadow: `0 4px 20px ${alpha(theme.palette.common.black, 0.08)}`,
-              overflow: 'hidden'
+              boxShadow: `0 4px 20px ${alpha(
+                theme.palette.common.black,
+                0.08
+              )}`,
+              overflow: "hidden",
             }}
           >
             {pendingCheckTasksLoading ? (
-              <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: 400, flexDirection: 'column', gap: 2 }}>
+              <Box
+                sx={{
+                  display: "flex",
+                  justifyContent: "center",
+                  alignItems: "center",
+                  minHeight: 400,
+                  flexDirection: "column",
+                  gap: 2,
+                }}
+              >
                 <CircularProgress size={50} />
                 <Typography variant="body1" color="text.secondary">
                   Loading Pending Check Tasks...
@@ -335,13 +387,13 @@ const CheckerDashboard: React.FC = () => {
               </Box>
             ) : pendingCheckTasksError ? (
               <Box sx={{ p: 4 }}>
-                <Alert severity="error">
-                  {pendingCheckTasksError}
-                </Alert>
+                <Alert severity="error">{pendingCheckTasksError}</Alert>
               </Box>
             ) : pendingCheckTasks.length === 0 ? (
-              <Box sx={{ textAlign: 'center', py: 12 }}>
-                <Assignment sx={{ fontSize: 80, color: 'text.disabled', mb: 2 }} />
+              <Box sx={{ textAlign: "center", py: 12 }}>
+                <Assignment
+                  sx={{ fontSize: 80, color: "text.disabled", mb: 2 }}
+                />
                 <Typography variant="h6" color="text.secondary" gutterBottom>
                   No pending check tasks
                 </Typography>
@@ -353,7 +405,9 @@ const CheckerDashboard: React.FC = () => {
               <TableContainer>
                 <Table>
                   <TableHead>
-                    <TableRow sx={{ bgcolor: alpha(theme.palette.primary.main, 0.05) }}>
+                    <TableRow
+                      sx={{ bgcolor: alpha(theme.palette.primary.main, 0.05) }}
+                    >
                       <TableCell>
                         <Typography variant="subtitle2" fontWeight={600}>
                           Activity Name
@@ -371,10 +425,19 @@ const CheckerDashboard: React.FC = () => {
                       </TableCell>
                       <TableCell>
                         <Typography variant="subtitle2" fontWeight={600}>
+                          Site Name
+                        </Typography>
+                      </TableCell>
+                      <TableCell>
+                        <Typography variant="subtitle2" fontWeight={600}>
                           Due Date
                         </Typography>
                       </TableCell>
-                     
+                      <TableCell>
+                        <Typography variant="subtitle2" fontWeight={600}>
+                          Maker Name
+                        </Typography>
+                      </TableCell>
                       <TableCell align="center">
                         <Typography variant="subtitle2" fontWeight={600}>
                           Actions
@@ -384,17 +447,21 @@ const CheckerDashboard: React.FC = () => {
                   </TableHead>
                   <TableBody>
                     {pendingCheckTasks.map((task, index) => (
-                      <TableRow 
+                      <TableRow
                         key={task.tblId || index}
                         hover
-                        sx={{ '&:last-child td': { borderBottom: 0 } }}
+                        sx={{ "&:last-child td": { borderBottom: 0 } }}
                       >
                         <TableCell>
                           <Typography variant="body2" fontWeight={500}>
                             {task.activityName}
                           </Typography>
                           {task.description && (
-                            <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 0.5 }}>
+                            <Typography
+                              variant="caption"
+                              color="text.secondary"
+                              sx={{ display: "block", mt: 0.5 }}
+                            >
                               {task.description}
                             </Typography>
                           )}
@@ -405,30 +472,43 @@ const CheckerDashboard: React.FC = () => {
                           </Typography>
                         </TableCell>
                         <TableCell>
-                          <Chip 
-                            label={task.departmentName} 
+                          <Chip
+                            label={task.departmentName}
                             size="small"
-                            sx={{ 
+                            sx={{
                               bgcolor: alpha(theme.palette.info.main, 0.1),
                               color: theme.palette.info.main,
                               fontWeight: 500,
-                              borderRadius: 2
+                              borderRadius: 2,
                             }}
                           />
                         </TableCell>
                         <TableCell>
                           <Typography variant="body2">
-                            {task.dueDate ? new Date(task.dueDate).toLocaleDateString() : '-'}
+                            {task.siteName || "-"}
                           </Typography>
                         </TableCell>
                         <TableCell>
                           <Typography variant="body2">
-                            {task.maker || '-'}
+                            {task.dueDate
+                              ? new Date(task.dueDate).toLocaleDateString()
+                              : "-"}
                           </Typography>
                         </TableCell>
-                        
+                        <TableCell>
+                          <Typography variant="body2">
+                            {task.maker || "-"}
+                          </Typography>
+                        </TableCell>
+
                         <TableCell align="center">
-                          <Box sx={{ display: 'flex', gap: 1, justifyContent: 'center' }}>
+                          <Box
+                            sx={{
+                              display: "flex",
+                              gap: 1,
+                              justifyContent: "center",
+                            }}
+                          >
                             <Button
                               size="small"
                               variant="contained"
@@ -436,7 +516,7 @@ const CheckerDashboard: React.FC = () => {
                               startIcon={<ApproveIcon />}
                               sx={{
                                 borderRadius: 1.5,
-                                textTransform: 'none',
+                                textTransform: "none",
                                 fontWeight: 600,
                                 px: 2,
                                 py: 1,
@@ -452,7 +532,7 @@ const CheckerDashboard: React.FC = () => {
                               startIcon={<RejectIcon />}
                               sx={{
                                 borderRadius: 1.5,
-                                textTransform: 'none',
+                                textTransform: "none",
                                 fontWeight: 600,
                                 px: 2,
                                 py: 1,
@@ -474,7 +554,14 @@ const CheckerDashboard: React.FC = () => {
       ) : approvedCheckTasksOpen ? (
         <>
           {/* Approved Check Tasks View */}
-          <Box sx={{ mb: 3, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+          <Box
+            sx={{
+              mb: 3,
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "flex-start",
+            }}
+          >
             <Box>
               <Typography variant="h4" fontWeight={700} gutterBottom>
                 Approved Check Tasks
@@ -489,7 +576,7 @@ const CheckerDashboard: React.FC = () => {
               onClick={handleCloseApprovedCheckTasksDialog}
               sx={{
                 borderRadius: 2,
-                textTransform: 'none',
+                textTransform: "none",
                 fontWeight: 600,
                 px: 3,
               }}
@@ -501,12 +588,24 @@ const CheckerDashboard: React.FC = () => {
           <Paper
             sx={{
               borderRadius: 3,
-              boxShadow: `0 4px 20px ${alpha(theme.palette.common.black, 0.08)}`,
-              overflow: 'hidden'
+              boxShadow: `0 4px 20px ${alpha(
+                theme.palette.common.black,
+                0.08
+              )}`,
+              overflow: "hidden",
             }}
           >
             {approvedCheckTasksLoading ? (
-              <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: 400, flexDirection: 'column', gap: 2 }}>
+              <Box
+                sx={{
+                  display: "flex",
+                  justifyContent: "center",
+                  alignItems: "center",
+                  minHeight: 400,
+                  flexDirection: "column",
+                  gap: 2,
+                }}
+              >
                 <CircularProgress size={50} />
                 <Typography variant="body1" color="text.secondary">
                   Loading Approved Check Tasks...
@@ -514,13 +613,13 @@ const CheckerDashboard: React.FC = () => {
               </Box>
             ) : approvedCheckTasksError ? (
               <Box sx={{ p: 4 }}>
-                <Alert severity="error">
-                  {approvedCheckTasksError}
-                </Alert>
+                <Alert severity="error">{approvedCheckTasksError}</Alert>
               </Box>
             ) : approvedCheckTasks.length === 0 ? (
-              <Box sx={{ textAlign: 'center', py: 12 }}>
-                <Assignment sx={{ fontSize: 80, color: 'text.disabled', mb: 2 }} />
+              <Box sx={{ textAlign: "center", py: 12 }}>
+                <Assignment
+                  sx={{ fontSize: 80, color: "text.disabled", mb: 2 }}
+                />
                 <Typography variant="h6" color="text.secondary" gutterBottom>
                   No approved check tasks
                 </Typography>
@@ -532,7 +631,9 @@ const CheckerDashboard: React.FC = () => {
               <TableContainer>
                 <Table>
                   <TableHead>
-                    <TableRow sx={{ bgcolor: alpha(theme.palette.primary.main, 0.05) }}>
+                    <TableRow
+                      sx={{ bgcolor: alpha(theme.palette.primary.main, 0.05) }}
+                    >
                       <TableCell>
                         <Typography variant="subtitle2" fontWeight={600}>
                           Activity Name
@@ -546,6 +647,11 @@ const CheckerDashboard: React.FC = () => {
                       <TableCell>
                         <Typography variant="subtitle2" fontWeight={600}>
                           Department
+                        </Typography>
+                      </TableCell>
+                      <TableCell>
+                        <Typography variant="subtitle2" fontWeight={600}>
+                          Site Name
                         </Typography>
                       </TableCell>
                       <TableCell>
@@ -562,17 +668,21 @@ const CheckerDashboard: React.FC = () => {
                   </TableHead>
                   <TableBody>
                     {approvedCheckTasks.map((task, index) => (
-                      <TableRow 
+                      <TableRow
                         key={task.tblId || index}
                         hover
-                        sx={{ '&:last-child td': { borderBottom: 0 } }}
+                        sx={{ "&:last-child td": { borderBottom: 0 } }}
                       >
                         <TableCell>
                           <Typography variant="body2" fontWeight={500}>
                             {task.activityName}
                           </Typography>
                           {task.description && (
-                            <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 0.5 }}>
+                            <Typography
+                              variant="caption"
+                              color="text.secondary"
+                              sx={{ display: "block", mt: 0.5 }}
+                            >
                               {task.description}
                             </Typography>
                           )}
@@ -583,20 +693,27 @@ const CheckerDashboard: React.FC = () => {
                           </Typography>
                         </TableCell>
                         <TableCell>
-                          <Chip 
-                            label={task.departmentName} 
+                          <Chip
+                            label={task.departmentName}
                             size="small"
-                            sx={{ 
+                            sx={{
                               bgcolor: alpha(theme.palette.success.main, 0.1),
                               color: theme.palette.success.main,
                               fontWeight: 500,
-                              borderRadius: 2
+                              borderRadius: 2,
                             }}
                           />
                         </TableCell>
                         <TableCell>
                           <Typography variant="body2">
-                            {task.dueDate ? new Date(task.dueDate).toLocaleDateString() : '-'}
+                            {task.siteName || "-"}
+                          </Typography>
+                        </TableCell>
+                        <TableCell>
+                          <Typography variant="body2">
+                            {task.dueDate
+                              ? new Date(task.dueDate).toLocaleDateString()
+                              : "-"}
                           </Typography>
                         </TableCell>
                         <TableCell align="center">
@@ -607,10 +724,10 @@ const CheckerDashboard: React.FC = () => {
                             onClick={() => handleViewTaskMovement(task)}
                             sx={{
                               color: theme.palette.primary.main,
-                              textTransform: 'none',
-                              '&:hover': {
+                              textTransform: "none",
+                              "&:hover": {
                                 bgcolor: alpha(theme.palette.primary.main, 0.1),
-                              }
+                              },
                             }}
                           >
                             View
@@ -627,7 +744,14 @@ const CheckerDashboard: React.FC = () => {
       ) : rejectedCheckTasksOpen ? (
         <>
           {/* Rejected Check Tasks View */}
-          <Box sx={{ mb: 3, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+          <Box
+            sx={{
+              mb: 3,
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "flex-start",
+            }}
+          >
             <Box>
               <Typography variant="h4" fontWeight={700} gutterBottom>
                 Rejected Check Tasks
@@ -642,7 +766,7 @@ const CheckerDashboard: React.FC = () => {
               onClick={handleCloseRejectedCheckTasksDialog}
               sx={{
                 borderRadius: 2,
-                textTransform: 'none',
+                textTransform: "none",
                 fontWeight: 600,
                 px: 3,
               }}
@@ -654,12 +778,24 @@ const CheckerDashboard: React.FC = () => {
           <Paper
             sx={{
               borderRadius: 3,
-              boxShadow: `0 4px 20px ${alpha(theme.palette.common.black, 0.08)}`,
-              overflow: 'hidden'
+              boxShadow: `0 4px 20px ${alpha(
+                theme.palette.common.black,
+                0.08
+              )}`,
+              overflow: "hidden",
             }}
           >
             {rejectedCheckTasksLoading ? (
-              <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: 400, flexDirection: 'column', gap: 2 }}>
+              <Box
+                sx={{
+                  display: "flex",
+                  justifyContent: "center",
+                  alignItems: "center",
+                  minHeight: 400,
+                  flexDirection: "column",
+                  gap: 2,
+                }}
+              >
                 <CircularProgress size={50} />
                 <Typography variant="body1" color="text.secondary">
                   Loading Rejected Check Tasks...
@@ -667,13 +803,13 @@ const CheckerDashboard: React.FC = () => {
               </Box>
             ) : rejectedCheckTasksError ? (
               <Box sx={{ p: 4 }}>
-                <Alert severity="error">
-                  {rejectedCheckTasksError}
-                </Alert>
+                <Alert severity="error">{rejectedCheckTasksError}</Alert>
               </Box>
             ) : rejectedCheckTasks.length === 0 ? (
-              <Box sx={{ textAlign: 'center', py: 12 }}>
-                <Assignment sx={{ fontSize: 80, color: 'text.disabled', mb: 2 }} />
+              <Box sx={{ textAlign: "center", py: 12 }}>
+                <Assignment
+                  sx={{ fontSize: 80, color: "text.disabled", mb: 2 }}
+                />
                 <Typography variant="h6" color="text.secondary" gutterBottom>
                   No rejected check tasks
                 </Typography>
@@ -685,7 +821,9 @@ const CheckerDashboard: React.FC = () => {
               <TableContainer>
                 <Table>
                   <TableHead>
-                    <TableRow sx={{ bgcolor: alpha(theme.palette.error.main, 0.05) }}>
+                    <TableRow
+                      sx={{ bgcolor: alpha(theme.palette.error.main, 0.05) }}
+                    >
                       <TableCell>
                         <Typography variant="subtitle2" fontWeight={600}>
                           Activity Name
@@ -698,6 +836,11 @@ const CheckerDashboard: React.FC = () => {
                       </TableCell>
                       <TableCell>
                         <Typography variant="subtitle2" fontWeight={600}>
+                          Site Name
+                        </Typography>
+                      </TableCell>
+                      <TableCell>
+                        <Typography variant="subtitle2" fontWeight={600}>
                           Department
                         </Typography>
                       </TableCell>
@@ -706,23 +849,25 @@ const CheckerDashboard: React.FC = () => {
                           Due Date
                         </Typography>
                       </TableCell>
-                   
-                   
                     </TableRow>
                   </TableHead>
                   <TableBody>
                     {rejectedCheckTasks.map((task, index) => (
-                      <TableRow 
+                      <TableRow
                         key={task.tblId || index}
                         hover
-                        sx={{ '&:last-child td': { borderBottom: 0 } }}
+                        sx={{ "&:last-child td": { borderBottom: 0 } }}
                       >
                         <TableCell>
                           <Typography variant="body2" fontWeight={500}>
                             {task.activityName}
                           </Typography>
                           {task.description && (
-                            <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 0.5 }}>
+                            <Typography
+                              variant="caption"
+                              color="text.secondary"
+                              sx={{ display: "block", mt: 0.5 }}
+                            >
                               {task.description}
                             </Typography>
                           )}
@@ -733,23 +878,29 @@ const CheckerDashboard: React.FC = () => {
                           </Typography>
                         </TableCell>
                         <TableCell>
-                          <Chip 
-                            label={task.departmentName} 
+                          <Chip
+                            label={task.departmentName}
                             size="small"
-                            sx={{ 
+                            sx={{
                               bgcolor: alpha(theme.palette.error.main, 0.1),
                               color: theme.palette.error.main,
                               fontWeight: 500,
-                              borderRadius: 2
+                              borderRadius: 2,
                             }}
                           />
+                          <TableCell>
+                            <Typography variant="body2">
+                              {task.siteName || "-"}
+                            </Typography>
+                          </TableCell>
                         </TableCell>
                         <TableCell>
                           <Typography variant="body2">
-                            {task.dueDate ? new Date(task.dueDate).toLocaleDateString() : '-'}
+                            {task.dueDate
+                              ? new Date(task.dueDate).toLocaleDateString()
+                              : "-"}
                           </Typography>
                         </TableCell>
-                       
                       </TableRow>
                     ))}
                   </TableBody>
@@ -767,7 +918,7 @@ const CheckerDashboard: React.FC = () => {
         maxWidth="sm"
         fullWidth
       >
-        <DialogTitle sx={{ fontWeight: 600, fontSize: '1.2rem' }}>
+        <DialogTitle sx={{ fontWeight: 600, fontSize: "1.2rem" }}>
           Approve Check Task
         </DialogTitle>
         {taskActionsError && (
@@ -803,9 +954,15 @@ const CheckerDashboard: React.FC = () => {
             variant="contained"
             color="success"
             disabled={taskActionsLoading || !remark.trim()}
-            startIcon={taskActionsLoading ? <CircularProgress size={20} /> : <ApproveIcon />}
+            startIcon={
+              taskActionsLoading ? (
+                <CircularProgress size={20} />
+              ) : (
+                <ApproveIcon />
+              )
+            }
           >
-            {taskActionsLoading ? 'Approving...' : 'Approve'}
+            {taskActionsLoading ? "Approving..." : "Approve"}
           </Button>
         </DialogActions>
       </Dialog>
@@ -817,7 +974,7 @@ const CheckerDashboard: React.FC = () => {
         maxWidth="sm"
         fullWidth
       >
-        <DialogTitle sx={{ fontWeight: 600, fontSize: '1.2rem' }}>
+        <DialogTitle sx={{ fontWeight: 600, fontSize: "1.2rem" }}>
           Reject Check Task
         </DialogTitle>
         {taskActionsError && (
@@ -853,9 +1010,15 @@ const CheckerDashboard: React.FC = () => {
             variant="contained"
             color="error"
             disabled={taskActionsLoading || !remark.trim()}
-            startIcon={taskActionsLoading ? <CircularProgress size={20} /> : <RejectIcon />}
+            startIcon={
+              taskActionsLoading ? (
+                <CircularProgress size={20} />
+              ) : (
+                <RejectIcon />
+              )
+            }
           >
-            {taskActionsLoading ? 'Rejecting...' : 'Reject'}
+            {taskActionsLoading ? "Rejecting..." : "Reject"}
           </Button>
         </DialogActions>
       </Dialog>
@@ -867,19 +1030,30 @@ const CheckerDashboard: React.FC = () => {
         maxWidth="md"
         fullWidth
       >
-        <DialogTitle sx={{ fontWeight: 600, fontSize: '1.3rem', pb: 1 }}>
+        <DialogTitle sx={{ fontWeight: 600, fontSize: "1.3rem", pb: 1 }}>
           Task Movement Details
         </DialogTitle>
         <DialogContent sx={{ py: 2 }}>
           {selectedTask && (
             <Box>
-              <Box sx={{ mb: 3, p: 2, bgcolor: alpha(theme.palette.primary.main, 0.05), borderRadius: 2 }}>
+              <Box
+                sx={{
+                  mb: 3,
+                  p: 2,
+                  bgcolor: alpha(theme.palette.primary.main, 0.05),
+                  borderRadius: 2,
+                }}
+              >
                 <Typography variant="subtitle2" fontWeight={600} gutterBottom>
                   Activity Information
                 </Typography>
                 <Grid container spacing={2} sx={{ mt: 0.5 }}>
                   <Grid size={{ xs: 12, sm: 6 }}>
-                    <Typography variant="caption" color="text.secondary" display="block">
+                    <Typography
+                      variant="caption"
+                      color="text.secondary"
+                      display="block"
+                    >
                       Activity Name
                     </Typography>
                     <Typography variant="body2" fontWeight={500}>
@@ -887,7 +1061,11 @@ const CheckerDashboard: React.FC = () => {
                     </Typography>
                   </Grid>
                   <Grid size={{ xs: 12, sm: 6 }}>
-                    <Typography variant="caption" color="text.secondary" display="block">
+                    <Typography
+                      variant="caption"
+                      color="text.secondary"
+                      display="block"
+                    >
                       Act Name
                     </Typography>
                     <Typography variant="body2" fontWeight={500}>
@@ -895,7 +1073,11 @@ const CheckerDashboard: React.FC = () => {
                     </Typography>
                   </Grid>
                   <Grid size={{ xs: 12, sm: 6 }}>
-                    <Typography variant="caption" color="text.secondary" display="block">
+                    <Typography
+                      variant="caption"
+                      color="text.secondary"
+                      display="block"
+                    >
                       Department
                     </Typography>
                     <Typography variant="body2" fontWeight={500}>
@@ -903,20 +1085,43 @@ const CheckerDashboard: React.FC = () => {
                     </Typography>
                   </Grid>
                   <Grid size={{ xs: 12, sm: 6 }}>
-                    <Typography variant="caption" color="text.secondary" display="block">
+                    <Typography
+                      variant="caption"
+                      color="text.secondary"
+                      display="block"
+                    >
                       Due Date
                     </Typography>
                     <Typography variant="body2" fontWeight={500}>
-                      {selectedTask.dueDate ? new Date(selectedTask.dueDate).toLocaleDateString() : '-'}
+                      {selectedTask.dueDate
+                        ? new Date(selectedTask.dueDate).toLocaleDateString()
+                        : "-"}
+                    </Typography>
+                  </Grid>
+                  <Grid size={{ xs: 12, sm: 6 }}>
+                    <Typography
+                      variant="caption"
+                      color="text.secondary"
+                      display="block"
+                    >
+                      Site Name
+                    </Typography>
+                    <Typography variant="body2" fontWeight={500}>
+                      {selectedTask.siteName || "-"}
                     </Typography>
                   </Grid>
                 </Grid>
               </Box>
 
-              <Typography variant="subtitle2" fontWeight={600} gutterBottom sx={{ mt: 3, mb: 2 }}>
+              <Typography
+                variant="subtitle2"
+                fontWeight={600}
+                gutterBottom
+                sx={{ mt: 3, mb: 2 }}
+              >
                 Task Movement History
               </Typography>
-              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+              <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
                 {selectedTask.details && selectedTask.details.length > 0 ? (
                   selectedTask.details.map((detail: any, index: number) => (
                     <Box
@@ -926,56 +1131,98 @@ const CheckerDashboard: React.FC = () => {
                         border: `1px solid ${theme.palette.divider}`,
                         borderRadius: 2,
                         bgcolor: alpha(
-                          detail.status === 'Approved'
+                          detail.status === "Approved"
                             ? theme.palette.success.main
-                            : detail.status === 'Rejected'
+                            : detail.status === "Rejected"
                             ? theme.palette.error.main
                             : theme.palette.warning.main,
                           0.05
                         ),
                       }}
                     >
-                      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start', mb: 1 }}>
+                      <Box
+                        sx={{
+                          display: "flex",
+                          justifyContent: "space-between",
+                          alignItems: "start",
+                          mb: 1,
+                        }}
+                      >
                         <Box>
                           <Typography variant="subtitle2" fontWeight={600}>
                             {detail.userName}
                           </Typography>
                           <Typography variant="caption" color="text.secondary">
-                            {index === 0 ? 'Maker' : index === 1 ? 'Checker' : 'Reviewer'}
+                            {index === 0
+                              ? "Maker"
+                              : index === 1
+                              ? "Checker"
+                              : "Reviewer"}
                           </Typography>
                         </Box>
                         <Chip
                           label={detail.status}
                           size="small"
-                          color={detail.status === 'Approved' ? 'success' : detail.status === 'Rejected' ? 'error' : 'warning'}
+                          color={
+                            detail.status === "Approved"
+                              ? "success"
+                              : detail.status === "Rejected"
+                              ? "error"
+                              : "warning"
+                          }
                           variant="outlined"
                           sx={{ fontWeight: 600 }}
                         />
                       </Box>
 
-                      <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: 2, my: 2 }}>
+                      <Box
+                        sx={{
+                          display: "grid",
+                          gridTemplateColumns:
+                            "repeat(auto-fit, minmax(150px, 1fr))",
+                          gap: 2,
+                          my: 2,
+                        }}
+                      >
                         <Box>
-                          <Typography variant="caption" color="text.secondary" display="block" sx={{ mb: 0.5 }}>
+                          <Typography
+                            variant="caption"
+                            color="text.secondary"
+                            display="block"
+                            sx={{ mb: 0.5 }}
+                          >
                             In Date
                           </Typography>
                           <Typography variant="body2" fontWeight={500}>
-                            {detail.inDate && detail.inDate !== '0001-01-01T00:00:00Z'
-                              ? new Date(detail.inDate).toLocaleString()
-                              : '-'}
+                            {detail.inDate &&
+                            detail.inDate !== "0001-01-01T00:00:00Z"
+                              ? new Date(detail.inDate).toLocaleDateString()
+                              : "-"}
                           </Typography>
                         </Box>
                         <Box>
-                          <Typography variant="caption" color="text.secondary" display="block" sx={{ mb: 0.5 }}>
+                          <Typography
+                            variant="caption"
+                            color="text.secondary"
+                            display="block"
+                            sx={{ mb: 0.5 }}
+                          >
                             Out Date
                           </Typography>
                           <Typography variant="body2" fontWeight={500}>
-                            {detail.outDate && detail.outDate !== '0001-01-01T00:00:00Z'
-                              ? new Date(detail.outDate).toLocaleString()
-                              : '-'}
+                            {detail.outDate &&
+                            detail.outDate !== "0001-01-01T00:00:00Z"
+                              ? new Date(detail.outDate).toLocaleDateString()
+                              : "-"}
                           </Typography>
                         </Box>
                         <Box>
-                          <Typography variant="caption" color="text.secondary" display="block" sx={{ mb: 0.5 }}>
+                          <Typography
+                            variant="caption"
+                            color="text.secondary"
+                            display="block"
+                            sx={{ mb: 0.5 }}
+                          >
                             P.TAT (Days)
                           </Typography>
                           <Typography variant="body2" fontWeight={500}>
@@ -983,7 +1230,12 @@ const CheckerDashboard: React.FC = () => {
                           </Typography>
                         </Box>
                         <Box>
-                          <Typography variant="caption" color="text.secondary" display="block" sx={{ mb: 0.5 }}>
+                          <Typography
+                            variant="caption"
+                            color="text.secondary"
+                            display="block"
+                            sx={{ mb: 0.5 }}
+                          >
                             A.TAT (Days)
                           </Typography>
                           <Typography variant="body2" fontWeight={500}>
@@ -993,8 +1245,19 @@ const CheckerDashboard: React.FC = () => {
                       </Box>
 
                       {detail.remarks && (
-                        <Box sx={{ mt: 2, pt: 2, borderTop: `1px solid ${theme.palette.divider}` }}>
-                          <Typography variant="caption" color="text.secondary" display="block" sx={{ mb: 0.5 }}>
+                        <Box
+                          sx={{
+                            mt: 2,
+                            pt: 2,
+                            borderTop: `1px solid ${theme.palette.divider}`,
+                          }}
+                        >
+                          <Typography
+                            variant="caption"
+                            color="text.secondary"
+                            display="block"
+                            sx={{ mb: 0.5 }}
+                          >
                             Remarks
                           </Typography>
                           <Typography variant="body2">
@@ -1004,8 +1267,19 @@ const CheckerDashboard: React.FC = () => {
                       )}
 
                       {detail.rejectionRemark && (
-                        <Box sx={{ mt: 2, pt: 2, borderTop: `1px solid ${theme.palette.divider}` }}>
-                          <Typography variant="caption" color="error" display="block" sx={{ mb: 0.5, fontWeight: 600 }}>
+                        <Box
+                          sx={{
+                            mt: 2,
+                            pt: 2,
+                            borderTop: `1px solid ${theme.palette.divider}`,
+                          }}
+                        >
+                          <Typography
+                            variant="caption"
+                            color="error"
+                            display="block"
+                            sx={{ mb: 0.5, fontWeight: 600 }}
+                          >
                             Rejection Remark
                           </Typography>
                           <Typography variant="body2" color="error">
@@ -1016,7 +1290,11 @@ const CheckerDashboard: React.FC = () => {
                     </Box>
                   ))
                 ) : (
-                  <Typography variant="body2" color="text.secondary" sx={{ textAlign: 'center', py: 4 }}>
+                  <Typography
+                    variant="body2"
+                    color="text.secondary"
+                    sx={{ textAlign: "center", py: 4 }}
+                  >
                     No movement details available
                   </Typography>
                 )}

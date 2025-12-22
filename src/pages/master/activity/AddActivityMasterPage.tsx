@@ -416,7 +416,37 @@ const AddActivityMasterPage: React.FC = () => {
         }
         break;
       }
+      case FrequencyType.QUARTERLY: {
+        // Quarterly: 4 periods in a year → Jan-Mar, Apr-Jun, Jul-Sep, Oct-Dec
+        // Each quarter starts: Jan 1, Apr 1, Jul 1, Oct 1
+        const quarterStarts = [0, 3, 6, 9]; // months: 0=Jan, 3=Apr, 6=Jul, 9=Oct
+        const currentMonth = today.getMonth();
+        const currentYear = today.getFullYear();
 
+        // Find current quarter index
+        let currentQuarterIndex = quarterStarts.findIndex(
+          (m) => currentMonth < m
+        );
+        if (currentQuarterIndex === -1) currentQuarterIndex = 4; // if in Oct-Dec
+
+        for (let i = 0; i < 5; i++) {
+          const quarterIndex = (currentQuarterIndex + i) % 4;
+          const yearOffset = Math.floor((currentQuarterIndex + i) / 4);
+          const startMonth = quarterStarts[quarterIndex];
+
+          const nextDate = new Date(currentYear + yearOffset, startMonth, 1);
+          nextDate.setDate(nextDate.getDate() + dueDay - 1);
+
+          dates.push(
+            nextDate.toLocaleDateString("en-GB", {
+              day: "2-digit",
+              month: "short",
+              year: "numeric",
+            })
+          );
+        }
+        break;
+      }
       case FrequencyType.HALF_YEARLY: {
         // For half yearly: dueDay is 1-183 (day of half year period)
         // If today is in first half (Jan-Jun), next cycle starts in second half (Jul-Dec)
@@ -733,7 +763,10 @@ const AddActivityMasterPage: React.FC = () => {
                       helperText={dueDayError}
                       inputProps={{
                         min: 1,
-                        max: formData.frequency === FrequencyType.AS_NEEDED ? undefined : (selectedFrequency?.maxDueDay || 365),
+                        max:
+                          formData.frequency === FrequencyType.AS_NEEDED
+                            ? undefined
+                            : selectedFrequency?.maxDueDay || 365,
                       }}
                     />
                   </Box>
@@ -819,7 +852,10 @@ const AddActivityMasterPage: React.FC = () => {
                   helperText={gracePeriodError}
                   inputProps={{
                     min: 0,
-                    max: formData.frequency === FrequencyType.AS_NEEDED ? undefined : (selectedFrequency?.maxDueDay || 365),
+                    max:
+                      formData.frequency === FrequencyType.AS_NEEDED
+                        ? undefined
+                        : selectedFrequency?.maxDueDay || 365,
                   }}
                 />
 
@@ -835,7 +871,10 @@ const AddActivityMasterPage: React.FC = () => {
                   helperText={reminderDayError}
                   inputProps={{
                     min: 0,
-                    max: formData.frequency === FrequencyType.AS_NEEDED ? undefined : (selectedFrequency?.maxDueDay || 365),
+                    max:
+                      formData.frequency === FrequencyType.AS_NEEDED
+                        ? undefined
+                        : selectedFrequency?.maxDueDay || 365,
                   }}
                 />
               </Box>

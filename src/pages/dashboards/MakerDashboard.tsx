@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import type { AppDispatch } from '../../app/store';
+import React, { useState, useEffect } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import type { AppDispatch } from "../../app/store";
 import {
   Box,
   Typography,
@@ -25,7 +25,7 @@ import {
   DialogContent,
   DialogActions,
   TextField,
-} from '@mui/material';
+} from "@mui/material";
 import {
   CheckCircle,
   Assignment,
@@ -33,8 +33,8 @@ import {
   Close as CloseIcon,
   ThumbUp as ApproveIcon,
   ThumbDown as RejectIcon,
-  Visibility as EyeIcon
-} from '@mui/icons-material';
+  Visibility as EyeIcon,
+} from "@mui/icons-material";
 import {
   fetchTaskCount,
   fetchPendingTasks,
@@ -44,11 +44,8 @@ import {
   rejectTask,
   clearError,
   clearTaskActionError,
-} from './makerslice/MakerDashboard.Slice';
+} from "./makerslice/MakerDashboard.Slice";
 import {
-  selectAssignedTasks,
-  selectMakerDashboardLoading,
-  selectMakerDashboardError,
   selectTaskCounts,
   selectTaskActionsLoading,
   selectTaskActionsError,
@@ -61,19 +58,19 @@ import {
   selectRejectedTasks,
   selectRejectedTasksLoading,
   selectRejectedTasksError,
-} from './makerslice/MakerDashboard.Selector';
-import { selectUser } from '../login/slice/Login.selector';
+} from "./makerslice/MakerDashboard.Selector";
+import { selectUser } from "../login/slice/Login.selector";
 
 const MakerDashboard: React.FC = () => {
   const theme = useTheme();
   const dispatch = useDispatch<AppDispatch>();
   const user = useSelector(selectUser);
-  const assignedTasks = useSelector(selectAssignedTasks);
-  const loading = useSelector(selectMakerDashboardLoading);
-  const error = useSelector(selectMakerDashboardError);
   const counts = useSelector(selectTaskCounts);
   const taskActionsLoading = useSelector(selectTaskActionsLoading);
   const taskActionsError = useSelector(selectTaskActionsError);
+  const [allTasks, setAllTasks] = useState<any[]>([]);
+  const [allTasksLoading, setAllTasksLoading] = useState(false);
+  const [allTasksError, setAllTasksError] = useState<string | null>(null);
   const pendingTasks = useSelector(selectPendingTasks);
   const pendingTasksLoading = useSelector(selectPendingTasksLoading);
   const pendingTasksError = useSelector(selectPendingTasksError);
@@ -93,14 +90,43 @@ const MakerDashboard: React.FC = () => {
   const [taskMovementDialogOpen, setTaskMovementDialogOpen] = useState(false);
   const [selectedTask, setSelectedTask] = useState<any | null>(null);
   const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
-  const [remark, setRemark] = useState('');
+  const [remark, setRemark] = useState("");
 
+  // const handleTotalTasksClick = async () => {
+  //   if (user?.id) {
+  //     setTasksOpen(true);
+  //   }
+  // };
+  // Total Tasks क्लिक हैंडलर को अपडेट करें
   const handleTotalTasksClick = async () => {
-    if (user?.id) {
-      setTasksOpen(true);
+    if (!user?.id) return;
+
+    setAllTasksLoading(true);
+    setAllTasksError(null);
+    setTasksOpen(true); // डायलॉग ओपन
+
+    try {
+      // तीनों API parallel में call करें
+      const [pendingRes, approvedRes, rejectedRes] = await Promise.all([
+        dispatch(fetchPendingTasks(user.id)).unwrap(),
+        dispatch(fetchApprovedTasks(user.id)).unwrap(),
+        dispatch(fetchRejectedTasks(user.id)).unwrap(),
+      ]);
+
+      // सभी टास्क्स को combine करें और status ऐड करें ताकि टेबल में दिखे
+      const combined = [
+        ...pendingRes.map((t: any) => ({ ...t, status: "Pending" })),
+        ...approvedRes.map((t: any) => ({ ...t, status: "Approved" })),
+        ...rejectedRes.map((t: any) => ({ ...t, status: "Approved" })),
+      ];
+
+      setAllTasks(combined);
+    } catch (err: any) {
+      setAllTasksError(err.message || "Failed to load tasks");
+    } finally {
+      setAllTasksLoading(false);
     }
   };
-
   const handlePendingTasksClick = async () => {
     if (user?.id) {
       await dispatch(fetchPendingTasks(user.id));
@@ -157,13 +183,13 @@ const MakerDashboard: React.FC = () => {
 
   const handleApproveClick = (taskId: string) => {
     setSelectedTaskId(taskId);
-    setRemark('');
+    setRemark("");
     setApproveDialogOpen(true);
   };
 
   const handleRejectClick = (taskId: string) => {
     setSelectedTaskId(taskId);
-    setRemark('');
+    setRemark("");
     setRejectDialogOpen(true);
   };
 
@@ -181,7 +207,7 @@ const MakerDashboard: React.FC = () => {
     if (selectedTaskId && remark.trim()) {
       await dispatch(approveTask({ taskID: selectedTaskId, remark }));
       setApproveDialogOpen(false);
-      setRemark('');
+      setRemark("");
       setSelectedTaskId(null);
       // Refresh pending tasks grid after approval
       if (user?.id) {
@@ -194,7 +220,7 @@ const MakerDashboard: React.FC = () => {
     if (selectedTaskId && remark.trim()) {
       await dispatch(rejectTask({ taskID: selectedTaskId, remark }));
       setRejectDialogOpen(false);
-      setRemark('');
+      setRemark("");
       setSelectedTaskId(null);
       // Refresh pending tasks grid after rejection
       if (user?.id) {
@@ -205,14 +231,14 @@ const MakerDashboard: React.FC = () => {
 
   const handleCloseApproveDialog = () => {
     setApproveDialogOpen(false);
-    setRemark('');
+    setRemark("");
     setSelectedTaskId(null);
     dispatch(clearTaskActionError());
   };
 
   const handleCloseRejectDialog = () => {
     setRejectDialogOpen(false);
-    setRemark('');
+    setRemark("");
     setSelectedTaskId(null);
     dispatch(clearTaskActionError());
   };
@@ -230,15 +256,42 @@ const MakerDashboard: React.FC = () => {
   const totalCount = pendingCount + approvedCount + rejectedCount;
 
   const stats = [
-    { label: 'Total Tasks', value: totalCount.toString(), icon: <Assignment />, color: theme.palette.info.main, onClick: handleTotalTasksClick },
-    { label: 'Pending', value: pendingCount.toString(), icon: <Assignment />, color: theme.palette.warning.main, onClick: handlePendingTasksClick },
-    { label: 'Approved', value: approvedCount.toString(), icon: <CheckCircle />, color: theme.palette.success.main, onClick: handleApprovedTasksClick },
-    { label: 'Rejected', value: rejectedCount.toString(), icon: <Cancel />, color: theme.palette.error.main, onClick: handleRejectedTasksClick },
+    {
+      label: "Total Tasks",
+      value: totalCount.toString(),
+      icon: <Assignment />,
+      color: theme.palette.info.main,
+      onClick: handleTotalTasksClick,
+    },
+    {
+      label: "Pending",
+      value: pendingCount.toString(),
+      icon: <Assignment />,
+      color: theme.palette.warning.main,
+      onClick: handlePendingTasksClick,
+    },
+    {
+      label: "Approved",
+      value: approvedCount.toString(),
+      icon: <CheckCircle />,
+      color: theme.palette.success.main,
+      onClick: handleApprovedTasksClick,
+    },
+    {
+      label: "Rejected",
+      value: rejectedCount.toString(),
+      icon: <Cancel />,
+      color: theme.palette.error.main,
+      onClick: handleRejectedTasksClick,
+    },
   ];
 
   return (
     <Box>
-      {!tasksOpen && !pendingTasksOpen && !approvedTasksOpen && !rejectedTasksOpen ? (
+      {!tasksOpen &&
+      !pendingTasksOpen &&
+      !approvedTasksOpen &&
+      !rejectedTasksOpen ? (
         <>
           {/* Main Dashboard View */}
           <Box sx={{ mb: 4 }}>
@@ -256,23 +309,41 @@ const MakerDashboard: React.FC = () => {
                 <Card
                   sx={{
                     borderRadius: 3,
-                    boxShadow: `0 4px 20px ${alpha(theme.palette.common.black, 0.08)}`,
-                    cursor: (stat.label === 'Total Tasks' || stat.label === 'Pending' || stat.label === 'Approved' || stat.label === 'Rejected') ? 'pointer' : 'default',
-                    transition: 'transform 0.2s, box-shadow 0.2s',
-                    '&:hover': (stat.label === 'Total Tasks' || stat.label === 'Pending' || stat.label === 'Approved' || stat.label === 'Rejected') ? {
-                      transform: 'translateY(-4px)',
-                      boxShadow: `0 8px 30px ${alpha(theme.palette.common.black, 0.12)}`,
-                    } : {},
+                    boxShadow: `0 4px 20px ${alpha(
+                      theme.palette.common.black,
+                      0.08
+                    )}`,
+                    cursor:
+                      stat.label === "Total Tasks" ||
+                      stat.label === "Pending" ||
+                      stat.label === "Approved" ||
+                      stat.label === "Rejected"
+                        ? "pointer"
+                        : "default",
+                    transition: "transform 0.2s, box-shadow 0.2s",
+                    "&:hover":
+                      stat.label === "Total Tasks" ||
+                      stat.label === "Pending" ||
+                      stat.label === "Approved" ||
+                      stat.label === "Rejected"
+                        ? {
+                            transform: "translateY(-4px)",
+                            boxShadow: `0 8px 30px ${alpha(
+                              theme.palette.common.black,
+                              0.12
+                            )}`,
+                          }
+                        : {},
                   }}
                   onClick={() => {
-                    if (stat.label === 'Total Tasks') handleTotalTasksClick();
-                    if (stat.label === 'Pending') handlePendingTasksClick();
-                    if (stat.label === 'Approved') handleApprovedTasksClick();
-                    if (stat.label === 'Rejected') handleRejectedTasksClick();
+                    if (stat.label === "Total Tasks") handleTotalTasksClick();
+                    if (stat.label === "Pending") handlePendingTasksClick();
+                    if (stat.label === "Approved") handleApprovedTasksClick();
+                    if (stat.label === "Rejected") handleRejectedTasksClick();
                   }}
                 >
                   <CardContent>
-                    <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+                    <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
                       <Box
                         sx={{
                           p: 1.5,
@@ -303,7 +374,10 @@ const MakerDashboard: React.FC = () => {
             sx={{
               mt: 3,
               borderRadius: 3,
-              boxShadow: `0 4px 20px ${alpha(theme.palette.common.black, 0.08)}`,
+              boxShadow: `0 4px 20px ${alpha(
+                theme.palette.common.black,
+                0.08
+              )}`,
             }}
           >
             <CardContent sx={{ p: 4 }}>
@@ -324,14 +398,20 @@ const MakerDashboard: React.FC = () => {
         </>
       ) : tasksOpen ? (
         <>
-          {/* Assigned Tasks View */}
-          <Box sx={{ mb: 3, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+          <Box
+            sx={{
+              mb: 3,
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "flex-start",
+            }}
+          >
             <Box>
               <Typography variant="h4" fontWeight={700} gutterBottom>
-                Assigned Tasks
+                All Tasks ({totalCount})
               </Typography>
               <Typography variant="body1" color="text.secondary">
-                Manage and take action on your assigned tasks
+                View all your pending, approved, and rejected tasks
               </Typography>
             </Box>
             <Button
@@ -340,7 +420,7 @@ const MakerDashboard: React.FC = () => {
               onClick={handleCloseDialog}
               sx={{
                 borderRadius: 2,
-                textTransform: 'none',
+                textTransform: "none",
                 fontWeight: 600,
                 px: 3,
               }}
@@ -352,38 +432,49 @@ const MakerDashboard: React.FC = () => {
           <Paper
             sx={{
               borderRadius: 3,
-              boxShadow: `0 4px 20px ${alpha(theme.palette.common.black, 0.08)}`,
-              overflow: 'hidden'
+              boxShadow: `0 4px 20px ${alpha(
+                theme.palette.common.black,
+                0.08
+              )}`,
+              overflow: "hidden",
             }}
           >
-            {loading ? (
-              <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: 400, flexDirection: 'column', gap: 2 }}>
+            {allTasksLoading ? (
+              <Box
+                sx={{
+                  display: "flex",
+                  justifyContent: "center",
+                  alignItems: "center",
+                  minHeight: 400,
+                  flexDirection: "column",
+                  gap: 2,
+                }}
+              >
                 <CircularProgress size={50} />
                 <Typography variant="body1" color="text.secondary">
-                  Loading Assigned Tasks...
+                  Loading all tasks...
                 </Typography>
               </Box>
-            ) : error ? (
+            ) : allTasksError ? (
               <Box sx={{ p: 4 }}>
-                <Alert severity="error">
-                  {error}
-                </Alert>
+                <Alert severity="error">{allTasksError}</Alert>
               </Box>
-            ) : assignedTasks.length === 0 ? (
-              <Box sx={{ textAlign: 'center', py: 12 }}>
-                <Assignment sx={{ fontSize: 80, color: 'text.disabled', mb: 2 }} />
+            ) : allTasks.length === 0 ? (
+              <Box sx={{ textAlign: "center", py: 12 }}>
+                <Assignment
+                  sx={{ fontSize: 80, color: "text.disabled", mb: 2 }}
+                />
                 <Typography variant="h6" color="text.secondary" gutterBottom>
-                  No tasks assigned yet
-                </Typography>
-                <Typography variant="body2" color="text.secondary">
-                  You don't have any assigned tasks at the moment
+                  No tasks found
                 </Typography>
               </Box>
             ) : (
               <TableContainer>
                 <Table>
                   <TableHead>
-                    <TableRow sx={{ bgcolor: alpha(theme.palette.primary.main, 0.05) }}>
+                    <TableRow
+                      sx={{ bgcolor: alpha(theme.palette.primary.main, 0.05) }}
+                    >
                       <TableCell>
                         <Typography variant="subtitle2" fontWeight={600}>
                           Activity Name
@@ -401,21 +492,19 @@ const MakerDashboard: React.FC = () => {
                       </TableCell>
                       <TableCell>
                         <Typography variant="subtitle2" fontWeight={600}>
-                          Frequency
+                          Site Name
                         </Typography>
                       </TableCell>
-                      <TableCell align="center">
+                      <TableCell>
                         <Typography variant="subtitle2" fontWeight={600}>
-                          Due Day
+                          Due Date
                         </Typography>
                       </TableCell>
-                      <TableCell align="center">
+                      <TableCell>
                         <Typography variant="subtitle2" fontWeight={600}>
-                          Grace Days
+                          Status
                         </Typography>
                       </TableCell>
-                     
-                     
                       <TableCell align="center">
                         <Typography variant="subtitle2" fontWeight={600}>
                           Actions
@@ -424,18 +513,18 @@ const MakerDashboard: React.FC = () => {
                     </TableRow>
                   </TableHead>
                   <TableBody>
-                    {assignedTasks.map((task, index) => (
-                      <TableRow 
-                        key={task.activityId || index}
-                        hover
-                        sx={{ '&:last-child td': { borderBottom: 0 } }}
-                      >
+                    {allTasks.map((task, index) => (
+                      <TableRow key={task.tblId || index} hover>
                         <TableCell>
                           <Typography variant="body2" fontWeight={500}>
                             {task.activityName}
                           </Typography>
                           {task.description && (
-                            <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 0.5 }}>
+                            <Typography
+                              variant="caption"
+                              color="text.secondary"
+                              sx={{ display: "block", mt: 0.5 }}
+                            >
                               {task.description}
                             </Typography>
                           )}
@@ -446,71 +535,83 @@ const MakerDashboard: React.FC = () => {
                           </Typography>
                         </TableCell>
                         <TableCell>
-                          <Chip 
-                            label={task.departmentName} 
+                          <Chip
+                            label={task.departmentName}
                             size="small"
-                            sx={{ 
+                            sx={{
                               bgcolor: alpha(theme.palette.info.main, 0.1),
                               color: theme.palette.info.main,
-                              fontWeight: 500,
-                              borderRadius: 2
                             }}
                           />
                         </TableCell>
                         <TableCell>
-                          <Chip 
-                            label={task.frequency || 'N/A'} 
+                          <Typography variant="body2" fontWeight={500}>
+                            {task.siteName || "-"}
+                          </Typography>
+                        </TableCell>
+                        <TableCell>
+                          <Typography variant="body2">
+                            {task.dueDate
+                              ? new Date(task.dueDate).toLocaleDateString()
+                              : "-"}
+                          </Typography>
+                        </TableCell>
+                        <TableCell>
+                          <Chip
+                            label={task.status}
                             size="small"
-                            color="primary"
-                            variant="outlined"
+                            color={
+                              task.status === "Approved"
+                                ? "success"
+                                : task.status === "Rejected"
+                                ? "error"
+                                : "warning"
+                            }
+                            sx={{ fontWeight: 600 }}
                           />
                         </TableCell>
                         <TableCell align="center">
-                          <Typography variant="body2">
-                            {task.dueDay || '-'}
-                          </Typography>
-                        </TableCell>
-                        <TableCell align="center">
-                          <Typography variant="body2">
-                            {task.gracePeriodDay || '-'}
-                          </Typography>
-                        </TableCell>
-                        
-                        <TableCell align="center">
-                          <Box sx={{ display: 'flex', gap: 1, justifyContent: 'center' }}>
+                          {task.status === "Pending" ? (
+                            <Box
+                              sx={{
+                                display: "flex",
+                                gap: 1,
+                                justifyContent: "center",
+                              }}
+                            >
+                              <Button
+                                size="small"
+                                variant="contained"
+                                color="success"
+                                startIcon={<ApproveIcon />}
+                                onClick={() => handleApproveClick(task.tblId)}
+                              >
+                                Approve
+                              </Button>
+                              <Button
+                                size="small"
+                                variant="contained"
+                                color="error"
+                                startIcon={<RejectIcon />}
+                                onClick={() => handleRejectClick(task.tblId)}
+                              >
+                                Reject
+                              </Button>
+                            </Box>
+                          ) : task.status === "Approved" ? (
                             <Button
                               size="small"
-                              variant="contained"
-                              color="success"
-                              startIcon={<ApproveIcon />}
-                              sx={{
-                                borderRadius: 1.5,
-                                textTransform: 'none',
-                                fontWeight: 600,
-                                px: 2,
-                                py: 1,
-                              }}
-                              onClick={() => handleApproveClick(task.activityId)}
+                              variant="text"
+                              startIcon={<EyeIcon />}
+                              onClick={() => handleViewTaskMovement(task)}
                             >
-                              Approve
+                              View
                             </Button>
-                            <Button
-                              size="small"
-                              variant="contained"
-                              color="error"
-                              startIcon={<RejectIcon />}
-                              sx={{
-                                borderRadius: 1.5,
-                                textTransform: 'none',
-                                fontWeight: 600,
-                                px: 2,
-                                py: 1,
-                              }}
-                              onClick={() => handleRejectClick(task.activityId)}
-                            >
-                              Reject
-                            </Button>
-                          </Box>
+                          ) : (
+                            <Typography variant="body2" color="text.secondary">
+                              -
+                            </Typography>
+                          )}
                         </TableCell>
                       </TableRow>
                     ))}
@@ -523,7 +624,14 @@ const MakerDashboard: React.FC = () => {
       ) : pendingTasksOpen ? (
         <>
           {/* Pending Tasks View */}
-          <Box sx={{ mb: 3, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+          <Box
+            sx={{
+              mb: 3,
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "flex-start",
+            }}
+          >
             <Box>
               <Typography variant="h4" fontWeight={700} gutterBottom>
                 Pending Tasks
@@ -538,7 +646,7 @@ const MakerDashboard: React.FC = () => {
               onClick={handleClosePendingTasksDialog}
               sx={{
                 borderRadius: 2,
-                textTransform: 'none',
+                textTransform: "none",
                 fontWeight: 600,
                 px: 3,
               }}
@@ -550,12 +658,24 @@ const MakerDashboard: React.FC = () => {
           <Paper
             sx={{
               borderRadius: 3,
-              boxShadow: `0 4px 20px ${alpha(theme.palette.common.black, 0.08)}`,
-              overflow: 'hidden'
+              boxShadow: `0 4px 20px ${alpha(
+                theme.palette.common.black,
+                0.08
+              )}`,
+              overflow: "hidden",
             }}
           >
             {pendingTasksLoading ? (
-              <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: 400, flexDirection: 'column', gap: 2 }}>
+              <Box
+                sx={{
+                  display: "flex",
+                  justifyContent: "center",
+                  alignItems: "center",
+                  minHeight: 400,
+                  flexDirection: "column",
+                  gap: 2,
+                }}
+              >
                 <CircularProgress size={50} />
                 <Typography variant="body1" color="text.secondary">
                   Loading Pending Tasks...
@@ -563,13 +683,13 @@ const MakerDashboard: React.FC = () => {
               </Box>
             ) : pendingTasksError ? (
               <Box sx={{ p: 4 }}>
-                <Alert severity="error">
-                  {pendingTasksError}
-                </Alert>
+                <Alert severity="error">{pendingTasksError}</Alert>
               </Box>
             ) : pendingTasks.length === 0 ? (
-              <Box sx={{ textAlign: 'center', py: 12 }}>
-                <Assignment sx={{ fontSize: 80, color: 'text.disabled', mb: 2 }} />
+              <Box sx={{ textAlign: "center", py: 12 }}>
+                <Assignment
+                  sx={{ fontSize: 80, color: "text.disabled", mb: 2 }}
+                />
                 <Typography variant="h6" color="text.secondary" gutterBottom>
                   No pending tasks
                 </Typography>
@@ -581,7 +701,9 @@ const MakerDashboard: React.FC = () => {
               <TableContainer>
                 <Table>
                   <TableHead>
-                    <TableRow sx={{ bgcolor: alpha(theme.palette.primary.main, 0.05) }}>
+                    <TableRow
+                      sx={{ bgcolor: alpha(theme.palette.primary.main, 0.05) }}
+                    >
                       <TableCell>
                         <Typography variant="subtitle2" fontWeight={600}>
                           Activity Name
@@ -599,10 +721,15 @@ const MakerDashboard: React.FC = () => {
                       </TableCell>
                       <TableCell>
                         <Typography variant="subtitle2" fontWeight={600}>
+                          Site Name
+                        </Typography>
+                      </TableCell>
+                      <TableCell>
+                        <Typography variant="subtitle2" fontWeight={600}>
                           Due Date
                         </Typography>
                       </TableCell>
-                
+
                       <TableCell align="center">
                         <Typography variant="subtitle2" fontWeight={600}>
                           Actions
@@ -612,17 +739,21 @@ const MakerDashboard: React.FC = () => {
                   </TableHead>
                   <TableBody>
                     {pendingTasks.map((task, index) => (
-                      <TableRow 
+                      <TableRow
                         key={task.tblId || index}
                         hover
-                        sx={{ '&:last-child td': { borderBottom: 0 } }}
+                        sx={{ "&:last-child td": { borderBottom: 0 } }}
                       >
                         <TableCell>
                           <Typography variant="body2" fontWeight={500}>
                             {task.activityName}
                           </Typography>
                           {task.description && (
-                            <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 0.5 }}>
+                            <Typography
+                              variant="caption"
+                              color="text.secondary"
+                              sx={{ display: "block", mt: 0.5 }}
+                            >
                               {task.description}
                             </Typography>
                           )}
@@ -633,25 +764,38 @@ const MakerDashboard: React.FC = () => {
                           </Typography>
                         </TableCell>
                         <TableCell>
-                          <Chip 
-                            label={task.departmentName} 
+                          <Chip
+                            label={task.departmentName}
                             size="small"
-                            sx={{ 
+                            sx={{
                               bgcolor: alpha(theme.palette.info.main, 0.1),
                               color: theme.palette.info.main,
                               fontWeight: 500,
-                              borderRadius: 2
+                              borderRadius: 2,
                             }}
                           />
                         </TableCell>
                         <TableCell>
-                          <Typography variant="body2">
-                            {task.dueDate ? new Date(task.dueDate).toLocaleDateString() : '-'}
+                          <Typography variant="body2" fontWeight={500}>
+                            {task.siteName || "-"}
                           </Typography>
                         </TableCell>
-                        
+                        <TableCell>
+                          <Typography variant="body2">
+                            {task.dueDate
+                              ? new Date(task.dueDate).toLocaleDateString()
+                              : "-"}
+                          </Typography>
+                        </TableCell>
+
                         <TableCell align="center">
-                          <Box sx={{ display: 'flex', gap: 1, justifyContent: 'center' }}>
+                          <Box
+                            sx={{
+                              display: "flex",
+                              gap: 1,
+                              justifyContent: "center",
+                            }}
+                          >
                             <Button
                               size="small"
                               variant="contained"
@@ -659,7 +803,7 @@ const MakerDashboard: React.FC = () => {
                               startIcon={<ApproveIcon />}
                               sx={{
                                 borderRadius: 1.5,
-                                textTransform: 'none',
+                                textTransform: "none",
                                 fontWeight: 600,
                                 px: 2,
                                 py: 1,
@@ -675,7 +819,7 @@ const MakerDashboard: React.FC = () => {
                               startIcon={<RejectIcon />}
                               sx={{
                                 borderRadius: 1.5,
-                                textTransform: 'none',
+                                textTransform: "none",
                                 fontWeight: 600,
                                 px: 2,
                                 py: 1,
@@ -697,7 +841,14 @@ const MakerDashboard: React.FC = () => {
       ) : approvedTasksOpen ? (
         <>
           {/* Approved Tasks View */}
-          <Box sx={{ mb: 3, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+          <Box
+            sx={{
+              mb: 3,
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "flex-start",
+            }}
+          >
             <Box>
               <Typography variant="h4" fontWeight={700} gutterBottom>
                 Approved Tasks
@@ -712,7 +863,7 @@ const MakerDashboard: React.FC = () => {
               onClick={handleCloseApprovedTasksDialog}
               sx={{
                 borderRadius: 2,
-                textTransform: 'none',
+                textTransform: "none",
                 fontWeight: 600,
                 px: 3,
               }}
@@ -724,12 +875,24 @@ const MakerDashboard: React.FC = () => {
           <Paper
             sx={{
               borderRadius: 3,
-              boxShadow: `0 4px 20px ${alpha(theme.palette.common.black, 0.08)}`,
-              overflow: 'hidden'
+              boxShadow: `0 4px 20px ${alpha(
+                theme.palette.common.black,
+                0.08
+              )}`,
+              overflow: "hidden",
             }}
           >
             {approvedTasksLoading ? (
-              <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: 400, flexDirection: 'column', gap: 2 }}>
+              <Box
+                sx={{
+                  display: "flex",
+                  justifyContent: "center",
+                  alignItems: "center",
+                  minHeight: 400,
+                  flexDirection: "column",
+                  gap: 2,
+                }}
+              >
                 <CircularProgress size={50} />
                 <Typography variant="body1" color="text.secondary">
                   Loading Approved Tasks...
@@ -737,13 +900,13 @@ const MakerDashboard: React.FC = () => {
               </Box>
             ) : approvedTasksError ? (
               <Box sx={{ p: 4 }}>
-                <Alert severity="error">
-                  {approvedTasksError}
-                </Alert>
+                <Alert severity="error">{approvedTasksError}</Alert>
               </Box>
             ) : approvedTasks.length === 0 ? (
-              <Box sx={{ textAlign: 'center', py: 12 }}>
-                <Assignment sx={{ fontSize: 80, color: 'text.disabled', mb: 2 }} />
+              <Box sx={{ textAlign: "center", py: 12 }}>
+                <Assignment
+                  sx={{ fontSize: 80, color: "text.disabled", mb: 2 }}
+                />
                 <Typography variant="h6" color="text.secondary" gutterBottom>
                   No approved tasks
                 </Typography>
@@ -755,7 +918,9 @@ const MakerDashboard: React.FC = () => {
               <TableContainer>
                 <Table>
                   <TableHead>
-                    <TableRow sx={{ bgcolor: alpha(theme.palette.primary.main, 0.05) }}>
+                    <TableRow
+                      sx={{ bgcolor: alpha(theme.palette.primary.main, 0.05) }}
+                    >
                       <TableCell>
                         <Typography variant="subtitle2" fontWeight={600}>
                           Activity Name
@@ -773,11 +938,15 @@ const MakerDashboard: React.FC = () => {
                       </TableCell>
                       <TableCell>
                         <Typography variant="subtitle2" fontWeight={600}>
+                          Site Name
+                        </Typography>
+                      </TableCell>
+                      <TableCell>
+                        <Typography variant="subtitle2" fontWeight={600}>
                           Due Date
                         </Typography>
                       </TableCell>
-                     
-                     
+
                       <TableCell align="center">
                         <Typography variant="subtitle2" fontWeight={600}>
                           Actions
@@ -787,17 +956,21 @@ const MakerDashboard: React.FC = () => {
                   </TableHead>
                   <TableBody>
                     {approvedTasks.map((task, index) => (
-                      <TableRow 
+                      <TableRow
                         key={task.tblId || index}
                         hover
-                        sx={{ '&:last-child td': { borderBottom: 0 } }}
+                        sx={{ "&:last-child td": { borderBottom: 0 } }}
                       >
                         <TableCell>
                           <Typography variant="body2" fontWeight={500}>
                             {task.activityName}
                           </Typography>
                           {task.description && (
-                            <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 0.5 }}>
+                            <Typography
+                              variant="caption"
+                              color="text.secondary"
+                              sx={{ display: "block", mt: 0.5 }}
+                            >
                               {task.description}
                             </Typography>
                           )}
@@ -808,24 +981,30 @@ const MakerDashboard: React.FC = () => {
                           </Typography>
                         </TableCell>
                         <TableCell>
-                          <Chip 
-                            label={task.departmentName} 
+                          <Chip
+                            label={task.departmentName}
                             size="small"
-                            sx={{ 
+                            sx={{
                               bgcolor: alpha(theme.palette.success.main, 0.1),
                               color: theme.palette.success.main,
                               fontWeight: 500,
-                              borderRadius: 2
+                              borderRadius: 2,
                             }}
                           />
                         </TableCell>
                         <TableCell>
-                          <Typography variant="body2">
-                            {task.dueDate ? new Date(task.dueDate).toLocaleDateString() : '-'}
+                          <Typography variant="body2" fontWeight={500}>
+                            {task.siteName || "-"}
                           </Typography>
                         </TableCell>
-                       
-                       
+                        <TableCell>
+                          <Typography variant="body2">
+                            {task.dueDate
+                              ? new Date(task.dueDate).toLocaleDateString()
+                              : "-"}
+                          </Typography>
+                        </TableCell>
+
                         <TableCell align="center">
                           <Button
                             size="small"
@@ -834,10 +1013,10 @@ const MakerDashboard: React.FC = () => {
                             onClick={() => handleViewTaskMovement(task)}
                             sx={{
                               color: theme.palette.primary.main,
-                              textTransform: 'none',
-                              '&:hover': {
+                              textTransform: "none",
+                              "&:hover": {
                                 bgcolor: alpha(theme.palette.primary.main, 0.1),
-                              }
+                              },
                             }}
                           >
                             View
@@ -854,7 +1033,14 @@ const MakerDashboard: React.FC = () => {
       ) : rejectedTasksOpen ? (
         <>
           {/* Rejected Tasks View */}
-          <Box sx={{ mb: 3, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+          <Box
+            sx={{
+              mb: 3,
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "flex-start",
+            }}
+          >
             <Box>
               <Typography variant="h4" fontWeight={700} gutterBottom>
                 Rejected Tasks
@@ -869,7 +1055,7 @@ const MakerDashboard: React.FC = () => {
               onClick={handleCloseRejectedTasksDialog}
               sx={{
                 borderRadius: 2,
-                textTransform: 'none',
+                textTransform: "none",
                 fontWeight: 600,
                 px: 3,
               }}
@@ -881,12 +1067,24 @@ const MakerDashboard: React.FC = () => {
           <Paper
             sx={{
               borderRadius: 3,
-              boxShadow: `0 4px 20px ${alpha(theme.palette.common.black, 0.08)}`,
-              overflow: 'hidden'
+              boxShadow: `0 4px 20px ${alpha(
+                theme.palette.common.black,
+                0.08
+              )}`,
+              overflow: "hidden",
             }}
           >
             {rejectedTasksLoading ? (
-              <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: 400, flexDirection: 'column', gap: 2 }}>
+              <Box
+                sx={{
+                  display: "flex",
+                  justifyContent: "center",
+                  alignItems: "center",
+                  minHeight: 400,
+                  flexDirection: "column",
+                  gap: 2,
+                }}
+              >
                 <CircularProgress size={50} />
                 <Typography variant="body1" color="text.secondary">
                   Loading Rejected Tasks...
@@ -894,13 +1092,13 @@ const MakerDashboard: React.FC = () => {
               </Box>
             ) : rejectedTasksError ? (
               <Box sx={{ p: 4 }}>
-                <Alert severity="error">
-                  {rejectedTasksError}
-                </Alert>
+                <Alert severity="error">{rejectedTasksError}</Alert>
               </Box>
             ) : rejectedTasks.length === 0 ? (
-              <Box sx={{ textAlign: 'center', py: 12 }}>
-                <Assignment sx={{ fontSize: 80, color: 'text.disabled', mb: 2 }} />
+              <Box sx={{ textAlign: "center", py: 12 }}>
+                <Assignment
+                  sx={{ fontSize: 80, color: "text.disabled", mb: 2 }}
+                />
                 <Typography variant="h6" color="text.secondary" gutterBottom>
                   No rejected tasks
                 </Typography>
@@ -912,7 +1110,9 @@ const MakerDashboard: React.FC = () => {
               <TableContainer>
                 <Table>
                   <TableHead>
-                    <TableRow sx={{ bgcolor: alpha(theme.palette.error.main, 0.05) }}>
+                    <TableRow
+                      sx={{ bgcolor: alpha(theme.palette.error.main, 0.05) }}
+                    >
                       <TableCell>
                         <Typography variant="subtitle2" fontWeight={600}>
                           Activity Name
@@ -930,26 +1130,33 @@ const MakerDashboard: React.FC = () => {
                       </TableCell>
                       <TableCell>
                         <Typography variant="subtitle2" fontWeight={600}>
+                          Site Name
+                        </Typography>
+                      </TableCell>
+                      <TableCell>
+                        <Typography variant="subtitle2" fontWeight={600}>
                           Due Date
                         </Typography>
                       </TableCell>
-                      
-                     
                     </TableRow>
                   </TableHead>
                   <TableBody>
                     {rejectedTasks.map((task, index) => (
-                      <TableRow 
+                      <TableRow
                         key={task.tblId || index}
                         hover
-                        sx={{ '&:last-child td': { borderBottom: 0 } }}
+                        sx={{ "&:last-child td": { borderBottom: 0 } }}
                       >
                         <TableCell>
                           <Typography variant="body2" fontWeight={500}>
                             {task.activityName}
                           </Typography>
                           {task.description && (
-                            <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 0.5 }}>
+                            <Typography
+                              variant="caption"
+                              color="text.secondary"
+                              sx={{ display: "block", mt: 0.5 }}
+                            >
                               {task.description}
                             </Typography>
                           )}
@@ -960,23 +1167,29 @@ const MakerDashboard: React.FC = () => {
                           </Typography>
                         </TableCell>
                         <TableCell>
-                          <Chip 
-                            label={task.departmentName} 
+                          <Chip
+                            label={task.departmentName}
                             size="small"
-                            sx={{ 
+                            sx={{
                               bgcolor: alpha(theme.palette.error.main, 0.1),
                               color: theme.palette.error.main,
                               fontWeight: 500,
-                              borderRadius: 2
+                              borderRadius: 2,
                             }}
                           />
                         </TableCell>
                         <TableCell>
-                          <Typography variant="body2">
-                            {task.dueDate ? new Date(task.dueDate).toLocaleDateString() : '-'}
+                          <Typography variant="body2" fontWeight={500}>
+                            {task.siteName || "-"}
                           </Typography>
                         </TableCell>
-                        
+                        <TableCell>
+                          <Typography variant="body2">
+                            {task.dueDate
+                              ? new Date(task.dueDate).toLocaleDateString()
+                              : "-"}
+                          </Typography>
+                        </TableCell>
                       </TableRow>
                     ))}
                   </TableBody>
@@ -994,7 +1207,7 @@ const MakerDashboard: React.FC = () => {
         maxWidth="sm"
         fullWidth
       >
-        <DialogTitle sx={{ fontWeight: 600, fontSize: '1.2rem' }}>
+        <DialogTitle sx={{ fontWeight: 600, fontSize: "1.2rem" }}>
           Approve Task
         </DialogTitle>
         {taskActionsError && (
@@ -1030,9 +1243,15 @@ const MakerDashboard: React.FC = () => {
             variant="contained"
             color="success"
             disabled={taskActionsLoading || !remark.trim()}
-            startIcon={taskActionsLoading ? <CircularProgress size={20} /> : <ApproveIcon />}
+            startIcon={
+              taskActionsLoading ? (
+                <CircularProgress size={20} />
+              ) : (
+                <ApproveIcon />
+              )
+            }
           >
-            {taskActionsLoading ? 'Approving...' : 'Approve'}
+            {taskActionsLoading ? "Approving..." : "Approve"}
           </Button>
         </DialogActions>
       </Dialog>
@@ -1044,7 +1263,7 @@ const MakerDashboard: React.FC = () => {
         maxWidth="sm"
         fullWidth
       >
-        <DialogTitle sx={{ fontWeight: 600, fontSize: '1.2rem' }}>
+        <DialogTitle sx={{ fontWeight: 600, fontSize: "1.2rem" }}>
           Reject Task
         </DialogTitle>
         {taskActionsError && (
@@ -1080,9 +1299,15 @@ const MakerDashboard: React.FC = () => {
             variant="contained"
             color="error"
             disabled={taskActionsLoading || !remark.trim()}
-            startIcon={taskActionsLoading ? <CircularProgress size={20} /> : <RejectIcon />}
+            startIcon={
+              taskActionsLoading ? (
+                <CircularProgress size={20} />
+              ) : (
+                <RejectIcon />
+              )
+            }
           >
-            {taskActionsLoading ? 'Rejecting...' : 'Reject'}
+            {taskActionsLoading ? "Rejecting..." : "Reject"}
           </Button>
         </DialogActions>
       </Dialog>
@@ -1094,19 +1319,30 @@ const MakerDashboard: React.FC = () => {
         maxWidth="md"
         fullWidth
       >
-        <DialogTitle sx={{ fontWeight: 600, fontSize: '1.3rem', pb: 1 }}>
+        <DialogTitle sx={{ fontWeight: 600, fontSize: "1.3rem", pb: 1 }}>
           Task Movement Details
         </DialogTitle>
         <DialogContent sx={{ py: 2 }}>
           {selectedTask && (
             <Box>
-              <Box sx={{ mb: 3, p: 2, bgcolor: alpha(theme.palette.primary.main, 0.05), borderRadius: 2 }}>
+              <Box
+                sx={{
+                  mb: 3,
+                  p: 2,
+                  bgcolor: alpha(theme.palette.primary.main, 0.05),
+                  borderRadius: 2,
+                }}
+              >
                 <Typography variant="subtitle2" fontWeight={600} gutterBottom>
                   Activity Information
                 </Typography>
                 <Grid container spacing={2} sx={{ mt: 0.5 }}>
                   <Grid size={{ xs: 12, sm: 6 }}>
-                    <Typography variant="caption" color="text.secondary" display="block">
+                    <Typography
+                      variant="caption"
+                      color="text.secondary"
+                      display="block"
+                    >
                       Activity Name
                     </Typography>
                     <Typography variant="body2" fontWeight={500}>
@@ -1114,7 +1350,11 @@ const MakerDashboard: React.FC = () => {
                     </Typography>
                   </Grid>
                   <Grid size={{ xs: 12, sm: 6 }}>
-                    <Typography variant="caption" color="text.secondary" display="block">
+                    <Typography
+                      variant="caption"
+                      color="text.secondary"
+                      display="block"
+                    >
                       Act Name
                     </Typography>
                     <Typography variant="body2" fontWeight={500}>
@@ -1122,7 +1362,11 @@ const MakerDashboard: React.FC = () => {
                     </Typography>
                   </Grid>
                   <Grid size={{ xs: 12, sm: 6 }}>
-                    <Typography variant="caption" color="text.secondary" display="block">
+                    <Typography
+                      variant="caption"
+                      color="text.secondary"
+                      display="block"
+                    >
                       Department
                     </Typography>
                     <Typography variant="body2" fontWeight={500}>
@@ -1130,20 +1374,43 @@ const MakerDashboard: React.FC = () => {
                     </Typography>
                   </Grid>
                   <Grid size={{ xs: 12, sm: 6 }}>
-                    <Typography variant="caption" color="text.secondary" display="block">
+                    <Typography
+                      variant="caption"
+                      color="text.secondary"
+                      display="block"
+                    >
                       Due Date
                     </Typography>
                     <Typography variant="body2" fontWeight={500}>
-                      {selectedTask.dueDate ? new Date(selectedTask.dueDate).toLocaleDateString() : '-'}
+                      {selectedTask.dueDate
+                        ? new Date(selectedTask.dueDate).toLocaleDateString()
+                        : "-"}
+                    </Typography>
+                  </Grid>
+                  <Grid size={{ xs: 12, sm: 6 }}>
+                    <Typography
+                      variant="caption"
+                      color="text.secondary"
+                      display="block"
+                    >
+                      Site Name
+                    </Typography>
+                    <Typography variant="body2" fontWeight={500}>
+                      {selectedTask.siteName || "-"}
                     </Typography>
                   </Grid>
                 </Grid>
               </Box>
 
-              <Typography variant="subtitle2" fontWeight={600} gutterBottom sx={{ mt: 3, mb: 2 }}>
+              <Typography
+                variant="subtitle2"
+                fontWeight={600}
+                gutterBottom
+                sx={{ mt: 3, mb: 2 }}
+              >
                 Task Movement History
               </Typography>
-              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+              <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
                 {selectedTask.details && selectedTask.details.length > 0 ? (
                   selectedTask.details.map((detail: any, index: number) => (
                     <Box
@@ -1153,56 +1420,98 @@ const MakerDashboard: React.FC = () => {
                         border: `1px solid ${theme.palette.divider}`,
                         borderRadius: 2,
                         bgcolor: alpha(
-                          detail.status === 'Approved'
+                          detail.status === "Approved"
                             ? theme.palette.success.main
-                            : detail.status === 'Rejected'
+                            : detail.status === "Rejected"
                             ? theme.palette.error.main
                             : theme.palette.warning.main,
                           0.05
                         ),
                       }}
                     >
-                      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start', mb: 1 }}>
+                      <Box
+                        sx={{
+                          display: "flex",
+                          justifyContent: "space-between",
+                          alignItems: "start",
+                          mb: 1,
+                        }}
+                      >
                         <Box>
                           <Typography variant="subtitle2" fontWeight={600}>
                             {detail.userName}
                           </Typography>
                           <Typography variant="caption" color="text.secondary">
-                            {index === 0 ? 'Maker' : index === 1 ? 'Checker' : 'Reviewer'}
+                            {index === 0
+                              ? "Maker"
+                              : index === 1
+                              ? "Checker"
+                              : "Reviewer"}
                           </Typography>
                         </Box>
                         <Chip
                           label={detail.status}
                           size="small"
-                          color={detail.status === 'Approved' ? 'success' : detail.status === 'Rejected' ? 'error' : 'warning'}
+                          color={
+                            detail.status === "Approved"
+                              ? "success"
+                              : detail.status === "Rejected"
+                              ? "error"
+                              : "warning"
+                          }
                           variant="outlined"
                           sx={{ fontWeight: 600 }}
                         />
                       </Box>
 
-                      <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: 2, my: 2 }}>
+                      <Box
+                        sx={{
+                          display: "grid",
+                          gridTemplateColumns:
+                            "repeat(auto-fit, minmax(150px, 1fr))",
+                          gap: 2,
+                          my: 2,
+                        }}
+                      >
                         <Box>
-                          <Typography variant="caption" color="text.secondary" display="block" sx={{ mb: 0.5 }}>
+                          <Typography
+                            variant="caption"
+                            color="text.secondary"
+                            display="block"
+                            sx={{ mb: 0.5 }}
+                          >
                             In Date
                           </Typography>
                           <Typography variant="body2" fontWeight={500}>
-                            {detail.inDate && detail.inDate !== '0001-01-01T00:00:00Z'
-                              ? new Date(detail.inDate).toLocaleString()
-                              : '-'}
+                            {detail.inDate &&
+                            detail.inDate !== "0001-01-01T00:00:00Z"
+                              ? new Date(detail.inDate).toLocaleDateString()
+                              : "-"}
                           </Typography>
                         </Box>
                         <Box>
-                          <Typography variant="caption" color="text.secondary" display="block" sx={{ mb: 0.5 }}>
+                          <Typography
+                            variant="caption"
+                            color="text.secondary"
+                            display="block"
+                            sx={{ mb: 0.5 }}
+                          >
                             Out Date
                           </Typography>
                           <Typography variant="body2" fontWeight={500}>
-                            {detail.outDate && detail.outDate !== '0001-01-01T00:00:00Z'
-                              ? new Date(detail.outDate).toLocaleString()
-                              : '-'}
+                            {detail.outDate &&
+                            detail.outDate !== "0001-01-01T00:00:00Z"
+                              ? new Date(detail.outDate).toLocaleDateString()
+                              : "-"}
                           </Typography>
                         </Box>
                         <Box>
-                          <Typography variant="caption" color="text.secondary" display="block" sx={{ mb: 0.5 }}>
+                          <Typography
+                            variant="caption"
+                            color="text.secondary"
+                            display="block"
+                            sx={{ mb: 0.5 }}
+                          >
                             P.TAT (Days)
                           </Typography>
                           <Typography variant="body2" fontWeight={500}>
@@ -1210,7 +1519,12 @@ const MakerDashboard: React.FC = () => {
                           </Typography>
                         </Box>
                         <Box>
-                          <Typography variant="caption" color="text.secondary" display="block" sx={{ mb: 0.5 }}>
+                          <Typography
+                            variant="caption"
+                            color="text.secondary"
+                            display="block"
+                            sx={{ mb: 0.5 }}
+                          >
                             A.TAT (Days)
                           </Typography>
                           <Typography variant="body2" fontWeight={500}>
@@ -1220,8 +1534,19 @@ const MakerDashboard: React.FC = () => {
                       </Box>
 
                       {detail.remarks && (
-                        <Box sx={{ mt: 2, pt: 2, borderTop: `1px solid ${theme.palette.divider}` }}>
-                          <Typography variant="caption" color="text.secondary" display="block" sx={{ mb: 0.5 }}>
+                        <Box
+                          sx={{
+                            mt: 2,
+                            pt: 2,
+                            borderTop: `1px solid ${theme.palette.divider}`,
+                          }}
+                        >
+                          <Typography
+                            variant="caption"
+                            color="text.secondary"
+                            display="block"
+                            sx={{ mb: 0.5 }}
+                          >
                             Remarks
                           </Typography>
                           <Typography variant="body2">
@@ -1231,8 +1556,19 @@ const MakerDashboard: React.FC = () => {
                       )}
 
                       {detail.rejectionRemark && (
-                        <Box sx={{ mt: 2, pt: 2, borderTop: `1px solid ${theme.palette.divider}` }}>
-                          <Typography variant="caption" color="error" display="block" sx={{ mb: 0.5, fontWeight: 600 }}>
+                        <Box
+                          sx={{
+                            mt: 2,
+                            pt: 2,
+                            borderTop: `1px solid ${theme.palette.divider}`,
+                          }}
+                        >
+                          <Typography
+                            variant="caption"
+                            color="error"
+                            display="block"
+                            sx={{ mb: 0.5, fontWeight: 600 }}
+                          >
                             Rejection Remark
                           </Typography>
                           <Typography variant="body2" color="error">
@@ -1243,7 +1579,11 @@ const MakerDashboard: React.FC = () => {
                     </Box>
                   ))
                 ) : (
-                  <Typography variant="body2" color="text.secondary" sx={{ textAlign: 'center', py: 4 }}>
+                  <Typography
+                    variant="body2"
+                    color="text.secondary"
+                    sx={{ textAlign: "center", py: 4 }}
+                  >
                     No movement details available
                   </Typography>
                 )}

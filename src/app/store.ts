@@ -14,6 +14,8 @@ import auditorDashboardReducer from "../pages/dashboards/auditorslice/AuditorDas
 import userReducer from "../pages/master/UserPage.slice";
 import countryReducer from "../pages/master/country/CountryPage.slice";
 import superAdminReducer from "../pages/dashboards/superadminslice/SuperAdmin.slice";
+import customerAdminReducer from "../pages/dashboards/customeradminslice/CustomerAdmin.slice";
+import taskReducer from "../pages/master/task/Task.slice";
 export const store = configureStore({
   reducer: {
     login: loginReducer,
@@ -31,6 +33,8 @@ export const store = configureStore({
     user: userReducer,
     country: countryReducer,
     superAdmin: superAdminReducer,
+    customerAdmin: customerAdminReducer,
+    task: taskReducer,
   },
 });
 

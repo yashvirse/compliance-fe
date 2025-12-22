@@ -5,6 +5,7 @@ export const FrequencyType = {
   WEEKLY: "Weekly",
   FORTNIGHTLY: "Fortnightly",
   MONTHLY: "Monthly",
+  QUARTERLY: "Quarterly", // ← नया add किया
   HALF_YEARLY: "Half Yearly",
   ANNUALLY: "Annually",
   AS_NEEDED: "As Needed",
@@ -56,6 +57,12 @@ export const FREQUENCY_OPTIONS: FrequencyOption[] = [
     maxDueDay: 31,
     description: "Enter day 1-31 of the month",
   },
+  {
+    value: FrequencyType.QUARTERLY,
+    label: "Quarterly",
+    maxDueDay: 90,
+    description: "Due on specific day of quarter (1-90)",
+  }, // ← नया
   {
     value: FrequencyType.HALF_YEARLY,
     label: "Half Yearly",

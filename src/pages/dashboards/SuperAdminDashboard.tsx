@@ -25,10 +25,12 @@ import {
   selectSuperAdminError,
   selectSuperAdminLoading,
 } from "./superadminslice/SuperAdmin.selector";
+import { useNavigate } from "react-router-dom";
 
 const SuperAdminDashboard: React.FC = () => {
   const theme = useTheme();
   const dispatch = useAppDispatch();
+  const navigate = useNavigate();
 
   const loading = useAppSelector(selectSuperAdminLoading);
   const error = useAppSelector(selectSuperAdminError);
@@ -45,26 +47,35 @@ const SuperAdminDashboard: React.FC = () => {
       value: dashboardData?.totalUsers ?? 0,
       icon: <People />,
       color: theme.palette.primary.main,
+      path: "/dashboard/master/user",
     },
     {
       label: "Total Companies",
       value: dashboardData?.totalCompany ?? 0,
       icon: <Business />,
       color: theme.palette.success.main,
+      path: "/dashboard/master/company",
     },
     {
       label: "All Departments",
       value: dashboardData?.totalDepartment ?? 0,
       icon: <TrendingUp />,
       color: theme.palette.warning.main,
+      path: "/dashboard/master/department",
     },
     {
-      label: "All Act / All Activities",
-      value: `${dashboardData?.totalAct ?? 0} / ${
-        dashboardData?.totalActivity ?? 0
-      }`,
+      label: "All Act ",
+      value: dashboardData?.totalAct ?? 0,
       icon: <Security />,
       color: theme.palette.info.main,
+      path: "/dashboard/master/act",
+    },
+    {
+      label: " All Activities",
+      value: dashboardData?.totalActivity ?? 0,
+      icon: <TrendingUp />,
+      color: theme.palette.warning.main,
+      path: "/dashboard/master/activity",
     },
   ];
 
@@ -106,7 +117,9 @@ const SuperAdminDashboard: React.FC = () => {
         {stats.map((stat, index) => (
           <Grid key={index} size={{ xs: 12, sm: 6, md: 3 }}>
             <Card
+              onClick={() => navigate(stat.path)}
               sx={{
+                cursor: "pointer",
                 borderRadius: 3,
                 boxShadow: `0 4px 20px ${alpha(
                   theme.palette.common.black,

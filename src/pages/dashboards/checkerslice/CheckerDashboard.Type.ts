@@ -26,6 +26,7 @@ export interface PendingCheckTask {
   currentUserID: string;
   currentUserName: string;
   currentUserInDate: string;
+  siteName: string;
   maker: string;
   makerID: string;
   checker: string;

@@ -62,7 +62,7 @@ export const menuConfig: MenuItem[] = [
         id: "company",
         label: "Company",
         path: "/dashboard/master/company",
-        allowedRoles: [UserRole.SUPER_ADMIN, UserRole.MAKER],
+        allowedRoles: [UserRole.SUPER_ADMIN],
       },
       {
         id: "department",
@@ -95,10 +95,16 @@ export const menuConfig: MenuItem[] = [
         allowedRoles: [UserRole.CUSTOMER_ADMIN],
       },
       {
+        id: "task",
+        label: "Total Task",
+        path: "/dashboard/master/task",
+        allowedRoles: [UserRole.CUSTOMER_ADMIN],
+      },
+      {
         id: "country",
         label: "Country",
         path: "/dashboard/master/country",
-        allowedRoles: [UserRole.SUPER_ADMIN, UserRole.CUSTOMER_ADMIN],
+        allowedRoles: [UserRole.SUPER_ADMIN],
       },
     ],
   },
