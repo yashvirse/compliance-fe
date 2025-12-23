@@ -32,6 +32,7 @@ import {
   Settings,
   Close as CloseIcon,
 } from "@mui/icons-material";
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, Cell, LabelList } from "recharts";
 import type { AppDispatch } from "../../app/store";
 import { useDispatch, useSelector } from "react-redux";
 import {
@@ -46,6 +47,7 @@ import {
   fetchCustomerAdminDashboard,
 } from "./customeradminslice/CustomerAdmin.slice";
 import { useNavigate } from "react-router-dom";
+import SiteMap from "../../components/SiteMap";
 
 const CustomerAdminDashboard: React.FC = () => {
   const theme = useTheme();
@@ -291,36 +293,9 @@ const CustomerAdminDashboard: React.FC = () => {
           ))}
         </Grid>
         {/* Compliance Status Chart */}
-        <Grid container spacing={3} sx={{ mt: 4 }}>
-          {/* LEFT CARD – Compliance Status */}
-          <Grid size={{ xs: 12, md: 6 }}>
-            <Card
-              sx={{
-                height: "100%",
-                borderRadius: 3,
-                boxShadow: `0 4px 20px ${alpha(
-                  theme.palette.common.black,
-                  0.08
-                )}`,
-              }}
-            >
-              <CardContent
-                sx={{
-                  p: 4,
-                  height: "100%",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                }}
-              >
-                <Typography variant="body2" color="text.secondary">
-                  Act-wise Pillar Chart
-                </Typography>
-              </CardContent>
-            </Card>
-          </Grid>
+        <Grid container spacing={3} sx={{ mt: 4 }}>        
           {/* RIGHT CARD – Pillar Chart */}
-          <Grid size={{ xs: 12, md: 6 }}>
+          <Grid size={{ xs: 12, md: 12 }}>
             <Card
               sx={{
                 height: "100%",
@@ -456,104 +431,62 @@ const CustomerAdminDashboard: React.FC = () => {
                   Act Wise
                 </Typography>
 
-                {/* GRAPH AREA */}
-                <Box
-                  sx={{
-                    position: "relative",
-                    height: 320,
-                    mt: 2,
-                  }}
-                >
-                  {/* Y AXIS */}
-                  <Box
-                    sx={{
-                      position: "absolute",
-                      left: 40,
-                      top: 10,
-                      bottom: 60,
-                      width: "2px",
-                      bgcolor: "#000",
-                    }}
-                  />
-
-                  {/* X AXIS */}
-                  <Box
-                    sx={{
-                      position: "absolute",
-                      left: 40,
-                      right: 20,
-                      bottom: 60,
-                      height: "2px",
-                      bgcolor: "#000",
-                    }}
-                  />
-
-                  {/* BARS AREA */}
-                  <Box
-                    sx={{
-                      position: "absolute",
-                      left: 60,
-                      right: 20,
-                      top: 10,
-                      bottom: 60,
-                      display: "flex",
-                      alignItems: "flex-end",
-                      gap: 28,
-                      overflowX: "auto",
-                    }}
-                  >
-                    {actChartData.map((act) => {
-                      const barHeight = (act.total / maxActivity) * 220;
-
-                      return (
-                        <Box
-                          key={act.actName}
-                          sx={{
-                            minWidth: 60,
-                            display: "flex",
-                            flexDirection: "column",
-                            alignItems: "center",
-                            justifyContent: "flex-end",
-                          }}
-                        >
-                          {/* VALUE */}
-                          <Typography
-                            variant="body2"
-                            fontWeight={600}
-                            sx={{ mb: 0.5 }}
-                          >
-                            {act.total}
-                          </Typography>
-
-                          {/* BAR */}
-                          <Box
-                            sx={{
-                              width: 28,
-                              height: `${barHeight}px`,
-                              background:
-                                "linear-gradient(to top, #ff9800, #ffc107)",
-                              border: "1px solid #e68900",
-                            }}
-                          />
-
-                          {/* ACT NAME (ROTATED LIKE IMAGE) */}
-                          <Typography
-                            variant="caption"
-                            sx={{
-                              mt: 1.5,
-                              transform: "rotate(-60deg)",
-                              transformOrigin: "top right",
-                              whiteSpace: "nowrap",
-                              fontSize: "0.75rem",
-                            }}
-                          >
-                            {act.actName}
-                          </Typography>
-                        </Box>
-                      );
-                    })}
+                {actChartData.length === 0 ? (
+                  <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center", height: 280 }}>
+                    <Typography variant="body2" color="text.secondary">
+                      No data available
+                    </Typography>
                   </Box>
-                </Box>
+                ) : (
+                  <ResponsiveContainer width="100%" height={380}>
+                    <BarChart
+                      data={actChartData}
+                      margin={{ top: 30, right: 30, left: 0, bottom: 5 }}
+                    >
+                      <CartesianGrid strokeDasharray="0" stroke={alpha(theme.palette.divider, 0.2)} vertical={false} />
+                      <XAxis
+                        dataKey="actName"
+                        tick={{ fontSize: 11, fill: theme.palette.text.secondary }}
+                        axisLine={{ stroke: theme.palette.divider }}
+                      />
+                      <YAxis tick={{ fontSize: 11, fill: theme.palette.text.secondary }} axisLine={{ stroke: theme.palette.divider }} />
+                      <Tooltip
+                        contentStyle={{
+                          backgroundColor: alpha(theme.palette.background.paper, 0.95),
+                          border: `1px solid ${theme.palette.divider}`,
+                          borderRadius: "8px",
+                          boxShadow: theme.shadows[3],
+                        }}
+                        labelStyle={{ color: theme.palette.text.primary }}
+                        cursor={{ fill: alpha(theme.palette.primary.main, 0.05) }}
+                        formatter={(value, name, props) => [`${value} Tasks`, props.payload.actName]}
+                      />
+                      <Bar
+                        dataKey="total"
+                        fill="#ff9800"
+                        radius={[12, 12, 0, 0]}
+                        isAnimationActive={true}
+                      >
+                        <LabelList
+                          dataKey="actName"
+                          position="center"
+                          fill="#fff"
+                          fontSize={10}
+                          fontWeight={600}
+                          angle={-90}
+                          textAnchor="middle"
+                        />
+                        <LabelList
+                          dataKey="total"
+                          position="top"
+                          fill={theme.palette.text.primary}
+                          fontSize={12}
+                          fontWeight={600}
+                        />
+                      </Bar>
+                    </BarChart>
+                  </ResponsiveContainer>
+                )}
               </CardContent>
             </Card>
           </Grid>
@@ -582,6 +515,27 @@ const CustomerAdminDashboard: React.FC = () => {
                 <Typography variant="body2" color="text.secondary">
                   Act-wise Pillar Chart
                 </Typography>
+              </CardContent>
+            </Card>
+          </Grid>
+        </Grid>
+
+        {/* Site Map */}
+        <Grid container spacing={3} sx={{ mt: 4 }}>
+          <Grid size={{ xs: 12 }}>
+            <Card
+              sx={{
+                height: "100%",
+                borderRadius: 3,
+                overflow: "hidden",
+                boxShadow: `0 4px 20px ${alpha(
+                  theme.palette.common.black,
+                  0.08
+                )}`,
+              }}
+            >
+              <CardContent sx={{ p: 0, height: 500 }}>
+                <SiteMap height={500} />
               </CardContent>
             </Card>
           </Grid>
