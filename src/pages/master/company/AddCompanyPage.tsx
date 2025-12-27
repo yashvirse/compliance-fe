@@ -802,7 +802,6 @@ const AddCompanyPage: React.FC = () => {
           onChange={(e) =>
             setAccountData({ ...accountData, ifscCode: e.target.value })
           }
-          required
           placeholder="IFSC0001234"
         />
       </Grid>
@@ -815,7 +814,6 @@ const AddCompanyPage: React.FC = () => {
           onChange={(e) =>
             setAccountData({ ...accountData, panNo: e.target.value })
           }
-          required
           placeholder="ABCDE1234F"
         />
       </Grid>
@@ -828,7 +826,6 @@ const AddCompanyPage: React.FC = () => {
           onChange={(e) =>
             setAccountData({ ...accountData, gstNo: e.target.value })
           }
-          required
           placeholder="22AAAAA0000A1Z5"
         />
       </Grid>
@@ -841,7 +838,6 @@ const AddCompanyPage: React.FC = () => {
           onChange={(e) =>
             setAccountData({ ...accountData, cinNo: e.target.value })
           }
-          required
           placeholder="U12345AB2020PTC123456"
         />
       </Grid>
@@ -871,7 +867,6 @@ const AddCompanyPage: React.FC = () => {
             })
           }
           options={planTypeOptions}
-          required
         />
       </Grid>
 
@@ -887,7 +882,6 @@ const AddCompanyPage: React.FC = () => {
               planRate: e.target.value,
             })
           }
-          required
           placeholder="Enter plan rate"
         />
       </Grid>

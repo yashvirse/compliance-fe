@@ -273,7 +273,7 @@ const ImportActivityList: React.FC = () => {
                         </TableCell>
                         <TableCell>
                           <Typography variant="body2" fontWeight={600}>
-                            {group.actName}
+                            {group.actName} ({group.activities.length})
                           </Typography>
                         </TableCell>
                         <TableCell>
@@ -330,7 +330,7 @@ const ImportActivityList: React.FC = () => {
                                   variant="subtitle2"
                                   fontWeight={600}
                                 >
-                                  Activities ({group.activities.length})
+                                  Activities
                                 </Typography>
                                 <Button
                                   size="small"

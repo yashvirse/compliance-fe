@@ -1138,6 +1138,11 @@ const MakerDashboard: React.FC = () => {
                           Due Date
                         </Typography>
                       </TableCell>
+                      <TableCell align="center">
+                        <Typography variant="subtitle2" fontWeight={600}>
+                          Actions
+                        </Typography>
+                      </TableCell>
                     </TableRow>
                   </TableHead>
                   <TableBody>
@@ -1189,6 +1194,23 @@ const MakerDashboard: React.FC = () => {
                               ? new Date(task.dueDate).toLocaleDateString()
                               : "-"}
                           </Typography>
+                        </TableCell>
+                        <TableCell align="center">
+                          <Button
+                            size="small"
+                            variant="text"
+                            startIcon={<EyeIcon />}
+                            onClick={() => handleViewTaskMovement(task)}
+                            sx={{
+                              color: theme.palette.primary.main,
+                              textTransform: "none",
+                              "&:hover": {
+                                bgcolor: alpha(theme.palette.primary.main, 0.1),
+                              },
+                            }}
+                          >
+                            View
+                          </Button>
                         </TableCell>
                       </TableRow>
                     ))}

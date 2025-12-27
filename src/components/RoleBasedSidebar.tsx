@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
-import { useSelector } from 'react-redux';
+import React, { useState } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
+import { useSelector } from "react-redux";
 import {
   Box,
   List,
@@ -13,7 +13,7 @@ import {
   Typography,
   Divider,
   alpha,
-} from '@mui/material';
+} from "@mui/material";
 import {
   Dashboard as DashboardIcon,
   ExpandLess,
@@ -27,9 +27,14 @@ import {
   Assessment,
   Settings,
   Widgets,
-} from '@mui/icons-material';
-import { selectUser } from '../pages/login/slice/Login.selector';
-import { getMenuItemsForRole, getDashboardPathForRole, type MenuItem, UserRole } from '../config/roleConfig.tsx';
+} from "@mui/icons-material";
+import { selectUser } from "../pages/login/slice/Login.selector";
+import {
+  getMenuItemsForRole,
+  getDashboardPathForRole,
+  type MenuItem,
+  UserRole,
+} from "../config/roleConfig.tsx";
 
 interface RoleBasedSidebarProps {
   sidebarOpen: boolean;
@@ -42,16 +47,16 @@ const iconMap: Record<string, React.ReactElement> = {
   user: <People />,
   company: <Business />,
   country: <Public />,
-  'data-entry': <Edit />,
-  'create-entry': <Edit />,
-  'pending-entries': <FactCheck />,
+  "data-entry": <Edit />,
+  "create-entry": <Edit />,
+  "pending-entries": <FactCheck />,
   verification: <FactCheck />,
-  'check-entries': <FactCheck />,
-  'review-entries': <FactCheck />,
+  "check-entries": <FactCheck />,
+  "review-entries": <FactCheck />,
   reports: <Assessment />,
-  'all-reports': <Assessment />,
-  'view-reports': <Assessment />,
-  'export-reports': <Assessment />,
+  "all-reports": <Assessment />,
+  "view-reports": <Assessment />,
+  "export-reports": <Assessment />,
   settings: <Settings />,
   components: <Widgets />,
 };
@@ -78,35 +83,36 @@ const RoleBasedSidebar: React.FC<RoleBasedSidebarProps> = ({ sidebarOpen }) => {
   };
 
   const renderMenuItem = (item: MenuItem) => {
-    const icon = iconMap[item.id] || <Folder />;
+    const icon = item.icon || iconMap[item.id] || <Folder />;
     const hasChildren = item.children && item.children.length > 0;
     const isOpen = openMenus[item.id] || false;
-    
+
     // For dashboard menu, use role-specific path
-    const itemPath = item.id === 'dashboard' ? getDashboardPathForRole(userRole) : item.path;
+    const itemPath =
+      item.id === "dashboard" ? getDashboardPathForRole(userRole) : item.path;
     const isSelected = itemPath === location.pathname;
 
     if (hasChildren) {
       return (
         <React.Fragment key={item.id}>
           <ListItem disablePadding sx={{ mb: 1 }}>
-            <Tooltip title={!sidebarOpen ? item.label : ''} placement="right">
+            <Tooltip title={!sidebarOpen ? item.label : ""} placement="right">
               <ListItemButton
                 onClick={() => handleMenuClick(item.id)}
                 sx={{
                   borderRadius: 2,
-                  justifyContent: sidebarOpen ? 'initial' : 'center',
-                  '&:hover': {
-                    bgcolor: alpha('#fff', 0.15),
+                  justifyContent: sidebarOpen ? "initial" : "center",
+                  "&:hover": {
+                    bgcolor: alpha("#fff", 0.15),
                   },
                 }}
               >
                 <ListItemIcon
                   sx={{
-                    color: 'white',
-                    minWidth: sidebarOpen ? 40 : 'auto',
+                    color: "white",
+                    minWidth: sidebarOpen ? 40 : "auto",
                     mr: sidebarOpen ? 0 : 0,
-                    justifyContent: 'center',
+                    justifyContent: "center",
                   }}
                 >
                   {icon}
@@ -117,7 +123,7 @@ const RoleBasedSidebar: React.FC<RoleBasedSidebarProps> = ({ sidebarOpen }) => {
                       primary={item.label}
                       primaryTypographyProps={{
                         fontWeight: 500,
-                        fontSize: '0.95rem',
+                        fontSize: "0.95rem",
                       }}
                     />
                     {isOpen ? <ExpandLess /> : <ExpandMore />}
@@ -136,32 +142,39 @@ const RoleBasedSidebar: React.FC<RoleBasedSidebarProps> = ({ sidebarOpen }) => {
     }
 
     return (
-      <ListItem key={item.id} disablePadding sx={{ mb: hasChildren ? 0.5 : 1, pl: (item.path?.split('/').length ?? 0) > 3 ? 2 : 0 }}>
-        <Tooltip title={!sidebarOpen ? item.label : ''} placement="right">
+      <ListItem
+        key={item.id}
+        disablePadding
+        sx={{
+          mb: hasChildren ? 0.5 : 1,
+          pl: (item.path?.split("/").length ?? 0) > 3 ? 2 : 0,
+        }}
+      >
+        <Tooltip title={!sidebarOpen ? item.label : ""} placement="right">
           <ListItemButton
             onClick={() => itemPath && handleNavigate(itemPath)}
             selected={isSelected}
             sx={{
               borderRadius: 2,
-              justifyContent: sidebarOpen ? 'initial' : 'center',
-              pl: (item.path?.split('/').length ?? 0) > 3 ? 4 : 2,
-              '&:hover': {
-                bgcolor: alpha('#fff', 0.15),
+              justifyContent: sidebarOpen ? "initial" : "center",
+              pl: (item.path?.split("/").length ?? 0) > 3 ? 4 : 2,
+              "&:hover": {
+                bgcolor: alpha("#fff", 0.15),
               },
-              '&.Mui-selected': {
-                bgcolor: alpha('#fff', 0.2),
-                '&:hover': {
-                  bgcolor: alpha('#fff', 0.25),
+              "&.Mui-selected": {
+                bgcolor: alpha("#fff", 0.2),
+                "&:hover": {
+                  bgcolor: alpha("#fff", 0.25),
                 },
               },
             }}
           >
             <ListItemIcon
               sx={{
-                color: 'white',
-                minWidth: sidebarOpen ? 40 : 'auto',
+                color: "white",
+                minWidth: sidebarOpen ? 40 : "auto",
                 mr: sidebarOpen ? 0 : 0,
-                justifyContent: 'center',
+                justifyContent: "center",
               }}
             >
               {icon}
@@ -171,7 +184,10 @@ const RoleBasedSidebar: React.FC<RoleBasedSidebarProps> = ({ sidebarOpen }) => {
                 primary={item.label}
                 primaryTypographyProps={{
                   fontWeight: 500,
-                  fontSize: (item.path?.split('/').length ?? 0) > 3 ? '0.9rem' : '0.95rem',
+                  fontSize:
+                    (item.path?.split("/").length ?? 0) > 3
+                      ? "0.9rem"
+                      : "0.95rem",
                 }}
               />
             )}
@@ -184,26 +200,33 @@ const RoleBasedSidebar: React.FC<RoleBasedSidebarProps> = ({ sidebarOpen }) => {
   return (
     <Box
       sx={{
-        height: '100%',
-        display: 'flex',
-        flexDirection: 'column',
+        height: "100%",
+        display: "flex",
+        flexDirection: "column",
       }}
     >
       {sidebarOpen && user && (
         <>
           <Box sx={{ px: 3, py: 2 }}>
-            <Typography variant="caption" sx={{ opacity: 0.7, textTransform: 'uppercase', letterSpacing: 1 }}>
+            <Typography
+              variant="caption"
+              sx={{
+                opacity: 0.7,
+                textTransform: "uppercase",
+                letterSpacing: 1,
+              }}
+            >
               Role
             </Typography>
             <Typography variant="body2" fontWeight={600} sx={{ mt: 0.5 }}>
               {user.role}
             </Typography>
           </Box>
-          <Divider sx={{ bgcolor: alpha('#fff', 0.2), mb: 2 }} />
+          <Divider sx={{ bgcolor: alpha("#fff", 0.2), mb: 2 }} />
         </>
       )}
-      
-      <List sx={{ px: 2, flex: 1, overflowY: 'auto' }}>
+
+      <List sx={{ px: 2, flex: 1, overflowY: "auto" }}>
         {menuItems.map((item) => renderMenuItem(item))}
       </List>
     </Box>
