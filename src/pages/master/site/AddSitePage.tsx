@@ -225,12 +225,12 @@ const AddSitePage: React.FC = () => {
     if (!formData.defaultUser.defaultChecker.trim()) {
       errors.defaultChecker = "Default Checker is required";
     }
-    if (!formData.defaultUser.defaultReviewer.trim()) {
-      errors.defaultReviewer = "Default Reviewer is required";
-    }
-    if (!formData.defaultUser.defaultAuditer.trim()) {
-      errors.defaultAuditer = "Default Auditor is required";
-    }
+    // if (!formData.defaultUser.defaultReviewer.trim()) {
+    //   errors.defaultReviewer = "Default Reviewer is required";
+    // }
+    // if (!formData.defaultUser.defaultAuditer.trim()) {
+    //   errors.defaultAuditer = "Default Auditor is required";
+    // }
 
     setFormErrors(errors);
     return Object.keys(errors).length === 0;
@@ -463,6 +463,7 @@ const AddSitePage: React.FC = () => {
                 helperText={formErrors.latitude}
                 placeholder="Enter site Latitude"
                 variant="outlined"
+                required
               />
             </Grid>
             <Grid size={{ xs: 12, sm: 6 }}>
@@ -476,6 +477,7 @@ const AddSitePage: React.FC = () => {
                 helperText={formErrors.longtitude}
                 placeholder="Enter site longtitude"
                 variant="outlined"
+                required
               />
             </Grid>
           </Grid>

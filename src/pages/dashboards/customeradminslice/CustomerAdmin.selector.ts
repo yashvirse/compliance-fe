@@ -12,3 +12,5 @@ export const selectCompletedTasks = (state: RootState) =>
   state.customerAdmin.completedTasks;
 export const selectAssignedTasks = (state: RootState) =>
   state.customerAdmin.asignedTasks;
+export const selectSiteWiseTasks = (state: RootState) =>
+  state.customerAdmin.siteWiseTasks;

@@ -109,7 +109,26 @@ const DashboardLayout: React.FC = () => {
 
       <Divider sx={{ bgcolor: alpha("#fff", 0.2), my: 2 }} />
 
-      <RoleBasedSidebar sidebarOpen={sidebarOpen} />
+      <Box
+        sx={{
+          flexGrow: 1,
+          overflowY: "auto",
+          overflowX: "hidden",
+          px: sidebarOpen ? 1 : 0,
+          "&::-webkit-scrollbar": {
+            width: "6px",
+          },
+          "&::-webkit-scrollbar-thumb": {
+            backgroundColor: alpha("#fff", 0.4),
+            borderRadius: "10px",
+          },
+          "&::-webkit-scrollbar-track": {
+            background: "transparent",
+          },
+        }}
+      >
+        <RoleBasedSidebar sidebarOpen={sidebarOpen} />
+      </Box>
 
       {sidebarOpen && (
         <Box sx={{ p: 3 }}>
@@ -124,10 +143,17 @@ const DashboardLayout: React.FC = () => {
             <Typography variant="body2" sx={{ opacity: 0.8, mb: 1 }}>
               Logged in as
             </Typography>
-            <Typography variant="body1" fontWeight={600}>
+            <Typography
+              variant="body1"
+              fontWeight={600}
+              sx={{ wordBreak: "break-word" }}
+            >
               {user?.name}
             </Typography>
-            <Typography variant="caption" sx={{ opacity: 0.7 }}>
+            <Typography
+              variant="caption"
+              sx={{ opacity: 0.7, wordBreak: "break-word" }}
+            >
               {user?.email}
             </Typography>
           </Box>

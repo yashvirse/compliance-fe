@@ -420,7 +420,7 @@ const CustomerAdminActivityMasterPage: React.FC = () => {
                         </TableCell>
                         <TableCell>
                           <Typography variant="body2" fontWeight={600}>
-                            {group.actName}
+                            {group.actName} ({group.activities.length})
                           </Typography>
                         </TableCell>
                         <TableCell>
@@ -459,7 +459,7 @@ const CustomerAdminActivityMasterPage: React.FC = () => {
                                 overflow: "hidden",
                               }}
                             >
-                              <Box
+                              {/* <Box
                                 sx={{
                                   bgcolor: alpha(theme.palette.grey[500], 0.03),
                                   px: 2,
@@ -476,7 +476,7 @@ const CustomerAdminActivityMasterPage: React.FC = () => {
                                 >
                                   Activities ({group.activities.length})
                                 </Typography>
-                              </Box>
+                              </Box> */}
                               <Table size="small">
                                 <TableHead>
                                   <TableRow

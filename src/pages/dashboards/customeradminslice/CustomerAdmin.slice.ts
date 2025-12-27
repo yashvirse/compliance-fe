@@ -5,6 +5,7 @@ import type {
   GetAssignedTaskResponse,
   GetCompletedTaskResponse,
   GetCustomerAdminDashboardResponse,
+  SiteWiseTaskResponse,
 } from "./CustomerAdmin.type";
 
 const initialState: CustomerAdminState = {
@@ -13,6 +14,7 @@ const initialState: CustomerAdminState = {
   dashboardData: null,
   completedTasks: [],
   asignedTasks: [],
+  siteWiseTasks: [],
 };
 
 // ✅ Customer Admin Dashboard API
@@ -91,6 +93,32 @@ export const fetchAssignedTasks = createAsyncThunk<
     );
   }
 });
+// ✅ Site Wise Tasks API
+export const fetchsiteWiseTasks = createAsyncThunk<
+  SiteWiseTaskResponse,
+  string, // 👈 siteId type
+  { rejectValue: string }
+>("customerAdmin/fetchsiteWiseTasks", async (siteId, { rejectWithValue }) => {
+  try {
+    const response = await apiService.get<SiteWiseTaskResponse>(
+      `Dashboard/siteWiseData?siteId=${siteId}`
+    );
+
+    if (!response.isSuccess) {
+      return rejectWithValue(
+        response.message || "Failed to fetch site wise tasks"
+      );
+    }
+
+    return response;
+  } catch (error: any) {
+    return rejectWithValue(
+      error?.response?.data?.message ||
+        error?.message ||
+        "Failed to fetch site wise tasks"
+    );
+  }
+});
 
 const customerAdminSlice = createSlice({
   name: "customerAdmin",
@@ -136,6 +164,19 @@ const customerAdminSlice = createSlice({
         state.asignedTasks = action.payload.result;
       })
       .addCase(fetchAssignedTasks.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload || "Something went wrong";
+      });
+    builder
+      .addCase(fetchsiteWiseTasks.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(fetchsiteWiseTasks.fulfilled, (state, action) => {
+        state.loading = false;
+        state.siteWiseTasks = action.payload.result;
+      })
+      .addCase(fetchsiteWiseTasks.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload || "Something went wrong";
       });

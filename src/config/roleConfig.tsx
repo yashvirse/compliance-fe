@@ -1,4 +1,11 @@
 import type { ReactNode } from "react";
+import PeopleIcon from "@mui/icons-material/People";
+import LocationOnIcon from "@mui/icons-material/LocationOn";
+import FactCheckIcon from "@mui/icons-material/FactCheck";
+import AssignmentTurnedInIcon from "@mui/icons-material/AssignmentTurnedIn";
+import AdminPanelSettingsIcon from "@mui/icons-material/AdminPanelSettings";
+import AccountTreeIcon from "@mui/icons-material/AccountTree";
+import GavelIcon from "@mui/icons-material/Gavel";
 
 // User roles
 export const UserRole = {
@@ -40,6 +47,7 @@ export const menuConfig: MenuItem[] = [
   {
     id: "master",
     label: "Master",
+    icon: <AdminPanelSettingsIcon />,
     allowedRoles: [
       UserRole.SUPER_ADMIN,
       UserRole.CUSTOMER_ADMIN,
@@ -56,6 +64,7 @@ export const menuConfig: MenuItem[] = [
         id: "customeradminuser",
         label: "User Master",
         path: "/dashboard/master/customeradminuser",
+        icon: <PeopleIcon />,
         allowedRoles: [UserRole.CUSTOMER_ADMIN],
       },
       {
@@ -68,36 +77,42 @@ export const menuConfig: MenuItem[] = [
         id: "department",
         label: "Department Master",
         path: "/dashboard/master/department",
+        icon: <AccountTreeIcon />,
         allowedRoles: [UserRole.SUPER_ADMIN],
       },
       {
         id: "act",
         label: "Act Master",
         path: "/dashboard/master/act",
+        icon: <GavelIcon />,
         allowedRoles: [UserRole.SUPER_ADMIN],
       },
       {
         id: "activity",
         label: "Activity Master",
         path: "/dashboard/master/activity",
+        icon: <FactCheckIcon />,
         allowedRoles: [UserRole.SUPER_ADMIN],
-      },
-      {
-        id: "customeradminactivity",
-        label: "Activity Master",
-        path: "/dashboard/master/customeradminactivity",
-        allowedRoles: [UserRole.CUSTOMER_ADMIN],
       },
       {
         id: "site",
         label: "Site Master",
         path: "/dashboard/master/site",
+        icon: <LocationOnIcon />,
+        allowedRoles: [UserRole.CUSTOMER_ADMIN],
+      },
+      {
+        id: "customeradminactivity",
+        label: "Activity Master",
+        path: "/dashboard/master/customeradminactivity",
+        icon: <FactCheckIcon />,
         allowedRoles: [UserRole.CUSTOMER_ADMIN],
       },
       {
         id: "task",
         label: "Total Task",
         path: "/dashboard/master/task",
+        icon: <AssignmentTurnedInIcon />,
         allowedRoles: [UserRole.CUSTOMER_ADMIN],
       },
       {
@@ -146,52 +161,52 @@ export const menuConfig: MenuItem[] = [
       },
     ],
   },
-  {
-    id: "reports",
-    label: "Reports",
-    allowedRoles: [
-      UserRole.SUPER_ADMIN,
-      UserRole.CUSTOMER_ADMIN,
-      UserRole.REVIEWER,
-      UserRole.AUDITOR,
-    ],
-    children: [
-      {
-        id: "all-reports",
-        label: "All Reports",
-        path: "/dashboard/reports/all",
-        allowedRoles: [UserRole.SUPER_ADMIN, UserRole.CUSTOMER_ADMIN],
-      },
-      {
-        id: "view-reports",
-        label: "View Reports",
-        path: "/dashboard/reports/view",
-        allowedRoles: [UserRole.REVIEWER, UserRole.AUDITOR],
-      },
-      {
-        id: "export-reports",
-        label: "Export Reports",
-        path: "/dashboard/reports/export",
-        allowedRoles: [
-          UserRole.SUPER_ADMIN,
-          UserRole.CUSTOMER_ADMIN,
-          UserRole.REVIEWER,
-        ],
-      },
-    ],
-  },
+  // {
+  //   id: "reports",
+  //   label: "Reports",
+  //   allowedRoles: [
+  //     UserRole.SUPER_ADMIN,
+  //     UserRole.CUSTOMER_ADMIN,
+  //     UserRole.REVIEWER,
+  //     UserRole.AUDITOR,
+  //   ],
+  //   children: [
+  //     {
+  //       id: "all-reports",
+  //       label: "All Reports",
+  //       path: "/dashboard/reports/all",
+  //       allowedRoles: [UserRole.SUPER_ADMIN, UserRole.CUSTOMER_ADMIN],
+  //     },
+  //     {
+  //       id: "view-reports",
+  //       label: "View Reports",
+  //       path: "/dashboard/reports/view",
+  //       allowedRoles: [UserRole.REVIEWER, UserRole.AUDITOR],
+  //     },
+  //     {
+  //       id: "export-reports",
+  //       label: "Export Reports",
+  //       path: "/dashboard/reports/export",
+  //       allowedRoles: [
+  //         UserRole.SUPER_ADMIN,
+  //         UserRole.CUSTOMER_ADMIN,
+  //         UserRole.REVIEWER,
+  //       ],
+  //     },
+  //   ],
+  // },
   {
     id: "settings",
     label: "Settings",
     path: "/dashboard/settings",
     allowedRoles: [UserRole.SUPER_ADMIN, UserRole.CUSTOMER_ADMIN],
   },
-  {
-    id: "components",
-    label: "Components Demo",
-    path: "/dashboard/components",
-    allowedRoles: [UserRole.SUPER_ADMIN], // Demo page only for super admin
-  },
+  // {
+  //   id: "components",
+  //   label: "Components Demo",
+  //   path: "/dashboard/components",
+  //   allowedRoles: [UserRole.SUPER_ADMIN], // Demo page only for super admin
+  // },
 ];
 
 // Helper function to filter menu items based on user role
