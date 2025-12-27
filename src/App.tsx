@@ -56,6 +56,7 @@ import SitePage from "./pages/master/site/SitePage.tsx";
 import AddSitePage from "./pages/master/site/AddSitePage.tsx";
 import ComponentDemoPage from "./pages/ComponentDemoPage.tsx";
 import Task from "./pages/master/task/Task.tsx";
+import UtilPage from "./pages/UtilPage.tsx";
 
 const theme = createTheme({
   palette: {
@@ -387,6 +388,14 @@ function App() {
                     ]}
                   >
                     <SuperAdminDashboard />
+                  </RoleBasedRoute>
+                }
+              />
+              <Route
+                path="util"
+                element={
+                  <RoleBasedRoute allowedRoles={[UserRole.SUPER_ADMIN]}>
+                    <UtilPage />
                   </RoleBasedRoute>
                 }
               />

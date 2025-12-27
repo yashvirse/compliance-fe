@@ -201,6 +201,12 @@ export const menuConfig: MenuItem[] = [
     path: "/dashboard/settings",
     allowedRoles: [UserRole.SUPER_ADMIN, UserRole.CUSTOMER_ADMIN],
   },
+  {
+    id: "util",
+    label: "Util",
+    path: "/dashboard/util",
+    allowedRoles: [UserRole.SUPER_ADMIN],
+  },
   // {
   //   id: "components",
   //   label: "Components Demo",
