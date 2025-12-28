@@ -5,8 +5,10 @@ import axios, {
 } from "axios";
 
 // API Configuration
-const API_BASE_URL =
-  import.meta.env.VITE_API_BASE_URL || "https://api.ocmspro.com/api";
+ const API_BASE_URL =
+   import.meta.env.VITE_API_BASE_URL || "https://api.ocmspro.com/api";
+//  export const API_BASE_URL =
+//   import.meta.env.VITE_API_BASE_URL || "https://localhost:44341/api";
 const API_TIMEOUT = 30000; // 30 seconds
 
 // Create axios instance with default config

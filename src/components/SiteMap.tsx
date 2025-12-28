@@ -12,6 +12,7 @@ import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 
+
 // Fix for default marker icon in Leaflet
 delete (L.Icon.Default.prototype as any)._getIconUrl;
 L.Icon.Default.mergeOptions({
@@ -60,9 +61,7 @@ const SiteMap: React.FC<SiteMapProps> = ({
     setError(null);
     try {
       const token =
-        localStorage.getItem("authToken") ||
-        "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1bmlxdWVfbmFtZSI6IjE2MDEwNCIsImVtYWlsIjoiYWRtaW5Ab3JjaGlkZWFyZXNlYXJjaC5jb20iLCJyb2xlIjoiQ3VzdG9tZXJBZG1pbiIsIm5hbWVpZCI6IlByc3I0SXRKUmluWVdrNmlicjFseDFwK1ZTU2RVMjZucnFsb0VKc2VrZmd0U3pTeFNLRGk0cGNiempSTmxYdnNNMkJLSEJOd2N1Y3NPamxLUE9aTFV1R0VwNEFiVW1mZkdxY2VPVDloTnM0PSIsIm5iZiI6MTc2NjQyMDcwOSwiZXhwIjoxNzY3MDI1NTA5LCJpYXQiOjE3NjY0MjA3MDl9.LI1zJaeVpUsIfnLapAN5XmSwb9iwZFZGpXDZEnEWIak";
-
+        localStorage.getItem("authToken") 
       const response = await fetch(
         "https://api.ocmspro.com/api/Master/getSiteMasterList",
         {

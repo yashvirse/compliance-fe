@@ -21,6 +21,8 @@ import {
 import {
   ArrowBack as ArrowBackIcon,
   Save as SaveIcon,
+  Download as DownloadIcon,
+  CloudUpload as CloudUploadIcon,
 } from "@mui/icons-material";
 import {
   addSite,
@@ -28,6 +30,7 @@ import {
   fetchSiteList,
   clearError,
   fetchCountriesAndStates,
+  bulkUploadSite,
 } from "./slice/Site.Slice";
 import {
   selectSites,
@@ -35,7 +38,7 @@ import {
   selectSiteError,
 } from "./slice/Site.Selector";
 import type { Site, DefaultUser, State, CountryState } from "./slice/Site.Type";
-import { apiClient } from "../../../services/api";
+import { apiClient, apiService } from "../../../services/api";
 import type { GetUserListResponse } from "../customeradminuser/slice";
 import { useAuth } from "../../../context/AuthContext";
 
@@ -265,10 +268,10 @@ const AddSitePage: React.FC = () => {
         [fieldName === "defaultMaker"
           ? "defaultMakerId"
           : fieldName === "defaultChecker"
-          ? "defaultCheckerId"
-          : fieldName === "defaultReviewer"
-          ? "defaultReviewerId"
-          : "defaultAuditerId"]: selectedUserId,
+            ? "defaultCheckerId"
+            : fieldName === "defaultReviewer"
+              ? "defaultReviewerId"
+              : "defaultAuditerId"]: selectedUserId,
       },
     }));
 
@@ -315,6 +318,61 @@ const AddSitePage: React.FC = () => {
     navigate("/dashboard/master/site");
   };
 
+  const [bulkFile, setBulkFile] = useState<File | null>(null);
+
+  const handleDownloadTemplate = async () => {
+    try {
+      await apiService.download(
+        "Master/siteMasterCsvTemplate",
+        "SiteMasterTemplate.csv"
+      );
+    } catch (err) {
+      console.error("Template download error:", err);
+      setSnackbarMessage("Failed to download template");
+      setSnackbarSeverity("error");
+      setShowSnackbar(true);
+    }
+  };
+
+  const handleBulkFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      const file = e.target.files[0];
+      if (file.name.endsWith(".csv")) {
+        setBulkFile(file);
+      } else {
+        setSnackbarMessage("Please select a CSV file");
+        setSnackbarSeverity("error");
+        setShowSnackbar(true);
+      }
+    }
+  };
+
+  const handleBulkUpload = async () => {
+    if (!bulkFile) {
+      setSnackbarMessage("Please select a CSV file first");
+      setSnackbarSeverity("error");
+      setShowSnackbar(true);
+      return;
+    }
+
+    try {
+      const result = await dispatch(bulkUploadSite(bulkFile)).unwrap();
+      setSnackbarMessage(result?.message || "Bulk upload successful");
+      setSnackbarSeverity("success");
+      setShowSnackbar(true);
+      setBulkFile(null);
+      // Reset the file input
+      const fileInput = document.getElementById(
+        "bulk-site-upload"
+      ) as HTMLInputElement;
+      if (fileInput) fileInput.value = "";
+    } catch (err: any) {
+      setSnackbarMessage(err || "Bulk upload failed");
+      setSnackbarSeverity("error");
+      setShowSnackbar(true);
+    }
+  };
+
   // Filter users by role
   const getMakerUsers = () =>
     userList.filter((user) => user.userRole === "Maker");
@@ -346,6 +404,58 @@ const AddSitePage: React.FC = () => {
           </Typography>
         </Box>
       </Box>
+
+      {/* Bulk Upload Section */}
+      {!isEditMode && (
+        <Paper sx={{ p: 4, borderRadius: 2, mb: 4 }}>
+          <Typography variant="h6" fontWeight={600} sx={{ mb: 1 }}>
+            Bulk Upload
+          </Typography>
+          <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+            Download the template, fill it with site data, and upload it to add
+            multiple sites at once.
+          </Typography>
+
+          <Box sx={{ display: "flex", gap: 2, alignItems: "center", flexWrap: "wrap" }}>
+            <Button
+              variant="outlined"
+              startIcon={<DownloadIcon />}
+              onClick={handleDownloadTemplate}
+              sx={{ textTransform: "none" }}
+            >
+              Download Template
+            </Button>
+
+            <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+              <input
+                type="file"
+                accept=".csv"
+                id="bulk-site-upload"
+                style={{ display: "none" }}
+                onChange={handleBulkFileChange}
+              />
+              <Button
+                variant="outlined"
+                component="label"
+                htmlFor="bulk-site-upload"
+                startIcon={<CloudUploadIcon />}
+                sx={{ textTransform: "none" }}
+              >
+                {bulkFile ? bulkFile.name : "Select CSV File"}
+              </Button>
+
+              <Button
+                variant="contained"
+                onClick={handleBulkUpload}
+                disabled={!bulkFile || loading}
+                sx={{ textTransform: "none" }}
+              >
+                {loading ? "Uploading..." : "Upload & Process"}
+              </Button>
+            </Box>
+          </Box>
+        </Paper>
+      )}
 
       <Paper sx={{ p: 4, borderRadius: 2 }}>
         <form onSubmit={handleSubmit}>
@@ -602,8 +712,8 @@ const AddSitePage: React.FC = () => {
                     ? "Updating..."
                     : "Saving..."
                   : isEditMode
-                  ? "Update Site"
-                  : "Save Site"}
+                    ? "Update Site"
+                    : "Save Site"}
               </Button>
               <Button
                 variant="outlined"

@@ -27,8 +27,8 @@ export const fetchSiteList = createAsyncThunk(
       console.error("Error fetching sites:", error);
       return rejectWithValue(
         error.response?.data?.message ||
-          error.message ||
-          "Failed to fetch sites"
+        error.message ||
+        "Failed to fetch sites"
       );
     }
   }
@@ -65,8 +65,8 @@ export const updateSite = createAsyncThunk(
       console.error("Error updating site:", error);
       return rejectWithValue(
         error.response?.data?.message ||
-          error.message ||
-          "Failed to update site"
+        error.message ||
+        "Failed to update site"
       );
     }
   }
@@ -85,8 +85,31 @@ export const deleteSite = createAsyncThunk(
       console.error("Error deleting site:", error);
       return rejectWithValue(
         error.response?.data?.message ||
-          error.message ||
-          "Failed to delete site"
+        error.message ||
+        "Failed to delete site"
+      );
+    }
+  }
+);
+
+// Bulk upload sites
+export const bulkUploadSite = createAsyncThunk(
+  "site/bulkUploadSite",
+  async (file: File, { rejectWithValue }) => {
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+      const response = await apiService.post(`Master/bulkUploadSiteMaster`, formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
+      console.log("Bulk Upload Response:", response);
+      return response;
+    } catch (error: any) {
+      console.error("Error during bulk upload:", error);
+      return rejectWithValue(
+        error.response?.data?.message || error.message || "Failed to upload file"
       );
     }
   }
@@ -205,6 +228,21 @@ const siteSlice = createSlice({
         state.successMessage = "Site deleted successfully";
       })
       .addCase(deleteSite.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
+      });
+
+    // Bulk upload site
+    builder
+      .addCase(bulkUploadSite.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(bulkUploadSite.fulfilled, (state, action) => {
+        state.loading = false;
+        state.successMessage = action.payload?.message || "File uploaded successfully";
+      })
+      .addCase(bulkUploadSite.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload as string;
       });
