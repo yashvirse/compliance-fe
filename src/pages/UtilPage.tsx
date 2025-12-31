@@ -19,8 +19,8 @@ import {
   Chip,
 } from "@mui/material";
 import { CloudUpload, CheckCircle, Error as ErrorIcon } from "@mui/icons-material";
-import { useAppSelector } from "../app/hooks";
-import { selectUser } from "./login/slice/Login.selector";
+// import { useAppSelector } from "../app/hooks";
+// import { selectUser } from "./login/slice/Login.selector";
 
 interface CSVRecord {
   [key: string]: string;
@@ -35,7 +35,7 @@ interface ProcessingStatus {
 
 const UtilPage: React.FC = () => {
   const theme = useTheme();
-  const user = useAppSelector(selectUser);
+  // const user = useAppSelector(selectUser);
   const shouldStopRef = useRef(false);
   const [uploadLoading, setUploadLoading] = useState(false);
   const [uploading, setUploading] = useState(false);
@@ -354,9 +354,9 @@ const UtilPage: React.FC = () => {
       case "failed":
         return <ErrorIcon />;
       case "processing":
-        return "⏳";
+        return <Typography variant="caption">⏳</Typography>;
       default:
-        return "⧐";
+        return <Typography variant="caption">⧐</Typography>;
     }
   };
 
@@ -427,8 +427,8 @@ const UtilPage: React.FC = () => {
               {uploadLoading
                 ? "Parsing..."
                 : uploading
-                ? "Processing..."
-                : "Upload CSV"}
+                  ? "Processing..."
+                  : "Upload CSV"}
             </Button>
             {stopButtonVisible && (
               <Button
