@@ -1,9 +1,10 @@
 // Login Types and Interfaces
-import { UserRole } from '../../../config/roleConfig';
+import { UserRole } from "../../../config/roleConfig";
 
 export interface LoginRequest {
   userEmail: string;
   password: string;
+  domain: string;
 }
 
 export interface LoginResponse {

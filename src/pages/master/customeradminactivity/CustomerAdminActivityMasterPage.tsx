@@ -38,6 +38,7 @@ import {
   Edit as EditIcon,
   Delete as DeleteIcon,
   Upload as UploadIcon,
+  DownloadOutlined as DownloadIcon,
 } from "@mui/icons-material";
 import {
   fetchCompanyActivityList,
@@ -45,6 +46,7 @@ import {
   editCompAdminActivity,
   deleteActivity,
   clearError,
+  bulkUploadActivity,
 } from "./slice/CustomerAdminActivity.Slice";
 import { fetchUserList } from "../customeradminuser/slice/CustomerAdminUser.Slice";
 import {
@@ -56,6 +58,7 @@ import { selectSites } from "../site/slice/Site.Selector";
 import { fetchSiteList } from "../site/slice/Site.Slice";
 import CustomMultiSelect from "../../../components/common/CustomMultiSelect";
 import type { ActivityDetail } from "./slice/CustomerAdminActivity.Type";
+import { apiService } from "../../../services/api";
 
 const CustomerAdminActivityMasterPage: React.FC = () => {
   const theme = useTheme();
@@ -73,6 +76,8 @@ const CustomerAdminActivityMasterPage: React.FC = () => {
   const [snackbarSeverity, setSnackbarSeverity] = useState<"success" | "error">(
     "success"
   );
+  const [, setBulkFile] = useState<File | null>(null);
+
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [selectedActivity, setSelectedActivity] =
     useState<ActivityDetail | null>(null);
@@ -123,6 +128,50 @@ const CustomerAdminActivityMasterPage: React.FC = () => {
   const handleCloseSnackbar = () => {
     setShowSnackbar(false);
     dispatch(clearError());
+  };
+  const handleDownloadTemplate = async () => {
+    try {
+      await apiService.download(
+        "CompanyActivityMaster/activitySampleDataExcel",
+        "ActivityMasterTemplate.csv"
+      );
+      setSnackbarMessage("Activity template downloaded successful");
+      setShowSnackbar(true);
+    } catch (err) {
+      console.error("Template download error:", err);
+      setSnackbarMessage("Failed to download template");
+      setSnackbarSeverity("error");
+      setShowSnackbar(true);
+    }
+  };
+  const handleBulkFileChange = async (
+    e: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    if (e.target.files && e.target.files[0]) {
+      const file = e.target.files[0];
+      if (file.name.endsWith(".csv")) {
+        setBulkFile(file);
+        const response = await dispatch(bulkUploadActivity(file)).unwrap();
+        setSnackbarMessage(response.message || "Bulk upload successful");
+        setSnackbarSeverity("success");
+        setShowSnackbar(true);
+
+        // reset
+        setBulkFile(null);
+        const fileInput = document.getElementById(
+          "bulk-site-upload"
+        ) as HTMLInputElement;
+        if (fileInput) fileInput.value = "";
+        dispatch(fetchCompanyActivityList());
+        setTimeout(() => {
+          navigate("/dashboard/master/customeradminactivity");
+        }, 2000);
+      } else {
+        setSnackbarMessage("Please select a CSV file");
+        setSnackbarSeverity("error");
+        setShowSnackbar(true);
+      }
+    }
   };
 
   const toggleRow = (key: string) => {
@@ -331,7 +380,49 @@ const CustomerAdminActivityMasterPage: React.FC = () => {
             View and manage activities grouped by Act and Department
           </Typography>
         </Box>
-        <Box>
+
+        {/* Buttons Section */}
+        <Box sx={{ display: "flex", gap: 1.5 }}>
+          {/* Download Sample */}
+          <Button
+            variant="outlined"
+            startIcon={<DownloadIcon />}
+            sx={{
+              borderRadius: 2,
+              textTransform: "none",
+              fontWeight: 600,
+              px: 3,
+            }}
+            onClick={handleDownloadTemplate}
+          >
+            Download Template
+          </Button>
+
+          {/* Upload Activity */}
+          <input
+            type="file"
+            accept=".csv"
+            id="bulk-site-upload"
+            style={{ display: "none" }}
+            onChange={handleBulkFileChange}
+          />
+
+          <Button
+            variant="outlined"
+            component="label"
+            htmlFor="bulk-site-upload"
+            startIcon={<UploadIcon />}
+            sx={{
+              borderRadius: 2,
+              textTransform: "none",
+              fontWeight: 600,
+              px: 3,
+            }}
+          >
+            Upload CSV
+          </Button>
+
+          {/* Existing Import Activity */}
           <Button
             variant="contained"
             startIcon={<UploadIcon />}

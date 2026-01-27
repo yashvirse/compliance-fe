@@ -6,6 +6,11 @@ import AssignmentTurnedInIcon from "@mui/icons-material/AssignmentTurnedIn";
 import AdminPanelSettingsIcon from "@mui/icons-material/AdminPanelSettings";
 import AccountTreeIcon from "@mui/icons-material/AccountTree";
 import GavelIcon from "@mui/icons-material/Gavel";
+import BuildIcon from "@mui/icons-material/Build";
+import FolderOpenIcon from "@mui/icons-material/FolderOpen";
+import CloudUploadIcon from "@mui/icons-material/CloudUpload";
+import ArticleIcon from "@mui/icons-material/Article";
+import ApiIcon from "@mui/icons-material/Api";
 
 // User roles
 export const UserRole = {
@@ -196,6 +201,42 @@ export const menuConfig: MenuItem[] = [
   //   ],
   // },
   {
+    id: "tools",
+    label: "Tools",
+    icon: <BuildIcon />,
+    allowedRoles: [UserRole.CUSTOMER_ADMIN],
+    children: [
+      {
+        id: "file-explorer",
+        label: "Data Repository",
+        path: "/dashboard/tools/file-explorer",
+        icon: <FolderOpenIcon />,
+        allowedRoles: [UserRole.CUSTOMER_ADMIN],
+      },
+      {
+        id: "file-uploader",
+        label: "File Uploader",
+        path: "/dashboard/tools/file-uploader",
+        icon: <CloudUploadIcon />,
+        allowedRoles: [UserRole.CUSTOMER_ADMIN],
+      },
+      {
+        id: "template_formatter",
+        label: "Template Formatter",
+        path: "/dashboard/tools/template-formatter",
+        icon: <ArticleIcon />,
+        allowedRoles: [UserRole.CUSTOMER_ADMIN],
+      },
+      {
+        id: "api-integration",
+        label: "API Integration",
+        path: "/dashboard/tools/api-integration",
+        icon: <ApiIcon />,
+        allowedRoles: [UserRole.CUSTOMER_ADMIN],
+      },
+    ],
+  },
+  {
     id: "settings",
     label: "Settings",
     path: "/dashboard/settings",
@@ -205,20 +246,15 @@ export const menuConfig: MenuItem[] = [
     id: "util",
     label: "Util",
     path: "/dashboard/util",
+    icon: <CloudUploadIcon />,
     allowedRoles: [UserRole.SUPER_ADMIN],
   },
-  // {
-  //   id: "components",
-  //   label: "Components Demo",
-  //   path: "/dashboard/components",
-  //   allowedRoles: [UserRole.SUPER_ADMIN], // Demo page only for super admin
-  // },
 ];
 
 // Helper function to filter menu items based on user role
 export const getMenuItemsForRole = (
   role: UserRole,
-  items: MenuItem[] = menuConfig
+  items: MenuItem[] = menuConfig,
 ): MenuItem[] => {
   return items
     .filter((item) => item.allowedRoles.includes(role))

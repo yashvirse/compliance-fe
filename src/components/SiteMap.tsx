@@ -12,7 +12,6 @@ import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 
-
 // Fix for default marker icon in Leaflet
 delete (L.Icon.Default.prototype as any)._getIconUrl;
 L.Icon.Default.mergeOptions({
@@ -60,8 +59,7 @@ const SiteMap: React.FC<SiteMapProps> = ({
     setLoading(true);
     setError(null);
     try {
-      const token =
-        localStorage.getItem("authToken") 
+      const token = localStorage.getItem("authToken");
       const response = await fetch(
         "https://api.ocmspro.com/api/Master/getSiteMasterList",
         {
@@ -191,7 +189,15 @@ const SiteMap: React.FC<SiteMapProps> = ({
                 key={site.siteId}
                 position={coords}
                 eventHandlers={{
-                  popupopen: () => onMarkerClick?.(site.siteId),
+                  mouseover: (e: { target: { openPopup: () => void } }) => {
+                    e.target.openPopup();
+                  },
+                  mouseout: (e: { target: { closePopup: () => void } }) => {
+                    e.target.closePopup();
+                  },
+                  click: () => {
+                    onMarkerClick?.(site.siteId);
+                  },
                 }}
               >
                 <Popup>

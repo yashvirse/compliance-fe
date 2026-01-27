@@ -16,6 +16,9 @@ import countryReducer from "../pages/master/country/CountryPage.slice";
 import superAdminReducer from "../pages/dashboards/superadminslice/SuperAdmin.slice";
 import customerAdminReducer from "../pages/dashboards/customeradminslice/CustomerAdmin.slice";
 import taskReducer from "../pages/master/task/Task.slice";
+import fileUploaderReducer from "../pages/tools/FileUploaderSlice/FileUploader.slice";
+import fileExplorerReducer from "../pages/tools/FileExplorerSlice/FileExplorer.slice";
+import templateFormaterReducer from "../pages/tools/TemplateFormaterSlice/TemplateFormater.slice";
 export const store = configureStore({
   reducer: {
     login: loginReducer,
@@ -35,6 +38,9 @@ export const store = configureStore({
     superAdmin: superAdminReducer,
     customerAdmin: customerAdminReducer,
     task: taskReducer,
+    fileUploader: fileUploaderReducer,
+    fileExplorer: fileExplorerReducer,
+    templateFormater: templateFormaterReducer,
   },
 });
 

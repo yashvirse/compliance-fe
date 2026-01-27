@@ -57,6 +57,11 @@ import AddSitePage from "./pages/master/site/AddSitePage.tsx";
 import ComponentDemoPage from "./pages/ComponentDemoPage.tsx";
 import Task from "./pages/master/task/Task.tsx";
 import UtilPage from "./pages/UtilPage.tsx";
+import FileExplorer from "./pages/tools/FileExplorer.tsx";
+import FileUploader from "./pages/tools/FileUploder.tsx";
+import AddFileUploader from "./pages/tools/AddFileUploader.tsx";
+import TemplateFormatter from "./pages/tools/TemplateFormatter.tsx";
+import AddTemplateFormater from "./pages/tools/AddTemplateFormater.tsx";
 
 const theme = createTheme({
   palette: {
@@ -396,6 +401,54 @@ function App() {
                 element={
                   <RoleBasedRoute allowedRoles={[UserRole.SUPER_ADMIN]}>
                     <UtilPage />
+                  </RoleBasedRoute>
+                }
+              />
+              <Route
+                path="tools/file-explorer"
+                element={
+                  <RoleBasedRoute allowedRoles={[UserRole.CUSTOMER_ADMIN]}>
+                    <FileExplorer />
+                  </RoleBasedRoute>
+                }
+              />
+              <Route
+                path="tools/file-uploader"
+                element={
+                  <RoleBasedRoute allowedRoles={[UserRole.CUSTOMER_ADMIN]}>
+                    <FileUploader />
+                  </RoleBasedRoute>
+                }
+              />
+              <Route
+                path="tools/add-file-uploader"
+                element={
+                  <RoleBasedRoute allowedRoles={[UserRole.CUSTOMER_ADMIN]}>
+                    <AddFileUploader />
+                  </RoleBasedRoute>
+                }
+              />
+              <Route
+                path="tools/template-formatter"
+                element={
+                  <RoleBasedRoute allowedRoles={[UserRole.CUSTOMER_ADMIN]}>
+                    <TemplateFormatter />
+                  </RoleBasedRoute>
+                }
+              />
+              <Route
+                path="tools/add-template"
+                element={
+                  <RoleBasedRoute allowedRoles={[UserRole.CUSTOMER_ADMIN]}>
+                    <AddTemplateFormater />
+                  </RoleBasedRoute>
+                }
+              />
+              <Route
+                path="tools/template/edit/:id"
+                element={
+                  <RoleBasedRoute allowedRoles={[UserRole.CUSTOMER_ADMIN]}>
+                    <AddTemplateFormater />
                   </RoleBasedRoute>
                 }
               />
