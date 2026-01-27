@@ -23,6 +23,7 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
+  IconButton,
 } from "@mui/material";
 import {
   Assignment,
@@ -33,9 +34,9 @@ import {
   HourglassTop,
   ListAlt,
   People,
-  Settings,
   Close as CloseIcon,
   Visibility as EyeIcon,
+  FilterList as FilterListIcon,
 } from "@mui/icons-material";
 import {
   BarChart,
@@ -112,7 +113,7 @@ const CustomerAdminDashboard: React.FC = () => {
     }
   };
   const pendingTasks = assignedTasks.filter(
-    (task) => task.taskCurrentStatus === "Pending"
+    (task) => task.taskCurrentStatus === "Pending",
   );
   const handleRejectedTasksClick = async () => {
     setLoading(true);
@@ -128,7 +129,7 @@ const CustomerAdminDashboard: React.FC = () => {
     }
   };
   const rejectedTasks = assignedTasks.filter(
-    (task) => task.taskCurrentStatus === "Rejected"
+    (task) => task.taskCurrentStatus === "Rejected",
   );
   const handleBackToDashboard = () => {
     setShowCompletedTable(false);
@@ -321,7 +322,7 @@ const CustomerAdminDashboard: React.FC = () => {
                   borderRadius: 3,
                   boxShadow: `0 4px 20px ${alpha(
                     theme.palette.common.black,
-                    0.08
+                    0.08,
                   )}`,
                   transition: "transform 0.2s, box-shadow 0.2s",
                   "&:hover":
@@ -330,7 +331,7 @@ const CustomerAdminDashboard: React.FC = () => {
                           transform: "translateY(-4px)",
                           boxShadow: `0 8px 30px ${alpha(
                             theme.palette.common.black,
-                            0.12
+                            0.12,
                           )}`,
                         }
                       : {},
@@ -373,15 +374,27 @@ const CustomerAdminDashboard: React.FC = () => {
                 borderRadius: 3,
                 boxShadow: `0 4px 20px ${alpha(
                   theme.palette.common.black,
-                  0.08
+                  0.08,
                 )}`,
               }}
             >
               <CardContent sx={{ p: 4 }}>
-                <Typography variant="h6" fontWeight={700} gutterBottom>
-                  Compliance Status
-                </Typography>
+                <Box
+                  sx={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                    mb: 2,
+                  }}
+                >
+                  <Typography variant="h6" fontWeight={700}>
+                    Compliance Status
+                  </Typography>
 
+                  <IconButton size="small">
+                    <FilterListIcon fontSize="small" />
+                  </IconButton>
+                </Box>
                 {/* Compliance */}
                 <Typography variant="body2" fontWeight={600} gutterBottom>
                   Compliance
@@ -489,7 +502,7 @@ const CustomerAdminDashboard: React.FC = () => {
                 overflow: "hidden",
                 boxShadow: `0 4px 20px ${alpha(
                   theme.palette.common.black,
-                  0.08
+                  0.08,
                 )}`,
               }}
             >
@@ -517,7 +530,7 @@ const CustomerAdminDashboard: React.FC = () => {
                 backgroundColor: "#ffffff",
                 boxShadow: `0 4px 20px ${alpha(
                   theme.palette.common.black,
-                  0.08
+                  0.08,
                 )}`,
               }}
             >
@@ -540,7 +553,7 @@ const CustomerAdminDashboard: React.FC = () => {
                     </Typography>
                   </Box>
                 ) : (
-                  <ResponsiveContainer width="100%" height={380}>
+                  <ResponsiveContainer width="100%" height={480}>
                     <BarChart
                       data={actChartData}
                       margin={{ top: 30, right: 30, left: 0, bottom: 5 }}
@@ -556,6 +569,10 @@ const CustomerAdminDashboard: React.FC = () => {
                           fontSize: 11,
                           fill: theme.palette.text.secondary,
                         }}
+                        // axisLine={{ stroke: theme.palette.divider }}
+                        angle={30}
+                        textAnchor="start"
+                        height={80}
                         axisLine={{ stroke: theme.palette.divider }}
                       />
                       <YAxis
@@ -569,7 +586,7 @@ const CustomerAdminDashboard: React.FC = () => {
                         contentStyle={{
                           backgroundColor: alpha(
                             theme.palette.background.paper,
-                            0.95
+                            0.95,
                           ),
                           border: `1px solid ${theme.palette.divider}`,
                           borderRadius: "8px",
@@ -614,40 +631,6 @@ const CustomerAdminDashboard: React.FC = () => {
             </Card>
           </Grid>
         </Grid>
-
-        <Card
-          sx={{
-            mt: 3,
-            borderRadius: 3,
-            boxShadow: `0 4px 20px ${alpha(theme.palette.common.black, 0.08)}`,
-          }}
-        >
-          <CardContent sx={{ p: 4 }}>
-            <Box sx={{ display: "flex", alignItems: "center", mb: 3 }}>
-              <Settings
-                sx={{ fontSize: 40, color: theme.palette.primary.main, mr: 2 }}
-              />
-              <Box>
-                <Typography variant="h6" fontWeight={600}>
-                  Customer Admin Role
-                </Typography>
-                <Typography variant="body2" color="text.secondary">
-                  Organization management capabilities
-                </Typography>
-              </Box>
-            </Box>
-            <Typography variant="body1" paragraph>
-              Manage your company's users, configure settings, and access
-              organizational reports.
-            </Typography>
-            <Typography variant="body2" color="text.secondary">
-              • Manage company users
-              <br />
-              • Configure company settings
-              <br />• View company reports
-            </Typography>
-          </CardContent>
-        </Card>
       </Box>
     );
   }
@@ -995,9 +978,9 @@ const CustomerAdminDashboard: React.FC = () => {
                             detail.status === "Approved"
                               ? theme.palette.success.main
                               : detail.status === "Rejected"
-                              ? theme.palette.error.main
-                              : theme.palette.warning.main,
-                            0.05
+                                ? theme.palette.error.main
+                                : theme.palette.warning.main,
+                            0.05,
                           ),
                         }}
                       >
@@ -1020,8 +1003,8 @@ const CustomerAdminDashboard: React.FC = () => {
                               {index === 0
                                 ? "Maker"
                                 : index === 1
-                                ? "Checker"
-                                : "Reviewer"}
+                                  ? "Checker"
+                                  : "Reviewer"}
                             </Typography>
                           </Box>
                           <Chip
@@ -1031,8 +1014,8 @@ const CustomerAdminDashboard: React.FC = () => {
                               detail.status === "Approved"
                                 ? "success"
                                 : detail.status === "Rejected"
-                                ? "error"
-                                : "warning"
+                                  ? "error"
+                                  : "warning"
                             }
                             variant="outlined"
                             sx={{ fontWeight: 600 }}
@@ -1519,11 +1502,11 @@ const CustomerAdminDashboard: React.FC = () => {
                             detail.status === "Approved"
                               ? theme.palette.success.main
                               : detail.status === "Pending"
-                              ? theme.palette.warning.main
-                              : detail.status === "Rejected"
-                              ? theme.palette.error.main
-                              : theme.palette.warning.main,
-                            0.05
+                                ? theme.palette.warning.main
+                                : detail.status === "Rejected"
+                                  ? theme.palette.error.main
+                                  : theme.palette.warning.main,
+                            0.05,
                           ),
                         }}
                       >
@@ -1546,8 +1529,8 @@ const CustomerAdminDashboard: React.FC = () => {
                               {index === 0
                                 ? "Maker"
                                 : index === 1
-                                ? "Checker"
-                                : "Reviewer"}
+                                  ? "Checker"
+                                  : "Reviewer"}
                             </Typography>
                           </Box>
                           <Chip
@@ -1557,8 +1540,8 @@ const CustomerAdminDashboard: React.FC = () => {
                               detail.status === "Approved"
                                 ? "success"
                                 : detail.status === "Rejected"
-                                ? "error"
-                                : "warning"
+                                  ? "error"
+                                  : "warning"
                             }
                             variant="outlined"
                             sx={{ fontWeight: 600 }}
@@ -2043,9 +2026,9 @@ const CustomerAdminDashboard: React.FC = () => {
                             detail.status === "Approved"
                               ? theme.palette.success.main
                               : detail.status === "Rejected"
-                              ? theme.palette.error.main
-                              : theme.palette.warning.main,
-                            0.05
+                                ? theme.palette.error.main
+                                : theme.palette.warning.main,
+                            0.05,
                           ),
                         }}
                       >
@@ -2068,8 +2051,8 @@ const CustomerAdminDashboard: React.FC = () => {
                               {index === 0
                                 ? "Maker"
                                 : index === 1
-                                ? "Checker"
-                                : "Reviewer"}
+                                  ? "Checker"
+                                  : "Reviewer"}
                             </Typography>
                           </Box>
                           <Chip
@@ -2079,8 +2062,8 @@ const CustomerAdminDashboard: React.FC = () => {
                               detail.status === "Approved"
                                 ? "success"
                                 : detail.status === "Rejected"
-                                ? "error"
-                                : "warning"
+                                  ? "error"
+                                  : "warning"
                             }
                             variant="outlined"
                             sx={{ fontWeight: 600 }}
@@ -2433,8 +2416,8 @@ const CustomerAdminDashboard: React.FC = () => {
                             task.taskCurrentStatus === "Completed"
                               ? "success"
                               : task.taskCurrentStatus === "Rejected"
-                              ? "error"
-                              : "warning"
+                                ? "error"
+                                : "warning"
                           }
                           sx={{ fontWeight: 600 }}
                         />
@@ -2575,9 +2558,9 @@ const CustomerAdminDashboard: React.FC = () => {
                             detail.status === "Approved"
                               ? theme.palette.success.main
                               : detail.status === "Rejected"
-                              ? theme.palette.error.main
-                              : theme.palette.warning.main,
-                            0.05
+                                ? theme.palette.error.main
+                                : theme.palette.warning.main,
+                            0.05,
                           ),
                         }}
                       >
@@ -2600,8 +2583,8 @@ const CustomerAdminDashboard: React.FC = () => {
                               {index === 0
                                 ? "Maker"
                                 : index === 1
-                                ? "Checker"
-                                : "Reviewer"}
+                                  ? "Checker"
+                                  : "Reviewer"}
                             </Typography>
                           </Box>
                           <Chip
@@ -2611,8 +2594,8 @@ const CustomerAdminDashboard: React.FC = () => {
                               detail.status === "Approved"
                                 ? "success"
                                 : detail.status === "Rejected"
-                                ? "error"
-                                : "warning"
+                                  ? "error"
+                                  : "warning"
                             }
                             variant="outlined"
                             sx={{ fontWeight: 600 }}
@@ -2755,7 +2738,6 @@ const CustomerAdminDashboard: React.FC = () => {
       </Box>
     );
   }
-  // fallback (कभी नहीं आएगा, लेकिन safe रखने के लिए)
   return null;
 };
 

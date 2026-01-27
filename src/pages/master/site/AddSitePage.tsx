@@ -208,7 +208,7 @@ const AddSitePage: React.FC = () => {
       errors.siteName = "Site name is required";
     }
     if (!formData.siteLocation.trim()) {
-      errors.siteLocation = "Location is required";
+      errors.siteLocation = "Address is required";
     }
     if (!formData.state.trim()) {
       errors.state = "State is required";
@@ -225,9 +225,9 @@ const AddSitePage: React.FC = () => {
     if (!formData.defaultUser.defaultMaker.trim()) {
       errors.defaultMaker = "Default Maker is required";
     }
-    if (!formData.defaultUser.defaultChecker.trim()) {
-      errors.defaultChecker = "Default Checker is required";
-    }
+    // if (!formData.defaultUser.defaultChecker.trim()) {
+    //   errors.defaultChecker = "Default Checker is required";
+    // }
     // if (!formData.defaultUser.defaultReviewer.trim()) {
     //   errors.defaultReviewer = "Default Reviewer is required";
     // }
@@ -268,10 +268,10 @@ const AddSitePage: React.FC = () => {
         [fieldName === "defaultMaker"
           ? "defaultMakerId"
           : fieldName === "defaultChecker"
-            ? "defaultCheckerId"
-            : fieldName === "defaultReviewer"
-              ? "defaultReviewerId"
-              : "defaultAuditerId"]: selectedUserId,
+          ? "defaultCheckerId"
+          : fieldName === "defaultReviewer"
+          ? "defaultReviewerId"
+          : "defaultAuditerId"]: selectedUserId,
       },
     }));
 
@@ -366,6 +366,9 @@ const AddSitePage: React.FC = () => {
         "bulk-site-upload"
       ) as HTMLInputElement;
       if (fileInput) fileInput.value = "";
+      setTimeout(() => {
+        navigate("/dashboard/master/site");
+      }, 2000);
     } catch (err: any) {
       setSnackbarMessage(err || "Bulk upload failed");
       setSnackbarSeverity("error");
@@ -416,7 +419,14 @@ const AddSitePage: React.FC = () => {
             multiple sites at once.
           </Typography>
 
-          <Box sx={{ display: "flex", gap: 2, alignItems: "center", flexWrap: "wrap" }}>
+          <Box
+            sx={{
+              display: "flex",
+              gap: 2,
+              alignItems: "center",
+              flexWrap: "wrap",
+            }}
+          >
             <Button
               variant="outlined"
               startIcon={<DownloadIcon />}
@@ -475,6 +485,7 @@ const AddSitePage: React.FC = () => {
                 helperText={formErrors.siteName}
                 placeholder="Enter site name"
                 variant="outlined"
+                required
               />
             </Grid>
 
@@ -493,14 +504,15 @@ const AddSitePage: React.FC = () => {
             <Grid size={{ xs: 12, sm: 6 }}>
               <TextField
                 fullWidth
-                label="Site Location"
+                label="Site Address"
                 name="siteLocation"
                 value={formData.siteLocation}
                 onChange={handleChange}
                 error={!!formErrors.siteLocation}
                 helperText={formErrors.siteLocation}
-                placeholder="Enter site location"
+                placeholder="Enter site address"
                 variant="outlined"
+                required
               />
             </Grid>
 
@@ -510,6 +522,7 @@ const AddSitePage: React.FC = () => {
                 fullWidth
                 error={!!formErrors.country}
                 disabled={countryStateLoading}
+                required
               >
                 <InputLabel>Country</InputLabel>
                 <Select
@@ -541,6 +554,7 @@ const AddSitePage: React.FC = () => {
                 fullWidth
                 error={!!formErrors.state}
                 disabled={countryStateLoading || availableStates.length === 0}
+                required
               >
                 <InputLabel>State</InputLabel>
                 <Select
@@ -604,6 +618,7 @@ const AddSitePage: React.FC = () => {
                 fullWidth
                 error={!!formErrors.defaultMaker}
                 disabled={userListLoading}
+                required
               >
                 <InputLabel>Default Maker</InputLabel>
                 <Select
@@ -712,8 +727,8 @@ const AddSitePage: React.FC = () => {
                     ? "Updating..."
                     : "Saving..."
                   : isEditMode
-                    ? "Update Site"
-                    : "Save Site"}
+                  ? "Update Site"
+                  : "Save Site"}
               </Button>
               <Button
                 variant="outlined"

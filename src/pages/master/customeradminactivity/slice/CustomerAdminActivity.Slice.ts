@@ -1,5 +1,5 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
-import { apiClient } from "../../../../services/api";
+import { apiClient, apiService } from "../../../../services/api";
 import type {
   CustomerAdminActivityState,
   GetActivityMasterListResponse,
@@ -213,7 +213,34 @@ export const deleteActivity = createAsyncThunk(
     }
   }
 );
-
+// Bulk upload activity
+export const bulkUploadActivity = createAsyncThunk(
+  "site/bulkUploadSite",
+  async (file: File, { rejectWithValue }) => {
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+      const response = await apiService.post(
+        `CompanyActivityMaster/upload-activity-excel`,
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
+      console.log("Bulk Upload Response:", response);
+      return response;
+    } catch (error: any) {
+      console.error("Error during bulk upload:", error);
+      return rejectWithValue(
+        error.response?.data?.message ||
+          error.message ||
+          "Failed to upload file"
+      );
+    }
+  }
+);
 const customerAdminActivitySlice = createSlice({
   name: "customerAdminActivity",
   initialState,

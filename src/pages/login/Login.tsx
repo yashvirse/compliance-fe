@@ -17,6 +17,7 @@ import {
   VisibilityOff,
   EmailOutlined,
   LockOutlined,
+  DomainOutlined,
 } from "@mui/icons-material";
 import { loginUser, clearError } from "./slice/Login.Slice";
 import { selectLoginLoading, selectLoginError } from "./slice/Login.selector";
@@ -34,6 +35,7 @@ const Login: React.FC = () => {
   // Local state
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [domain, setDomain] = useState("");
   const [showPassword, setShowPassword] = useState(false);
 
   // Clear error when component unmounts
@@ -51,6 +53,7 @@ const Login: React.FC = () => {
       loginUser({
         userEmail: email,
         password: password,
+        domain: domain,
       })
     );
 
@@ -215,6 +218,31 @@ const Login: React.FC = () => {
           )}
 
           <form onSubmit={handleSubmit}>
+            <Box sx={{ mb: 3 }}>
+              <Typography variant="body2" fontWeight={600} sx={{ mb: 1 }}>
+                Company Domain
+              </Typography>
+              <TextField
+                fullWidth
+                type="domain"
+                value={domain}
+                onChange={(e) => setDomain(e.target.value)}
+                required
+                placeholder="Enter your domain"
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <DomainOutlined color="action" />
+                    </InputAdornment>
+                  ),
+                }}
+                sx={{
+                  "& .MuiOutlinedInput-root": {
+                    borderRadius: 2,
+                  },
+                }}
+              />
+            </Box>
             <Box sx={{ mb: 3 }}>
               <Typography variant="body2" fontWeight={600} sx={{ mb: 1 }}>
                 Email Address

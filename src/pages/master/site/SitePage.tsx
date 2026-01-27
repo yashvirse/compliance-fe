@@ -128,7 +128,7 @@ const SitePage: React.FC = () => {
     },
     {
       field: "siteLocation",
-      headerName: "Location",
+      headerName: "Address",
       flex: 1,
       minWidth: 150,
     },
@@ -157,7 +157,16 @@ const SitePage: React.FC = () => {
       minWidth: 150,
       sortable: false,
       renderCell: (params: GridRenderCellParams) => (
-        <Box sx={{ display: "flex", gap: 1 }}>
+        <Box
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "start",
+            height: "100%", // 🔑 IMPORTANT
+            width: "100%",
+            gap: 1,
+          }}
+        >
           <IconButton
             size="small"
             color="primary"
@@ -229,15 +238,17 @@ const SitePage: React.FC = () => {
               }}
               loading={loading}
               sx={{
-                "& .MuiDataGrid-root": {
-                  border: "none",
-                },
+                border: "none",
                 "& .MuiDataGrid-cell": {
-                  padding: "12px",
+                  borderBottom: `1px solid ${theme.palette.divider}`,
                 },
                 "& .MuiDataGrid-columnHeaders": {
                   backgroundColor: alpha(theme.palette.primary.main, 0.05),
-                  borderBottom: `1px solid ${theme.palette.divider}`,
+                  borderBottom: `2px solid ${theme.palette.primary.main}`,
+                  fontWeight: 600,
+                },
+                "& .MuiDataGrid-row:hover": {
+                  backgroundColor: alpha(theme.palette.primary.main, 0.05),
                 },
               }}
             />
