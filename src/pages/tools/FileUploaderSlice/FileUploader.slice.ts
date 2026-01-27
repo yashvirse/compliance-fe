@@ -92,30 +92,91 @@ export const deleteFile = createAsyncThunk<
     return rejectWithValue(error.message || "Delete failed");
   }
 });
+
+
 export const processSalaryMusterRoll = createAsyncThunk<
-  Blob,
+  { fileUrl: string; fileName: string },
   string,
   { rejectValue: string }
 >(
   "fileUploader/processSalaryMusterRoll",
-  async (fileId, { rejectWithValue }) => {
+  async (fileId, { rejectWithValue, dispatch }) => {
+    const POLLING_INTERVAL = 5000; // 5 seconds
+    const MAX_POLLING_TIME = 600000; // 10 minutes
+
     try {
-      const response = await apiService.post(
+      // Step 1: Initial request to start processing and get a taskId
+      dispatch(
+        FileUploaderSlice.actions.setSuccess(
+          "Initializing file generation... Please wait.",
+        ),
+      );
+      const initialResponse = await apiService.post<{ taskId: string }>(
         `SalaryMusterRoll/Process?fileId=${fileId}`,
-        {
-          responseType: "blob",
-          headers: {
-            Accept: "application/pdf",
-          },
-        },
       );
 
-      return response;
+      if (!initialResponse || !initialResponse.taskId) {
+        return rejectWithValue("Failed to start file processing.");
+      }
+
+      const { taskId } = initialResponse;
+      const startTime = Date.now();
+
+      // Step 2: Poll for the status of the task
+      while (Date.now() - startTime < MAX_POLLING_TIME) {
+        await new Promise((resolve) => setTimeout(resolve, POLLING_INTERVAL));
+
+        const statusResponse = await apiService.get<{
+          status: string;
+          fileUrl?: string;
+        }>(`SalaryMusterRoll/GetStatus?taskId=${taskId}`);
+
+        if (statusResponse.status === "Completed") {
+          // Step 3: Download the file
+          const downloadResponse = await apiService.get(
+            `SalaryMusterRoll/DownloadFile?taskId=${taskId}`,
+            {
+              responseType: "blob",
+            },
+          );
+
+          const contentDisposition =
+            downloadResponse.headers["content-disposition"];
+          let fileName = "SalaryRegister.pdf";
+          if (contentDisposition) {
+            const match = contentDisposition.match(/filename="?([^"]+)"?/);
+            if (match) {
+              fileName = match[1];
+            }
+          }
+
+          const fileUrl = URL.createObjectURL(downloadResponse.data);
+          return { fileUrl, fileName };
+        } else if (statusResponse.status === "Failed") {
+          return rejectWithValue("File generation failed on the server.");
+        }
+        // If status is "Pending" or other, continue polling
+        dispatch(
+          FileUploaderSlice.actions.setSuccess(
+            "Processing... please wait. This may take a few minutes.",
+          ),
+        );
+      }
+
+      return rejectWithValue(
+        "File generation timed out. Please try again later.",
+      );
     } catch (error: any) {
-      return rejectWithValue("PDF download failed");
+      const errorMessage =
+        error?.response?.data?.message ||
+        error.message ||
+        "An unknown error occurred during file processing.";
+      return rejectWithValue(errorMessage);
     }
   },
 );
+
+
 
 const initialState: FileUploaderState = {
   loading: false,
@@ -133,6 +194,9 @@ const FileUploaderSlice = createSlice({
     },
     clearError(state) {
       state.error = null;
+    },
+    setSuccess(state, action) {
+      state.successMessage = action.payload;
     },
     resetFileUploadState: (state) => {
       state.loading = false;

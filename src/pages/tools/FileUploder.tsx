@@ -67,20 +67,25 @@ const FileUploader: React.FC = () => {
   }, [dispatch]);
 
   const handleProcessClick = async (fileId: string) => {
-    const blob = await dispatch(processSalaryMusterRoll(fileId)).unwrap();
+    try {
+      setSnackbarMessage("Generating Salary Register... This may take a few minutes.");
+      setSnackbarSeverity("success");
+      setShowSnackbar(true);
 
-    const url = window.URL.createObjectURL(
-      new Blob([blob], { type: "application/pdf" }),
-    );
+      await apiService.downloadPost(
+        `SalaryMusterRoll/Process?fileId=${fileId}`,
+        {},
+      );
 
-    const link = document.createElement("a");
-    link.href = url;
-    link.download = "SalaryRegister.pdf";
-    document.body.appendChild(link);
-    link.click();
-
-    link.remove();
-    window.URL.revokeObjectURL(url);
+      setSnackbarMessage("Salary Register downloaded successfully");
+      setSnackbarSeverity("success");
+      setShowSnackbar(true);
+    } catch (err: any) {
+      console.error("Download failed:", err);
+      setSnackbarMessage(err.message || "Failed to download Salary Register");
+      setSnackbarSeverity("error");
+      setShowSnackbar(true);
+    }
   };
 
   /* ---------- Delete Handlers ---------- */

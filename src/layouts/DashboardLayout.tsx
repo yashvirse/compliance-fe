@@ -211,7 +211,7 @@ const DashboardLayout: React.FC = () => {
                 bgcolor: theme.palette.primary.main,
               }}
             >
-              {user?.name.charAt(0)}
+              {user?.name?.charAt(0)}
             </Avatar>
           </IconButton>
 

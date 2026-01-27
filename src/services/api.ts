@@ -5,8 +5,8 @@ import axios, {
 } from "axios";
 
 // API Configuration
- const API_BASE_URL =
-   import.meta.env.VITE_API_BASE_URL || "https://api.ocmspro.com/api";
+const API_BASE_URL =
+  import.meta.env.VITE_API_BASE_URL || "https://api.ocmspro.com/api";
 //  export const API_BASE_URL =
 //   import.meta.env.VITE_API_BASE_URL || "https://localhost:44341/api";
 const API_TIMEOUT = 30000; // 30 seconds
@@ -47,8 +47,7 @@ apiClient.interceptors.response.use(
   (response) => {
     // Debug logging
     console.log(
-      `📥 ${response.config.method?.toUpperCase()} ${response.config.url} - ${
-        response.status
+      `📥 ${response.config.method?.toUpperCase()} ${response.config.url} - ${response.status
       }`,
       {
         setCookie: response.headers["set-cookie"],
@@ -60,8 +59,7 @@ apiClient.interceptors.response.use(
   (error) => {
     if (error.response) {
       console.error(
-        `❌ ${error.config?.method?.toUpperCase()} ${error.config?.url} - ${
-          error.response.status
+        `❌ ${error.config?.method?.toUpperCase()} ${error.config?.url} - ${error.response.status
         }`,
         {
           data: error.response.data,
@@ -258,7 +256,59 @@ class ApiService {
   }
 
   /**
-   * Download file
+   * Download file using POST
+   * @param url - API endpoint
+   * @param data - Request body
+   * @param filename - Name for downloaded file
+   * @param config - Axios request config (can override timeout)
+   * @returns Promise that resolves when download starts
+   */
+  async downloadPost(
+    url: string,
+    data?: any,
+    filename?: string,
+    config?: AxiosRequestConfig
+  ): Promise<void> {
+    const response: AxiosResponse<Blob> = await apiClient.post(url, data, {
+      ...config,
+      responseType: "blob",
+      // Default to 180 seconds for downloads if not specified
+      timeout: config?.timeout || 180000,
+    });
+
+    // Create blob link to download
+    const contentType = response.headers["content-type"] || "application/octet-stream";
+    const blob = new Blob([response.data], { type: contentType });
+    const downloadUrl = window.URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = downloadUrl;
+
+    // Extract filename from response headers or use provided filename
+    const contentDisposition = response.headers["content-disposition"];
+    let extractedFilename = filename || "download";
+
+    if (contentDisposition) {
+      // Try to match filename*=UTF-8''filename or filename=filename
+      const filenameStarMatch = contentDisposition.match(/filename\*=UTF-8''([^;]+)/i);
+      if (filenameStarMatch && filenameStarMatch[1]) {
+        extractedFilename = decodeURIComponent(filenameStarMatch[1]);
+      } else {
+        const filenameMatch = contentDisposition.match(/filename=([^;]+)/i);
+        if (filenameMatch && filenameMatch[1]) {
+          extractedFilename = filenameMatch[1].replace(/['"]/g, "");
+        }
+      }
+    }
+
+    link.setAttribute("download", extractedFilename);
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    window.URL.revokeObjectURL(downloadUrl);
+  }
+
+  /**
+   * Download file using GET
    * @param url - API endpoint
    * @param filename - Name for downloaded file
    * @param config - Axios request config
@@ -272,6 +322,7 @@ class ApiService {
     const response: AxiosResponse<Blob> = await apiClient.get(url, {
       ...config,
       responseType: "blob",
+      timeout: config?.timeout || 180000,
     });
 
     // Create blob link to download
@@ -282,9 +333,19 @@ class ApiService {
 
     // Extract filename from response headers or use provided filename
     const contentDisposition = response.headers["content-disposition"];
-    const extractedFilename = contentDisposition
-      ? contentDisposition.split("filename=")[1]?.replace(/['"]/g, "")
-      : filename || "download";
+    let extractedFilename = filename || "download";
+
+    if (contentDisposition) {
+      const filenameStarMatch = contentDisposition.match(/filename\*=UTF-8''([^;]+)/i);
+      if (filenameStarMatch && filenameStarMatch[1]) {
+        extractedFilename = decodeURIComponent(filenameStarMatch[1]);
+      } else {
+        const filenameMatch = contentDisposition.match(/filename=([^;]+)/i);
+        if (filenameMatch && filenameMatch[1]) {
+          extractedFilename = filenameMatch[1].replace(/['"]/g, "");
+        }
+      }
+    }
 
     link.setAttribute("download", extractedFilename);
     document.body.appendChild(link);
