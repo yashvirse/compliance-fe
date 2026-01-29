@@ -10,12 +10,6 @@ import {
   useTheme,
   alpha,
   Button,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
   Paper,
   CircularProgress,
   Alert,
@@ -26,6 +20,7 @@ import {
   DialogActions,
   TextField,
 } from "@mui/material";
+import type { GridColDef } from "@mui/x-data-grid";
 import {
   CheckCircle,
   Assignment,
@@ -60,6 +55,8 @@ import {
   selectRejectedTasksError,
 } from "./makerslice/MakerDashboard.Selector";
 import { selectUser } from "../login/slice/Login.selector";
+import TaskMovementDialog from "../../components/common/TaskMovementDialog";
+import CommonDataTable from "../../components/common/CommonDataTable";
 
 const MakerDashboard: React.FC = () => {
   const theme = useTheme();
@@ -80,6 +77,274 @@ const MakerDashboard: React.FC = () => {
   const rejectedTasks = useSelector(selectRejectedTasks);
   const rejectedTasksLoading = useSelector(selectRejectedTasksLoading);
   const rejectedTasksError = useSelector(selectRejectedTasksError);
+
+  // Column definitions for CommonDataTable
+  const allTasksColumns: GridColDef[] = React.useMemo(
+    () => [
+      { field: "activityName", headerName: "Activity Name", flex: 1.2, minWidth: 150 },
+      { field: "actName", headerName: "Act Name", flex: 1, minWidth: 100 },
+      {
+        field: "departmentName",
+        headerName: "Department",
+        flex: 1,
+        minWidth: 120,
+        renderCell: (params) => (
+          <Chip
+            label={params.value}
+            size="small"
+            sx={{
+              bgcolor: alpha(theme.palette.info.main, 0.1),
+              color: theme.palette.info.main,
+            }}
+          />
+        ),
+      },
+      { field: "siteName", headerName: "Site Name", flex: 1, minWidth: 100 },
+      {
+        field: "dueDate",
+        headerName: "Due Date",
+        flex: 1,
+        minWidth: 100,
+        renderCell: (params) =>
+          params.value ? new Date(params.value).toLocaleDateString() : "-",
+      },
+      {
+        field: "status",
+        headerName: "Status",
+        flex: 0.8,
+        minWidth: 100,
+        renderCell: (params) => (
+          <Chip
+            label={params.value}
+            size="small"
+            color={
+              params.value === "Approved"
+                ? "success"
+                : params.value === "Rejected"
+                  ? "error"
+                  : "warning"
+            }
+            sx={{ fontWeight: 600 }}
+          />
+        ),
+      },
+      {
+        field: "actions",
+        headerName: "Actions",
+        flex: 0.8,
+        minWidth: 100,
+        sortable: false,
+        renderCell: (params) => (
+          <Button
+            size="small"
+            variant="text"
+            startIcon={<EyeIcon />}
+            onClick={() => handleViewTaskMovement(params.row)}
+            sx={{
+              color: theme.palette.primary.main,
+              textTransform: "none",
+              "&:hover": {
+                bgcolor: alpha(theme.palette.primary.main, 0.1),
+              },
+            }}
+          >
+            View
+          </Button>
+        ),
+      },
+    ],
+    [theme],
+  );
+
+  const pendingTasksColumns: GridColDef[] = React.useMemo(
+    () => [
+      { field: "activityName", headerName: "Activity Name", flex: 1.2, minWidth: 150 },
+      { field: "actName", headerName: "Act Name", flex: 1, minWidth: 100 },
+      {
+        field: "departmentName",
+        headerName: "Department",
+        flex: 1,
+        minWidth: 120,
+        renderCell: (params) => (
+          <Chip
+            label={params.value}
+            size="small"
+            sx={{
+              bgcolor: alpha(theme.palette.info.main, 0.1),
+              color: theme.palette.info.main,
+            }}
+          />
+        ),
+      },
+      { field: "siteName", headerName: "Site Name", flex: 1, minWidth: 100 },
+      {
+        field: "dueDate",
+        headerName: "Due Date",
+        flex: 1,
+        minWidth: 100,
+        renderCell: (params) =>
+          params.value ? new Date(params.value).toLocaleDateString() : "-",
+      },
+      {
+        field: "actions",
+        headerName: "Actions",
+        flex: 1.2,
+        minWidth: 150,
+        sortable: false,
+        renderCell: (params) => (
+          <Box sx={{ display: "flex", gap: 1 }}>
+            <Button
+              size="small"
+              variant="contained"
+              color="success"
+              startIcon={<ApproveIcon />}
+              sx={{
+                borderRadius: 1.5,
+                textTransform: "none",
+                fontWeight: 600,
+                px: 2,
+                py: 1,
+              }}
+              onClick={() => handleApproveClick(params.row.tblId)}
+            >
+              Approve
+            </Button>
+            <Button
+              size="small"
+              variant="contained"
+              color="error"
+              startIcon={<RejectIcon />}
+              sx={{
+                borderRadius: 1.5,
+                textTransform: "none",
+                fontWeight: 600,
+                px: 2,
+                py: 1,
+              }}
+              onClick={() => handleRejectClick(params.row.tblId)}
+            >
+              Reject
+            </Button>
+          </Box>
+        ),
+      },
+    ],
+    [theme],
+  );
+
+  const approvedTasksColumns: GridColDef[] = React.useMemo(
+    () => [
+      { field: "activityName", headerName: "Activity Name", flex: 1.2, minWidth: 150 },
+      { field: "actName", headerName: "Act Name", flex: 1, minWidth: 100 },
+      {
+        field: "departmentName",
+        headerName: "Department",
+        flex: 1,
+        minWidth: 120,
+        renderCell: (params) => (
+          <Chip
+            label={params.value}
+            size="small"
+            sx={{
+              bgcolor: alpha(theme.palette.success.main, 0.1),
+              color: theme.palette.success.main,
+            }}
+          />
+        ),
+      },
+      { field: "siteName", headerName: "Site Name", flex: 1, minWidth: 100 },
+      {
+        field: "dueDate",
+        headerName: "Due Date",
+        flex: 1,
+        minWidth: 100,
+        renderCell: (params) =>
+          params.value ? new Date(params.value).toLocaleDateString() : "-",
+      },
+      {
+        field: "actions",
+        headerName: "Actions",
+        flex: 0.8,
+        minWidth: 100,
+        sortable: false,
+        renderCell: (params) => (
+          <Button
+            size="small"
+            variant="text"
+            startIcon={<EyeIcon />}
+            onClick={() => handleViewTaskMovement(params.row)}
+            sx={{
+              color: theme.palette.primary.main,
+              textTransform: "none",
+              "&:hover": {
+                bgcolor: alpha(theme.palette.primary.main, 0.1),
+              },
+            }}
+          >
+            View
+          </Button>
+        ),
+      },
+    ],
+    [theme],
+  );
+
+  const rejectedTasksColumns: GridColDef[] = React.useMemo(
+    () => [
+      { field: "activityName", headerName: "Activity Name", flex: 1.2, minWidth: 150 },
+      { field: "actName", headerName: "Act Name", flex: 1, minWidth: 100 },
+      {
+        field: "departmentName",
+        headerName: "Department",
+        flex: 1,
+        minWidth: 120,
+        renderCell: (params) => (
+          <Chip
+            label={params.value}
+            size="small"
+            sx={{
+              bgcolor: alpha(theme.palette.error.main, 0.1),
+              color: theme.palette.error.main,
+            }}
+          />
+        ),
+      },
+      { field: "siteName", headerName: "Site Name", flex: 1, minWidth: 100 },
+      {
+        field: "dueDate",
+        headerName: "Due Date",
+        flex: 1,
+        minWidth: 100,
+        renderCell: (params) =>
+          params.value ? new Date(params.value).toLocaleDateString() : "-",
+      },
+      {
+        field: "actions",
+        headerName: "Actions",
+        flex: 0.8,
+        minWidth: 100,
+        sortable: false,
+        renderCell: (params) => (
+          <Button
+            size="small"
+            variant="text"
+            startIcon={<EyeIcon />}
+            onClick={() => handleViewTaskMovement(params.row)}
+            sx={{
+              color: theme.palette.primary.main,
+              textTransform: "none",
+              "&:hover": {
+                bgcolor: alpha(theme.palette.primary.main, 0.1),
+              },
+            }}
+          >
+            View
+          </Button>
+        ),
+      },
+    ],
+    [theme],
+  );
 
   const [tasksOpen, setTasksOpen] = useState(false);
   const [pendingTasksOpen, setPendingTasksOpen] = useState(false);
@@ -289,9 +554,9 @@ const MakerDashboard: React.FC = () => {
   return (
     <Box>
       {!tasksOpen &&
-      !pendingTasksOpen &&
-      !approvedTasksOpen &&
-      !rejectedTasksOpen ? (
+        !pendingTasksOpen &&
+        !approvedTasksOpen &&
+        !rejectedTasksOpen ? (
         <>
           {/* Main Dashboard View */}
           <Box sx={{ mb: 4 }}>
@@ -315,24 +580,24 @@ const MakerDashboard: React.FC = () => {
                     )}`,
                     cursor:
                       stat.label === "Total Tasks" ||
-                      stat.label === "Pending" ||
-                      stat.label === "Approved" ||
-                      stat.label === "Rejected"
+                        stat.label === "Pending" ||
+                        stat.label === "Approved" ||
+                        stat.label === "Rejected"
                         ? "pointer"
                         : "default",
                     transition: "transform 0.2s, box-shadow 0.2s",
                     "&:hover":
                       stat.label === "Total Tasks" ||
-                      stat.label === "Pending" ||
-                      stat.label === "Approved" ||
-                      stat.label === "Rejected"
+                        stat.label === "Pending" ||
+                        stat.label === "Approved" ||
+                        stat.label === "Rejected"
                         ? {
-                            transform: "translateY(-4px)",
-                            boxShadow: `0 8px 30px ${alpha(
-                              theme.palette.common.black,
-                              0.12,
-                            )}`,
-                          }
+                          transform: "translateY(-4px)",
+                          boxShadow: `0 8px 30px ${alpha(
+                            theme.palette.common.black,
+                            0.12,
+                          )}`,
+                        }
                         : {},
                   }}
                   onClick={() => {
@@ -469,131 +734,13 @@ const MakerDashboard: React.FC = () => {
                 </Typography>
               </Box>
             ) : (
-              <TableContainer>
-                <Table>
-                  <TableHead>
-                    <TableRow
-                      sx={{ bgcolor: alpha(theme.palette.primary.main, 0.05) }}
-                    >
-                      <TableCell>
-                        <Typography variant="subtitle2" fontWeight={600}>
-                          Activity Name
-                        </Typography>
-                      </TableCell>
-                      <TableCell>
-                        <Typography variant="subtitle2" fontWeight={600}>
-                          Act Name
-                        </Typography>
-                      </TableCell>
-                      <TableCell>
-                        <Typography variant="subtitle2" fontWeight={600}>
-                          Department
-                        </Typography>
-                      </TableCell>
-                      <TableCell>
-                        <Typography variant="subtitle2" fontWeight={600}>
-                          Site Name
-                        </Typography>
-                      </TableCell>
-                      <TableCell>
-                        <Typography variant="subtitle2" fontWeight={600}>
-                          Due Date
-                        </Typography>
-                      </TableCell>
-                      <TableCell>
-                        <Typography variant="subtitle2" fontWeight={600}>
-                          Status
-                        </Typography>
-                      </TableCell>
-                      <TableCell align="center">
-                        <Typography variant="subtitle2" fontWeight={600}>
-                          Actions
-                        </Typography>
-                      </TableCell>
-                    </TableRow>
-                  </TableHead>
-                  <TableBody>
-                    {allTasks.map((task, index) => (
-                      <TableRow key={task.tblId || index} hover>
-                        <TableCell>
-                          <Typography
-                            variant="body2"
-                            fontWeight={500}
-                            sx={{
-                              maxWidth: 180,
-                              whiteSpace: "nowrap",
-                              overflow: "hidden",
-                              textOverflow: "ellipsis",
-                            }}
-                          >
-                            {task.activityName}
-                          </Typography>
-                          {task.description && (
-                            <Typography
-                              variant="caption"
-                              color="text.secondary"
-                              sx={{ display: "block", mt: 0.5 }}
-                            >
-                              {task.description}
-                            </Typography>
-                          )}
-                        </TableCell>
-                        <TableCell>
-                          <Typography variant="body2">
-                            {task.actName}
-                          </Typography>
-                        </TableCell>
-                        <TableCell>
-                          <Chip
-                            label={task.departmentName}
-                            size="small"
-                            sx={{
-                              bgcolor: alpha(theme.palette.info.main, 0.1),
-                              color: theme.palette.info.main,
-                            }}
-                          />
-                        </TableCell>
-                        <TableCell>
-                          <Typography variant="body2" fontWeight={500}>
-                            {task.siteName || "-"}
-                          </Typography>
-                        </TableCell>
-                        <TableCell>
-                          <Typography variant="body2">
-                            {task.dueDate
-                              ? new Date(task.dueDate).toLocaleDateString()
-                              : "-"}
-                          </Typography>
-                        </TableCell>
-                        <TableCell>
-                          <Chip
-                            label={task.status}
-                            size="small"
-                            color={
-                              task.status === "Approved"
-                                ? "success"
-                                : task.status === "Rejected"
-                                  ? "error"
-                                  : "warning"
-                            }
-                            sx={{ fontWeight: 600 }}
-                          />
-                        </TableCell>
-                        <TableCell align="center">
-                          <Button
-                            size="small"
-                            variant="text"
-                            startIcon={<EyeIcon />}
-                            onClick={() => handleViewTaskMovement(task)}
-                          >
-                            View
-                          </Button>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </TableContainer>
+              <CommonDataTable
+                rows={allTasks}
+                columns={allTasksColumns}
+                loading={allTasksLoading}
+                getRowId={(row) => row.tblId}
+                autoHeight={true}
+              />
             )}
           </Paper>
         </>
@@ -674,152 +821,13 @@ const MakerDashboard: React.FC = () => {
                 </Typography>
               </Box>
             ) : (
-              <TableContainer>
-                <Table>
-                  <TableHead>
-                    <TableRow
-                      sx={{ bgcolor: alpha(theme.palette.primary.main, 0.05) }}
-                    >
-                      <TableCell>
-                        <Typography variant="subtitle2" fontWeight={600}>
-                          Activity Name
-                        </Typography>
-                      </TableCell>
-                      <TableCell>
-                        <Typography variant="subtitle2" fontWeight={600}>
-                          Act Name
-                        </Typography>
-                      </TableCell>
-                      <TableCell>
-                        <Typography variant="subtitle2" fontWeight={600}>
-                          Department
-                        </Typography>
-                      </TableCell>
-                      <TableCell>
-                        <Typography variant="subtitle2" fontWeight={600}>
-                          Site Name
-                        </Typography>
-                      </TableCell>
-                      <TableCell>
-                        <Typography variant="subtitle2" fontWeight={600}>
-                          Due Date
-                        </Typography>
-                      </TableCell>
-
-                      <TableCell align="center">
-                        <Typography variant="subtitle2" fontWeight={600}>
-                          Actions
-                        </Typography>
-                      </TableCell>
-                    </TableRow>
-                  </TableHead>
-                  <TableBody>
-                    {pendingTasks.map((task, index) => (
-                      <TableRow
-                        key={task.tblId || index}
-                        hover
-                        sx={{ "&:last-child td": { borderBottom: 0 } }}
-                      >
-                        <TableCell>
-                          <Typography
-                            variant="body2"
-                            fontWeight={500}
-                            sx={{
-                              maxWidth: 180,
-                              whiteSpace: "nowrap",
-                              overflow: "hidden",
-                              textOverflow: "ellipsis",
-                            }}
-                          >
-                            {task.activityName}
-                          </Typography>
-                          {task.description && (
-                            <Typography
-                              variant="caption"
-                              color="text.secondary"
-                              sx={{ display: "block", mt: 0.5 }}
-                            >
-                              {task.description}
-                            </Typography>
-                          )}
-                        </TableCell>
-                        <TableCell>
-                          <Typography variant="body2">
-                            {task.actName}
-                          </Typography>
-                        </TableCell>
-                        <TableCell>
-                          <Chip
-                            label={task.departmentName}
-                            size="small"
-                            sx={{
-                              bgcolor: alpha(theme.palette.info.main, 0.1),
-                              color: theme.palette.info.main,
-                              fontWeight: 500,
-                              borderRadius: 2,
-                            }}
-                          />
-                        </TableCell>
-                        <TableCell>
-                          <Typography variant="body2" fontWeight={500}>
-                            {task.siteName || "-"}
-                          </Typography>
-                        </TableCell>
-                        <TableCell>
-                          <Typography variant="body2">
-                            {task.dueDate
-                              ? new Date(task.dueDate).toLocaleDateString()
-                              : "-"}
-                          </Typography>
-                        </TableCell>
-
-                        <TableCell align="center">
-                          <Box
-                            sx={{
-                              display: "flex",
-                              gap: 1,
-                              justifyContent: "center",
-                            }}
-                          >
-                            <Button
-                              size="small"
-                              variant="contained"
-                              color="success"
-                              startIcon={<ApproveIcon />}
-                              sx={{
-                                borderRadius: 1.5,
-                                textTransform: "none",
-                                fontWeight: 600,
-                                px: 2,
-                                py: 1,
-                              }}
-                              onClick={() => handleApproveClick(task.tblId)}
-                            >
-                              Approve
-                            </Button>
-                            <Button
-                              size="small"
-                              variant="contained"
-                              color="error"
-                              startIcon={<RejectIcon />}
-                              sx={{
-                                borderRadius: 1.5,
-                                textTransform: "none",
-                                fontWeight: 600,
-                                px: 2,
-                                py: 1,
-                              }}
-                              onClick={() => handleRejectClick(task.tblId)}
-                            >
-                              Reject
-                            </Button>
-                          </Box>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </TableContainer>
+              <CommonDataTable
+                rows={pendingTasks}
+                columns={pendingTasksColumns}
+                loading={pendingTasksLoading}
+                getRowId={(row) => row.tblId}
+                autoHeight={true}
+              />
             )}
           </Paper>
         </>
@@ -900,127 +908,13 @@ const MakerDashboard: React.FC = () => {
                 </Typography>
               </Box>
             ) : (
-              <TableContainer>
-                <Table>
-                  <TableHead>
-                    <TableRow
-                      sx={{ bgcolor: alpha(theme.palette.primary.main, 0.05) }}
-                    >
-                      <TableCell>
-                        <Typography variant="subtitle2" fontWeight={600}>
-                          Activity Name
-                        </Typography>
-                      </TableCell>
-                      <TableCell>
-                        <Typography variant="subtitle2" fontWeight={600}>
-                          Act Name
-                        </Typography>
-                      </TableCell>
-                      <TableCell>
-                        <Typography variant="subtitle2" fontWeight={600}>
-                          Department
-                        </Typography>
-                      </TableCell>
-                      <TableCell>
-                        <Typography variant="subtitle2" fontWeight={600}>
-                          Site Name
-                        </Typography>
-                      </TableCell>
-                      <TableCell>
-                        <Typography variant="subtitle2" fontWeight={600}>
-                          Due Date
-                        </Typography>
-                      </TableCell>
-
-                      <TableCell align="center">
-                        <Typography variant="subtitle2" fontWeight={600}>
-                          Actions
-                        </Typography>
-                      </TableCell>
-                    </TableRow>
-                  </TableHead>
-                  <TableBody>
-                    {approvedTasks.map((task, index) => (
-                      <TableRow
-                        key={task.tblId || index}
-                        hover
-                        sx={{ "&:last-child td": { borderBottom: 0 } }}
-                      >
-                        <TableCell>
-                          <Typography
-                            variant="body2"
-                            fontWeight={500}
-                            sx={{
-                              maxWidth: 180,
-                              whiteSpace: "nowrap",
-                              overflow: "hidden",
-                              textOverflow: "ellipsis",
-                            }}
-                          >
-                            {task.activityName}
-                          </Typography>
-                          {task.description && (
-                            <Typography
-                              variant="caption"
-                              color="text.secondary"
-                              sx={{ display: "block", mt: 0.5 }}
-                            >
-                              {task.description}
-                            </Typography>
-                          )}
-                        </TableCell>
-                        <TableCell>
-                          <Typography variant="body2">
-                            {task.actName}
-                          </Typography>
-                        </TableCell>
-                        <TableCell>
-                          <Chip
-                            label={task.departmentName}
-                            size="small"
-                            sx={{
-                              bgcolor: alpha(theme.palette.success.main, 0.1),
-                              color: theme.palette.success.main,
-                              fontWeight: 500,
-                              borderRadius: 2,
-                            }}
-                          />
-                        </TableCell>
-                        <TableCell>
-                          <Typography variant="body2" fontWeight={500}>
-                            {task.siteName || "-"}
-                          </Typography>
-                        </TableCell>
-                        <TableCell>
-                          <Typography variant="body2">
-                            {task.dueDate
-                              ? new Date(task.dueDate).toLocaleDateString()
-                              : "-"}
-                          </Typography>
-                        </TableCell>
-
-                        <TableCell align="center">
-                          <Button
-                            size="small"
-                            variant="text"
-                            startIcon={<EyeIcon />}
-                            onClick={() => handleViewTaskMovement(task)}
-                            sx={{
-                              color: theme.palette.primary.main,
-                              textTransform: "none",
-                              "&:hover": {
-                                bgcolor: alpha(theme.palette.primary.main, 0.1),
-                              },
-                            }}
-                          >
-                            View
-                          </Button>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </TableContainer>
+              <CommonDataTable
+                rows={approvedTasks}
+                columns={approvedTasksColumns}
+                loading={approvedTasksLoading}
+                getRowId={(row) => row.tblId}
+                autoHeight={true}
+              />
             )}
           </Paper>
         </>
@@ -1101,125 +995,13 @@ const MakerDashboard: React.FC = () => {
                 </Typography>
               </Box>
             ) : (
-              <TableContainer>
-                <Table>
-                  <TableHead>
-                    <TableRow
-                      sx={{ bgcolor: alpha(theme.palette.error.main, 0.05) }}
-                    >
-                      <TableCell>
-                        <Typography variant="subtitle2" fontWeight={600}>
-                          Activity Name
-                        </Typography>
-                      </TableCell>
-                      <TableCell>
-                        <Typography variant="subtitle2" fontWeight={600}>
-                          Act Name
-                        </Typography>
-                      </TableCell>
-                      <TableCell>
-                        <Typography variant="subtitle2" fontWeight={600}>
-                          Department
-                        </Typography>
-                      </TableCell>
-                      <TableCell>
-                        <Typography variant="subtitle2" fontWeight={600}>
-                          Site Name
-                        </Typography>
-                      </TableCell>
-                      <TableCell>
-                        <Typography variant="subtitle2" fontWeight={600}>
-                          Due Date
-                        </Typography>
-                      </TableCell>
-                      <TableCell align="center">
-                        <Typography variant="subtitle2" fontWeight={600}>
-                          Actions
-                        </Typography>
-                      </TableCell>
-                    </TableRow>
-                  </TableHead>
-                  <TableBody>
-                    {rejectedTasks.map((task, index) => (
-                      <TableRow
-                        key={task.tblId || index}
-                        hover
-                        sx={{ "&:last-child td": { borderBottom: 0 } }}
-                      >
-                        <TableCell>
-                          <Typography
-                            variant="body2"
-                            fontWeight={500}
-                            sx={{
-                              maxWidth: 180,
-                              whiteSpace: "nowrap",
-                              overflow: "hidden",
-                              textOverflow: "ellipsis",
-                            }}
-                          >
-                            {task.activityName}
-                          </Typography>
-                          {task.description && (
-                            <Typography
-                              variant="caption"
-                              color="text.secondary"
-                              sx={{ display: "block", mt: 0.5 }}
-                            >
-                              {task.description}
-                            </Typography>
-                          )}
-                        </TableCell>
-                        <TableCell>
-                          <Typography variant="body2">
-                            {task.actName}
-                          </Typography>
-                        </TableCell>
-                        <TableCell>
-                          <Chip
-                            label={task.departmentName}
-                            size="small"
-                            sx={{
-                              bgcolor: alpha(theme.palette.error.main, 0.1),
-                              color: theme.palette.error.main,
-                              fontWeight: 500,
-                              borderRadius: 2,
-                            }}
-                          />
-                        </TableCell>
-                        <TableCell>
-                          <Typography variant="body2" fontWeight={500}>
-                            {task.siteName || "-"}
-                          </Typography>
-                        </TableCell>
-                        <TableCell>
-                          <Typography variant="body2">
-                            {task.dueDate
-                              ? new Date(task.dueDate).toLocaleDateString()
-                              : "-"}
-                          </Typography>
-                        </TableCell>
-                        <TableCell align="center">
-                          <Button
-                            size="small"
-                            variant="text"
-                            startIcon={<EyeIcon />}
-                            onClick={() => handleViewTaskMovement(task)}
-                            sx={{
-                              color: theme.palette.primary.main,
-                              textTransform: "none",
-                              "&:hover": {
-                                bgcolor: alpha(theme.palette.primary.main, 0.1),
-                              },
-                            }}
-                          >
-                            View
-                          </Button>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </TableContainer>
+              <CommonDataTable
+                rows={rejectedTasks}
+                columns={rejectedTasksColumns}
+                loading={rejectedTasksLoading}
+                getRowId={(row) => row.tblId}
+                autoHeight={true}
+              />
             )}
           </Paper>
         </>
@@ -1338,290 +1120,12 @@ const MakerDashboard: React.FC = () => {
       </Dialog>
 
       {/* Task Movement Dialog */}
-      <Dialog
+      <TaskMovementDialog
         open={taskMovementDialogOpen}
         onClose={handleCloseTaskMovementDialog}
-        maxWidth="md"
-        fullWidth
-      >
-        <DialogTitle sx={{ fontWeight: 600, fontSize: "1.3rem", pb: 1 }}>
-          Task Movement Details
-        </DialogTitle>
-        <DialogContent sx={{ py: 2 }}>
-          {selectedTask && (
-            <Box>
-              <Box
-                sx={{
-                  mb: 3,
-                  p: 2,
-                  bgcolor: alpha(theme.palette.primary.main, 0.05),
-                  borderRadius: 2,
-                }}
-              >
-                <Typography variant="subtitle2" fontWeight={600} gutterBottom>
-                  Activity Information
-                </Typography>
-                <Grid container spacing={2} sx={{ mt: 0.5 }}>
-                  <Grid size={{ xs: 12, sm: 6 }}>
-                    <Typography
-                      variant="caption"
-                      color="text.secondary"
-                      display="block"
-                    >
-                      Activity Name
-                    </Typography>
-                    <Typography variant="body2" fontWeight={500}>
-                      {selectedTask.activityName}
-                    </Typography>
-                  </Grid>
-                  <Grid size={{ xs: 12, sm: 6 }}>
-                    <Typography
-                      variant="caption"
-                      color="text.secondary"
-                      display="block"
-                    >
-                      Act Name
-                    </Typography>
-                    <Typography variant="body2" fontWeight={500}>
-                      {selectedTask.actName}
-                    </Typography>
-                  </Grid>
-                  <Grid size={{ xs: 12, sm: 6 }}>
-                    <Typography
-                      variant="caption"
-                      color="text.secondary"
-                      display="block"
-                    >
-                      Department
-                    </Typography>
-                    <Typography variant="body2" fontWeight={500}>
-                      {selectedTask.departmentName}
-                    </Typography>
-                  </Grid>
-                  <Grid size={{ xs: 12, sm: 6 }}>
-                    <Typography
-                      variant="caption"
-                      color="text.secondary"
-                      display="block"
-                    >
-                      Due Date
-                    </Typography>
-                    <Typography variant="body2" fontWeight={500}>
-                      {selectedTask.dueDate
-                        ? new Date(selectedTask.dueDate).toLocaleDateString()
-                        : "-"}
-                    </Typography>
-                  </Grid>
-                  <Grid size={{ xs: 12, sm: 6 }}>
-                    <Typography
-                      variant="caption"
-                      color="text.secondary"
-                      display="block"
-                    >
-                      Site Name
-                    </Typography>
-                    <Typography variant="body2" fontWeight={500}>
-                      {selectedTask.siteName || "-"}
-                    </Typography>
-                  </Grid>
-                </Grid>
-              </Box>
+        task={selectedTask}
+      />
 
-              <Typography
-                variant="subtitle2"
-                fontWeight={600}
-                gutterBottom
-                sx={{ mt: 3, mb: 2 }}
-              >
-                Task Movement History
-              </Typography>
-              <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
-                {selectedTask.details && selectedTask.details.length > 0 ? (
-                  selectedTask.details.map((detail: any, index: number) => (
-                    <Box
-                      key={index}
-                      sx={{
-                        p: 2,
-                        border: `1px solid ${theme.palette.divider}`,
-                        borderRadius: 2,
-                        bgcolor: alpha(
-                          detail.status === "Approved"
-                            ? theme.palette.success.main
-                            : detail.status === "Rejected"
-                              ? theme.palette.error.main
-                              : theme.palette.warning.main,
-                          0.05,
-                        ),
-                      }}
-                    >
-                      <Box
-                        sx={{
-                          display: "flex",
-                          justifyContent: "space-between",
-                          alignItems: "start",
-                          mb: 1,
-                        }}
-                      >
-                        <Box>
-                          <Typography variant="subtitle2" fontWeight={600}>
-                            {detail.userName}
-                          </Typography>
-                          <Typography variant="caption" color="text.secondary">
-                            {index === 0
-                              ? "Maker"
-                              : index === 1
-                                ? "Checker"
-                                : "Reviewer"}
-                          </Typography>
-                        </Box>
-                        <Chip
-                          label={detail.status}
-                          size="small"
-                          color={
-                            detail.status === "Approved"
-                              ? "success"
-                              : detail.status === "Rejected"
-                                ? "error"
-                                : "warning"
-                          }
-                          variant="outlined"
-                          sx={{ fontWeight: 600 }}
-                        />
-                      </Box>
-
-                      <Box
-                        sx={{
-                          display: "grid",
-                          gridTemplateColumns:
-                            "repeat(auto-fit, minmax(150px, 1fr))",
-                          gap: 2,
-                          my: 2,
-                        }}
-                      >
-                        <Box>
-                          <Typography
-                            variant="caption"
-                            color="text.secondary"
-                            display="block"
-                            sx={{ mb: 0.5 }}
-                          >
-                            In Date
-                          </Typography>
-                          <Typography variant="body2" fontWeight={500}>
-                            {detail.inDate &&
-                            detail.inDate !== "0001-01-01T00:00:00Z"
-                              ? new Date(detail.inDate).toLocaleDateString()
-                              : "-"}
-                          </Typography>
-                        </Box>
-                        <Box>
-                          <Typography
-                            variant="caption"
-                            color="text.secondary"
-                            display="block"
-                            sx={{ mb: 0.5 }}
-                          >
-                            Out Date
-                          </Typography>
-                          <Typography variant="body2" fontWeight={500}>
-                            {detail.outDate &&
-                            detail.outDate !== "0001-01-01T00:00:00Z"
-                              ? new Date(detail.outDate).toLocaleDateString()
-                              : "-"}
-                          </Typography>
-                        </Box>
-                        <Box>
-                          <Typography
-                            variant="caption"
-                            color="text.secondary"
-                            display="block"
-                            sx={{ mb: 0.5 }}
-                          >
-                            P.TAT (Days)
-                          </Typography>
-                          <Typography variant="body2" fontWeight={500}>
-                            {detail.pTat || 0}
-                          </Typography>
-                        </Box>
-                        <Box>
-                          <Typography
-                            variant="caption"
-                            color="text.secondary"
-                            display="block"
-                            sx={{ mb: 0.5 }}
-                          >
-                            A.TAT (Days)
-                          </Typography>
-                          <Typography variant="body2" fontWeight={500}>
-                            {detail.aTat || 0}
-                          </Typography>
-                        </Box>
-                      </Box>
-
-                      {detail.remarks && (
-                        <Box
-                          sx={{
-                            mt: 2,
-                            pt: 2,
-                            borderTop: `1px solid ${theme.palette.divider}`,
-                          }}
-                        >
-                          <Typography
-                            variant="caption"
-                            color="text.secondary"
-                            display="block"
-                            sx={{ mb: 0.5 }}
-                          >
-                            Remarks
-                          </Typography>
-                          <Typography variant="body2">
-                            {detail.remarks}
-                          </Typography>
-                        </Box>
-                      )}
-
-                      {detail.rejectionRemark && (
-                        <Box
-                          sx={{
-                            mt: 2,
-                            pt: 2,
-                            borderTop: `1px solid ${theme.palette.divider}`,
-                          }}
-                        >
-                          <Typography
-                            variant="caption"
-                            color="error"
-                            display="block"
-                            sx={{ mb: 0.5, fontWeight: 600 }}
-                          >
-                            Rejection Remark
-                          </Typography>
-                          <Typography variant="body2" color="error">
-                            {detail.rejectionRemark}
-                          </Typography>
-                        </Box>
-                      )}
-                    </Box>
-                  ))
-                ) : (
-                  <Typography
-                    variant="body2"
-                    color="text.secondary"
-                    sx={{ textAlign: "center", py: 4 }}
-                  >
-                    No movement details available
-                  </Typography>
-                )}
-              </Box>
-            </Box>
-          )}
-        </DialogContent>
-        <DialogActions sx={{ p: 2 }}>
-          <Button onClick={handleCloseTaskMovementDialog} variant="contained">
-            Close
-          </Button>
-        </DialogActions>
-      </Dialog>
     </Box>
   );
 };
