@@ -311,7 +311,7 @@ const MakerDashboard: React.FC = () => {
                     borderRadius: 3,
                     boxShadow: `0 4px 20px ${alpha(
                       theme.palette.common.black,
-                      0.08
+                      0.08,
                     )}`,
                     cursor:
                       stat.label === "Total Tasks" ||
@@ -330,7 +330,7 @@ const MakerDashboard: React.FC = () => {
                             transform: "translateY(-4px)",
                             boxShadow: `0 8px 30px ${alpha(
                               theme.palette.common.black,
-                              0.12
+                              0.12,
                             )}`,
                           }
                         : {},
@@ -376,7 +376,7 @@ const MakerDashboard: React.FC = () => {
               borderRadius: 3,
               boxShadow: `0 4px 20px ${alpha(
                 theme.palette.common.black,
-                0.08
+                0.08,
               )}`,
             }}
           >
@@ -434,7 +434,7 @@ const MakerDashboard: React.FC = () => {
               borderRadius: 3,
               boxShadow: `0 4px 20px ${alpha(
                 theme.palette.common.black,
-                0.08
+                0.08,
               )}`,
               overflow: "hidden",
             }}
@@ -516,7 +516,16 @@ const MakerDashboard: React.FC = () => {
                     {allTasks.map((task, index) => (
                       <TableRow key={task.tblId || index} hover>
                         <TableCell>
-                          <Typography variant="body2" fontWeight={500}>
+                          <Typography
+                            variant="body2"
+                            fontWeight={500}
+                            sx={{
+                              maxWidth: 180,
+                              whiteSpace: "nowrap",
+                              overflow: "hidden",
+                              textOverflow: "ellipsis",
+                            }}
+                          >
                             {task.activityName}
                           </Typography>
                           {task.description && (
@@ -564,54 +573,21 @@ const MakerDashboard: React.FC = () => {
                               task.status === "Approved"
                                 ? "success"
                                 : task.status === "Rejected"
-                                ? "error"
-                                : "warning"
+                                  ? "error"
+                                  : "warning"
                             }
                             sx={{ fontWeight: 600 }}
                           />
                         </TableCell>
                         <TableCell align="center">
-                          {task.status === "Pending" ? (
-                            <Box
-                              sx={{
-                                display: "flex",
-                                gap: 1,
-                                justifyContent: "center",
-                              }}
-                            >
-                              <Button
-                                size="small"
-                                variant="contained"
-                                color="success"
-                                startIcon={<ApproveIcon />}
-                                onClick={() => handleApproveClick(task.tblId)}
-                              >
-                                Approve
-                              </Button>
-                              <Button
-                                size="small"
-                                variant="contained"
-                                color="error"
-                                startIcon={<RejectIcon />}
-                                onClick={() => handleRejectClick(task.tblId)}
-                              >
-                                Reject
-                              </Button>
-                            </Box>
-                          ) : task.status === "Approved" ? (
-                            <Button
-                              size="small"
-                              variant="text"
-                              startIcon={<EyeIcon />}
-                              onClick={() => handleViewTaskMovement(task)}
-                            >
-                              View
-                            </Button>
-                          ) : (
-                            <Typography variant="body2" color="text.secondary">
-                              -
-                            </Typography>
-                          )}
+                          <Button
+                            size="small"
+                            variant="text"
+                            startIcon={<EyeIcon />}
+                            onClick={() => handleViewTaskMovement(task)}
+                          >
+                            View
+                          </Button>
                         </TableCell>
                       </TableRow>
                     ))}
@@ -660,7 +636,7 @@ const MakerDashboard: React.FC = () => {
               borderRadius: 3,
               boxShadow: `0 4px 20px ${alpha(
                 theme.palette.common.black,
-                0.08
+                0.08,
               )}`,
               overflow: "hidden",
             }}
@@ -745,7 +721,16 @@ const MakerDashboard: React.FC = () => {
                         sx={{ "&:last-child td": { borderBottom: 0 } }}
                       >
                         <TableCell>
-                          <Typography variant="body2" fontWeight={500}>
+                          <Typography
+                            variant="body2"
+                            fontWeight={500}
+                            sx={{
+                              maxWidth: 180,
+                              whiteSpace: "nowrap",
+                              overflow: "hidden",
+                              textOverflow: "ellipsis",
+                            }}
+                          >
                             {task.activityName}
                           </Typography>
                           {task.description && (
@@ -877,7 +862,7 @@ const MakerDashboard: React.FC = () => {
               borderRadius: 3,
               boxShadow: `0 4px 20px ${alpha(
                 theme.palette.common.black,
-                0.08
+                0.08,
               )}`,
               overflow: "hidden",
             }}
@@ -962,7 +947,16 @@ const MakerDashboard: React.FC = () => {
                         sx={{ "&:last-child td": { borderBottom: 0 } }}
                       >
                         <TableCell>
-                          <Typography variant="body2" fontWeight={500}>
+                          <Typography
+                            variant="body2"
+                            fontWeight={500}
+                            sx={{
+                              maxWidth: 180,
+                              whiteSpace: "nowrap",
+                              overflow: "hidden",
+                              textOverflow: "ellipsis",
+                            }}
+                          >
                             {task.activityName}
                           </Typography>
                           {task.description && (
@@ -1069,7 +1063,7 @@ const MakerDashboard: React.FC = () => {
               borderRadius: 3,
               boxShadow: `0 4px 20px ${alpha(
                 theme.palette.common.black,
-                0.08
+                0.08,
               )}`,
               overflow: "hidden",
             }}
@@ -1153,7 +1147,16 @@ const MakerDashboard: React.FC = () => {
                         sx={{ "&:last-child td": { borderBottom: 0 } }}
                       >
                         <TableCell>
-                          <Typography variant="body2" fontWeight={500}>
+                          <Typography
+                            variant="body2"
+                            fontWeight={500}
+                            sx={{
+                              maxWidth: 180,
+                              whiteSpace: "nowrap",
+                              overflow: "hidden",
+                              textOverflow: "ellipsis",
+                            }}
+                          >
                             {task.activityName}
                           </Typography>
                           {task.description && (
@@ -1445,9 +1448,9 @@ const MakerDashboard: React.FC = () => {
                           detail.status === "Approved"
                             ? theme.palette.success.main
                             : detail.status === "Rejected"
-                            ? theme.palette.error.main
-                            : theme.palette.warning.main,
-                          0.05
+                              ? theme.palette.error.main
+                              : theme.palette.warning.main,
+                          0.05,
                         ),
                       }}
                     >
@@ -1467,8 +1470,8 @@ const MakerDashboard: React.FC = () => {
                             {index === 0
                               ? "Maker"
                               : index === 1
-                              ? "Checker"
-                              : "Reviewer"}
+                                ? "Checker"
+                                : "Reviewer"}
                           </Typography>
                         </Box>
                         <Chip
@@ -1478,8 +1481,8 @@ const MakerDashboard: React.FC = () => {
                             detail.status === "Approved"
                               ? "success"
                               : detail.status === "Rejected"
-                              ? "error"
-                              : "warning"
+                                ? "error"
+                                : "warning"
                           }
                           variant="outlined"
                           sx={{ fontWeight: 600 }}

@@ -16,6 +16,8 @@ import {
   DialogContent,
   DialogContentText,
   DialogActions,
+  Backdrop,
+  CircularProgress,
 } from "@mui/material";
 import {
   DataGrid,
@@ -31,7 +33,6 @@ import { selectFileList } from "./FileUploaderSlice/FileUploader.selector";
 import {
   deleteFile,
   fetchFileList,
-  processSalaryMusterRoll,
 } from "./FileUploaderSlice/FileUploader.slice";
 import { useNavigate } from "react-router-dom";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
@@ -44,6 +45,8 @@ const FileUploader: React.FC = () => {
   const theme = useTheme();
   const dispatch = useDispatch<AppDispatch>();
   const navigate = useNavigate();
+  const [processing, setProcessing] = useState(false);
+  const [processingText, setProcessingText] = useState("Processing...");
 
   const files = useSelector(selectFileList);
   /* ---------- Delete State ---------- */
@@ -65,10 +68,27 @@ const FileUploader: React.FC = () => {
   useEffect(() => {
     dispatch(fetchFileList());
   }, [dispatch]);
+  /* ---------- Process Click Handler ---------- */
+  const handleProcessClick = async (fileId: string, fileType: string) => {
+    const isMuster = fileType?.toLowerCase().includes("muster");
 
-  const handleProcessClick = async (fileId: string) => {
+    const startMsg = isMuster
+      ? "Generating Muster Roll... "
+      : "Generating Salary Register... ";
+
+    const successMsg = isMuster
+      ? "Muster Roll downloaded successfully"
+      : "Salary Register downloaded successfully";
+
+    const errorMsg = isMuster
+      ? "Failed to download Muster Roll"
+      : "Failed to download Salary Register";
+
     try {
-      setSnackbarMessage("Generating Salary Register... This may take a few minutes.");
+      setProcessing(true);
+
+      setProcessingText(startMsg);
+      setSnackbarMessage(startMsg);
       setSnackbarSeverity("success");
       setShowSnackbar(true);
 
@@ -77,14 +97,15 @@ const FileUploader: React.FC = () => {
         {},
       );
 
-      setSnackbarMessage("Salary Register downloaded successfully");
+      setSnackbarMessage(successMsg);
       setSnackbarSeverity("success");
       setShowSnackbar(true);
     } catch (err: any) {
-      console.error("Download failed:", err);
-      setSnackbarMessage(err.message || "Failed to download Salary Register");
+      setSnackbarMessage(err.message || errorMsg);
       setSnackbarSeverity("error");
       setShowSnackbar(true);
+    } finally {
+      setProcessing(false);
     }
   };
 
@@ -136,6 +157,20 @@ const FileUploader: React.FC = () => {
       setShowSnackbar(true);
     } catch (err) {
       setSnackbarMessage("Failed to download selery register");
+      setSnackbarSeverity("error");
+      setShowSnackbar(true);
+    }
+  };
+  const handleDownloadMusterSample = async () => {
+    try {
+      await apiService.download(
+        "SalaryMusterRoll/musterRollSample",
+        "MusterRoll.csv",
+      );
+      setSnackbarMessage("Muster Roll Sample downloaded successful");
+      setShowSnackbar(true);
+    } catch (err) {
+      setSnackbarMessage("Failed to download muster roll sample");
       setSnackbarSeverity("error");
       setShowSnackbar(true);
     }
@@ -201,10 +236,18 @@ const FileUploader: React.FC = () => {
           <IconButton
             size="small"
             color="primary"
-            onClick={() => handleProcessClick(params.row.fileId)}
+            onClick={() =>
+              handleProcessClick(params.row.fileId, params.row.fileType)
+            }
+            disabled={processing}
           >
-            <PlayArrowIcon fontSize="small" />
+            {processing ? (
+              <CircularProgress size={18} />
+            ) : (
+              <PlayArrowIcon fontSize="small" />
+            )}
           </IconButton>
+
           <IconButton
             size="small"
             color="error"
@@ -276,7 +319,26 @@ const FileUploader: React.FC = () => {
               },
             }}
           >
-            Download Salary Sample
+            Salary Sample
+          </Button>
+          <Button
+            variant="contained"
+            startIcon={<DownloadIcon />}
+            onClick={handleDownloadMusterSample}
+            sx={{
+              borderRadius: 2,
+              textTransform: "none",
+              px: 3,
+              boxShadow: `0 4px 15px ${alpha(theme.palette.primary.main, 0.3)}`,
+              "&:hover": {
+                boxShadow: `0 6px 20px ${alpha(
+                  theme.palette.primary.main,
+                  0.4,
+                )}`,
+              },
+            }}
+          >
+            Muster Sample
           </Button>
           <Button
             variant="contained"
@@ -369,6 +431,73 @@ const FileUploader: React.FC = () => {
           </Button>
         </DialogActions>
       </Dialog>
+      <Backdrop
+        sx={{
+          color: "#fff",
+          zIndex: (theme) => theme.zIndex.drawer + 1,
+          flexDirection: "column",
+          backdropFilter: "blur(6px)",
+          backgroundColor: "rgba(0, 0, 0, 0.4)",
+        }}
+        open={processing}
+      >
+        {/* Pill Loader */}
+        <Box
+          sx={{
+            width: 260,
+            height: 10,
+            borderRadius: 10,
+            backgroundColor: "rgba(255,255,255,0.2)",
+            overflow: "hidden",
+            position: "relative",
+          }}
+        >
+          <Box
+            sx={{
+              width: "40%",
+              height: "100%",
+              borderRadius: 10,
+              background: "#115293",
+              position: "absolute",
+              animation: "loading 1.4s infinite",
+            }}
+          />
+        </Box>
+
+        <Typography
+          mt={3}
+          sx={{
+            fontSize: "16px",
+            fontWeight: 500,
+            letterSpacing: "0.5px",
+            background: "#ffffff",
+            WebkitBackgroundClip: "text",
+            WebkitTextFillColor: "transparent",
+          }}
+        >
+          {processingText}
+        </Typography>
+
+        <Typography
+          mt={1}
+          sx={{
+            fontSize: "13px",
+            color: "#ddd",
+            opacity: 0.9,
+          }}
+        >
+          Please wait, this may take a few moments
+        </Typography>
+
+        <style>
+          {`
+      @keyframes loading {
+        0% { left: -40%; }
+        100% { left: 100%; }
+      }
+    `}
+        </style>
+      </Backdrop>
     </Box>
   );
 };
