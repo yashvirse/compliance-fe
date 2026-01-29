@@ -14,6 +14,7 @@ import {
   InputLabel,
   Select,
   MenuItem,
+  Tooltip,
 } from "@mui/material";
 import {
   selectTaskError,
@@ -73,7 +74,7 @@ const Task: React.FC = () => {
       sortable: false,
       renderCell: (params: GridRenderCellParams) => {
         const index = tasks.findIndex(
-          (task) => task.tblId === params.row.tblId
+          (task) => task.tblId === params.row.tblId,
         );
         return index + 1;
       },
@@ -87,13 +88,29 @@ const Task: React.FC = () => {
       field: "activityName",
       headerName: "Activity Name",
       flex: 1,
-      minWidth: 150,
+      minWidth: 300,
     },
     {
       field: "actName",
       headerName: "Act Name",
       flex: 1,
       minWidth: 180,
+    },
+    {
+      field: "departmentName",
+      headerName: "Department",
+      flex: 1,
+      minWidth: 150,
+      renderCell: (params) => (
+        <Chip
+          label={params.value}
+          size="small"
+          sx={{
+            bgcolor: alpha(theme.palette.success.main, 0.1),
+            color: theme.palette.success.main,
+          }}
+        />
+      ),
     },
     {
       field: "dueDate",
@@ -106,21 +123,11 @@ const Task: React.FC = () => {
         return date.toLocaleDateString("en-GB");
       },
     },
-    {
-      field: "reminderDate",
-      headerName: "Reminder Date",
-      flex: 1,
-      minWidth: 100,
-      renderCell: (params: GridRenderCellParams) => {
-        if (!params.value) return "-";
-        const date = new Date(params.value as string);
-        return date.toLocaleDateString("en-GB");
-      },
-    },
+
     {
       field: "taskCurrentStatus",
       headerName: "Status",
-      width: 130,
+      width: 120,
       renderCell: (params: GridRenderCellParams) => (
         <Chip
           label={params.value}
@@ -139,7 +146,7 @@ const Task: React.FC = () => {
     {
       field: "actions",
       headerName: "Actions",
-      width: 120,
+      width: 100,
       sortable: false,
       filterable: false,
       disableColumnMenu: true,
@@ -148,21 +155,21 @@ const Task: React.FC = () => {
       renderCell: (params: any) => {
         const task = params.row;
         return (
-          <Button
-            size="small"
-            variant="text"
-            startIcon={<EyeIcon />}
-            onClick={() => handleViewTaskMovement(task)}
-            sx={{
-              color: theme.palette.primary.main,
-              textTransform: "none",
-              "&:hover": {
-                bgcolor: alpha(theme.palette.primary.main, 0.1),
-              },
-            }}
-          >
-            View
-          </Button>
+          <Tooltip title="View Task" arrow>
+            <Button
+              size="small"
+              variant="text"
+              startIcon={<EyeIcon />}
+              onClick={() => handleViewTaskMovement(task)}
+              sx={{
+                color: theme.palette.primary.main,
+                textTransform: "none",
+                "&:hover": {
+                  bgcolor: alpha(theme.palette.primary.main, 0.1),
+                },
+              }}
+            ></Button>
+          </Tooltip>
         );
       },
     },
@@ -260,7 +267,6 @@ const Task: React.FC = () => {
         onClose={handleCloseTaskMovementDialog}
         task={selectedTask}
       />
-
     </Box>
   );
 };

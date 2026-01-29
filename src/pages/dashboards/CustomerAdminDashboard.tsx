@@ -25,6 +25,7 @@ import {
   ListAlt,
   People,
   Close as CloseIcon,
+  Visibility as EyeIcon,
   FilterList as FilterListIcon,
 } from "@mui/icons-material";
 import {
@@ -216,17 +217,29 @@ const CustomerAdminDashboard: React.FC = () => {
   const completedTasksColumns: GridColDef[] = useMemo(
     () => [
       {
+        field: "sno",
+        headerName: "S.No.",
+        width: 60,
+        sortable: false,
+        filterable: false,
+        align: "left",
+        headerAlign: "left",
+        renderCell: (params) =>
+          params.api.getRowIndexRelativeToVisibleRows(params.id) + 1,
+      },
+      { field: "siteName", headerName: "Site Name", flex: 1, minWidth: 150 },
+      {
         field: "activityName",
         headerName: "Activity Name",
         flex: 1.2,
-        minWidth: 150,
+        minWidth: 250,
       },
-      { field: "actName", headerName: "Act Name", flex: 1, minWidth: 100 },
+      { field: "actName", headerName: "Act Name", flex: 1, minWidth: 150 },
       {
         field: "departmentName",
         headerName: "Department",
         flex: 1,
-        minWidth: 120,
+        minWidth: 150,
         renderCell: (params) => (
           <Chip
             label={params.value}
@@ -238,7 +251,6 @@ const CustomerAdminDashboard: React.FC = () => {
           />
         ),
       },
-      { field: "siteName", headerName: "Site Name", flex: 1, minWidth: 100 },
       {
         field: "dueDate",
         headerName: "Due Date",
@@ -247,15 +259,11 @@ const CustomerAdminDashboard: React.FC = () => {
         renderCell: (params) =>
           params.value ? new Date(params.value).toLocaleDateString() : "-",
       },
-      { field: "maker", headerName: "Maker", flex: 0.8, minWidth: 80 },
-      { field: "checker", headerName: "Checker", flex: 0.8, minWidth: 80 },
-      { field: "reviewer", headerName: "Reviewer", flex: 0.8, minWidth: 80 },
-      { field: "auditer", headerName: "Auditor", flex: 0.8, minWidth: 80 },
       {
         field: "status",
         headerName: "Status",
         flex: 0.8,
-        minWidth: 100,
+        minWidth: 120,
         renderCell: () => (
           <Chip
             label="Completed"
@@ -275,6 +283,7 @@ const CustomerAdminDashboard: React.FC = () => {
           <Button
             size="small"
             variant="text"
+            startIcon={<EyeIcon />}
             onClick={() => handleViewTaskMovement(params.row)}
             sx={{
               color: theme.palette.primary.main,
@@ -283,9 +292,7 @@ const CustomerAdminDashboard: React.FC = () => {
                 bgcolor: alpha(theme.palette.primary.main, 0.1),
               },
             }}
-          >
-            View
-          </Button>
+          ></Button>
         ),
       },
     ],
@@ -295,17 +302,29 @@ const CustomerAdminDashboard: React.FC = () => {
   const pendingTasksColumns: GridColDef[] = useMemo(
     () => [
       {
+        field: "sno",
+        headerName: "S.No.",
+        width: 60,
+        sortable: false,
+        filterable: false,
+        align: "left",
+        headerAlign: "left",
+        renderCell: (params) =>
+          params.api.getRowIndexRelativeToVisibleRows(params.id) + 1,
+      },
+      { field: "siteName", headerName: "Site Name", flex: 1, minWidth: 150 },
+      {
         field: "activityName",
         headerName: "Activity Name",
         flex: 1.2,
-        minWidth: 150,
+        minWidth: 300,
       },
-      { field: "actName", headerName: "Act Name", flex: 1, minWidth: 100 },
+      { field: "actName", headerName: "Act Name", flex: 1, minWidth: 150 },
       {
         field: "departmentName",
         headerName: "Department",
         flex: 1,
-        minWidth: 120,
+        minWidth: 150,
         renderCell: (params) => (
           <Chip
             label={params.value}
@@ -317,7 +336,6 @@ const CustomerAdminDashboard: React.FC = () => {
           />
         ),
       },
-      { field: "siteName", headerName: "Site Name", flex: 1, minWidth: 100 },
       {
         field: "dueDate",
         headerName: "Due Date",
@@ -326,10 +344,6 @@ const CustomerAdminDashboard: React.FC = () => {
         renderCell: (params) =>
           params.value ? new Date(params.value).toLocaleDateString() : "-",
       },
-      { field: "maker", headerName: "Maker", flex: 0.8, minWidth: 80 },
-      { field: "checker", headerName: "Checker", flex: 0.8, minWidth: 80 },
-      { field: "reviewer", headerName: "Reviewer", flex: 0.8, minWidth: 80 },
-      { field: "auditer", headerName: "Auditor", flex: 0.8, minWidth: 80 },
       {
         field: "status",
         headerName: "Status",
@@ -354,6 +368,7 @@ const CustomerAdminDashboard: React.FC = () => {
           <Button
             size="small"
             variant="text"
+            startIcon={<EyeIcon />}
             onClick={() => handleViewTaskMovement(params.row)}
             sx={{
               color: theme.palette.primary.main,
@@ -362,9 +377,7 @@ const CustomerAdminDashboard: React.FC = () => {
                 bgcolor: alpha(theme.palette.primary.main, 0.1),
               },
             }}
-          >
-            View
-          </Button>
+          ></Button>
         ),
       },
     ],
@@ -374,17 +387,29 @@ const CustomerAdminDashboard: React.FC = () => {
   const rejectedTasksColumns: GridColDef[] = useMemo(
     () => [
       {
+        field: "sno",
+        headerName: "S.No.",
+        width: 80,
+        sortable: false,
+        filterable: false,
+        align: "left",
+        headerAlign: "left",
+        renderCell: (params) =>
+          params.api.getRowIndexRelativeToVisibleRows(params.id) + 1,
+      },
+      { field: "siteName", headerName: "Site Name", flex: 1, minWidth: 150 },
+      {
         field: "activityName",
         headerName: "Activity Name",
         flex: 1.2,
-        minWidth: 150,
+        minWidth: 300,
       },
-      { field: "actName", headerName: "Act Name", flex: 1, minWidth: 100 },
+      { field: "actName", headerName: "Act Name", flex: 1, minWidth: 150 },
       {
         field: "departmentName",
         headerName: "Department",
         flex: 1,
-        minWidth: 120,
+        minWidth: 150,
         renderCell: (params) => (
           <Chip
             label={params.value}
@@ -396,24 +421,19 @@ const CustomerAdminDashboard: React.FC = () => {
           />
         ),
       },
-      { field: "siteName", headerName: "Site Name", flex: 1, minWidth: 100 },
       {
         field: "dueDate",
         headerName: "Due Date",
         flex: 1,
-        minWidth: 100,
+        minWidth: 120,
         renderCell: (params) =>
           params.value ? new Date(params.value).toLocaleDateString() : "-",
       },
-      { field: "maker", headerName: "Maker", flex: 0.8, minWidth: 80 },
-      { field: "checker", headerName: "Checker", flex: 0.8, minWidth: 80 },
-      { field: "reviewer", headerName: "Reviewer", flex: 0.8, minWidth: 80 },
-      { field: "auditer", headerName: "Auditor", flex: 0.8, minWidth: 80 },
       {
         field: "status",
         headerName: "Status",
         flex: 0.8,
-        minWidth: 100,
+        minWidth: 120,
         renderCell: () => (
           <Chip
             label="Rejected"
@@ -433,6 +453,7 @@ const CustomerAdminDashboard: React.FC = () => {
           <Button
             size="small"
             variant="text"
+            startIcon={<EyeIcon />}
             onClick={() => handleViewTaskMovement(params.row)}
             sx={{
               color: theme.palette.primary.main,
@@ -441,9 +462,7 @@ const CustomerAdminDashboard: React.FC = () => {
                 bgcolor: alpha(theme.palette.primary.main, 0.1),
               },
             }}
-          >
-            View
-          </Button>
+          ></Button>
         ),
       },
     ],
@@ -556,12 +575,12 @@ const CustomerAdminDashboard: React.FC = () => {
                   "&:hover":
                     stat.path || stat.onClick
                       ? {
-                        transform: "translateY(-4px)",
-                        boxShadow: `0 8px 30px ${alpha(
-                          theme.palette.common.black,
-                          0.12,
-                        )}`,
-                      }
+                          transform: "translateY(-4px)",
+                          boxShadow: `0 8px 30px ${alpha(
+                            theme.palette.common.black,
+                            0.12,
+                          )}`,
+                        }
                       : {},
                 }}
               >
@@ -937,7 +956,6 @@ const CustomerAdminDashboard: React.FC = () => {
           onClose={handleCloseTaskMovementDialog}
           task={selectedTask}
         />
-
       </Box>
     );
   }
@@ -1016,7 +1034,6 @@ const CustomerAdminDashboard: React.FC = () => {
           onClose={handleCloseTaskMovementDialog}
           task={selectedTask}
         />
-
       </Box>
     );
   }
@@ -1093,7 +1110,6 @@ const CustomerAdminDashboard: React.FC = () => {
           onClose={handleCloseTaskMovementDialog}
           task={selectedTask}
         />
-
       </Box>
     );
   }

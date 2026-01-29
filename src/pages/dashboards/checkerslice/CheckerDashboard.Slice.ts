@@ -38,7 +38,7 @@ export const fetchCheckerTaskCount = createAsyncThunk(
   async (userId: string, { rejectWithValue }) => {
     try {
       const response = await apiService.get<GetCheckerTaskCountResponse>(
-        `Dashboard/getTaskCount?userID=${userId}`
+        `Dashboard/getTaskCount?userID=${userId}`,
       );
 
       if (response.isSuccess && response.result) {
@@ -48,15 +48,15 @@ export const fetchCheckerTaskCount = createAsyncThunk(
 
       console.error("❌ API error:", response.message);
       return rejectWithValue(
-        response.message || "Failed to fetch dashboard counts"
+        response.message || "Failed to fetch dashboard counts",
       );
     } catch (error: any) {
       console.error("❌ Fetch error:", error);
       return rejectWithValue(
-        error?.message || "Failed to fetch dashboard counts"
+        error?.message || "Failed to fetch dashboard counts",
       );
     }
-  }
+  },
 );
 
 // Fetch pending check tasks
@@ -65,7 +65,7 @@ export const fetchPendingCheckTasks = createAsyncThunk(
   async (userID: string, { rejectWithValue }) => {
     try {
       const response = await apiService.get<GetPendingCheckTasksResponse>(
-        `Dashboard/getPendingTaskDtl?userID=${userID}`
+        `Dashboard/getPendingTaskDtl?userID=${userID}`,
       );
 
       if (response.isSuccess) {
@@ -75,15 +75,15 @@ export const fetchPendingCheckTasks = createAsyncThunk(
 
       console.error("❌ API error:", response.message);
       return rejectWithValue(
-        response.message || "Failed to fetch pending check tasks"
+        response.message || "Failed to fetch pending check tasks",
       );
     } catch (error: any) {
       console.error("❌ Fetch error:", error);
       return rejectWithValue(
-        error?.message || "Failed to fetch pending check tasks"
+        error?.message || "Failed to fetch pending check tasks",
       );
     }
-  }
+  },
 );
 
 // Fetch approved check tasks
@@ -92,7 +92,7 @@ export const fetchApprovedCheckTasks = createAsyncThunk(
   async (userID: string, { rejectWithValue }) => {
     try {
       const response = await apiService.get<GetApprovedCheckTasksResponse>(
-        `Dashboard/getApprovedTaskDtl?userID=${userID}`
+        `Dashboard/getApprovedTaskDtl?userID=${userID}`,
       );
 
       if (response.isSuccess) {
@@ -102,15 +102,15 @@ export const fetchApprovedCheckTasks = createAsyncThunk(
 
       console.error("❌ API error:", response.message);
       return rejectWithValue(
-        response.message || "Failed to fetch approved check tasks"
+        response.message || "Failed to fetch approved check tasks",
       );
     } catch (error: any) {
       console.error("❌ Fetch error:", error);
       return rejectWithValue(
-        error?.message || "Failed to fetch approved check tasks"
+        error?.message || "Failed to fetch approved check tasks",
       );
     }
-  }
+  },
 );
 
 // Fetch rejected check tasks
@@ -119,7 +119,7 @@ export const fetchRejectedCheckTasks = createAsyncThunk(
   async (userID: string, { rejectWithValue }) => {
     try {
       const response = await apiService.get<GetRejectedCheckTasksResponse>(
-        `Dashboard/getRejectedTaskDtl?userID=${userID}`
+        `Dashboard/getRejectedTaskDtl?userID=${userID}`,
       );
 
       if (response.isSuccess) {
@@ -129,15 +129,15 @@ export const fetchRejectedCheckTasks = createAsyncThunk(
 
       console.error("❌ API error:", response.message);
       return rejectWithValue(
-        response.message || "Failed to fetch rejected check tasks"
+        response.message || "Failed to fetch rejected check tasks",
       );
     } catch (error: any) {
       console.error("❌ Fetch error:", error);
       return rejectWithValue(
-        error?.message || "Failed to fetch rejected check tasks"
+        error?.message || "Failed to fetch rejected check tasks",
       );
     }
-  }
+  },
 );
 
 // Approve check task
@@ -147,21 +147,30 @@ export const approveCheckTask = createAsyncThunk<
   { rejectValue: string }
 >("checkerDashboard/approveCheckTask", async (payload, { rejectWithValue }) => {
   try {
+    const formData = new FormData();
+    formData.append("file", payload.file);
     const response = await apiService.post<ApproveCheckTaskResponse>(
-      `Dashboard/approveTask?taskID=${
-        payload.taskID
-      }&remark=${encodeURIComponent(payload.remark)}`,
-      {}
+      `Dashboard/approveTask?taskID=${payload.taskID}&remark=${encodeURIComponent(
+        payload.remark,
+      )}`,
+      formData,
+      {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      },
     );
     if (!response.isSuccess) {
       return rejectWithValue(
-        response.message || "Failed to approve check task"
+        response.message || "Failed to approve check task",
       );
     }
     return response;
   } catch (error: any) {
     console.error("❌ Approve check task error:", error);
-    return rejectWithValue(error?.message || "Error approving check task");
+    return rejectWithValue(
+      error?.response?.data?.message || "Error approving check task",
+    );
   }
 });
 
@@ -172,21 +181,28 @@ export const rejectCheckTask = createAsyncThunk<
   { rejectValue: string }
 >("checkerDashboard/rejectCheckTask", async (payload, { rejectWithValue }) => {
   try {
-    console.log("🔄 Rejecting check task:", payload.taskID);
+    const formData = new FormData();
+    formData.append("file", payload.file);
     const response = await apiService.post<RejectCheckTaskResponse>(
-      `Dashboard/rejectTask?taskID=${
-        payload.taskID
-      }&remark=${encodeURIComponent(payload.remark)}`,
-      {}
+      `Dashboard/rejectTask?taskID=${payload.taskID}&remark=${encodeURIComponent(
+        payload.remark,
+      )}`,
+      formData,
+      {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      },
     );
-    console.log("✅ Check task rejected successfully:", response);
     if (!response.isSuccess) {
       return rejectWithValue(response.message || "Failed to reject check task");
     }
     return response;
   } catch (error: any) {
     console.error("❌ Reject check task error:", error);
-    return rejectWithValue(error?.message || "Error rejecting check task");
+    return rejectWithValue(
+      error?.response?.data?.message || "Error rejecting check task",
+    );
   }
 });
 

@@ -36,7 +36,7 @@ export const fetchTaskCount = createAsyncThunk(
   async (userId: string, { rejectWithValue }) => {
     try {
       const response = await apiService.get<GetTaskCountResponse>(
-        `Dashboard/getTaskCount?userID=${userId}`
+        `Dashboard/getTaskCount?userID=${userId}`,
       );
       if (response.isSuccess && response.result) {
         return response.result;
@@ -45,7 +45,7 @@ export const fetchTaskCount = createAsyncThunk(
     } catch (error: any) {
       return rejectWithValue(error?.message || "Failed to fetch task counts");
     }
-  }
+  },
 );
 
 // Fetch pending tasks
@@ -54,18 +54,18 @@ export const fetchPendingTasks = createAsyncThunk(
   async (userID: string, { rejectWithValue }) => {
     try {
       const response = await apiService.get<GetPendingTasksResponse>(
-        `Dashboard/getPendingTaskDtl?userID=${userID}`
+        `Dashboard/getPendingTaskDtl?userID=${userID}`,
       );
       if (response.isSuccess) {
         return response.result;
       }
       return rejectWithValue(
-        response.message || "Failed to fetch pending tasks"
+        response.message || "Failed to fetch pending tasks",
       );
     } catch (error: any) {
       return rejectWithValue(error?.message || "Failed to fetch pending tasks");
     }
-  }
+  },
 );
 
 // Fetch approved tasks
@@ -74,20 +74,20 @@ export const fetchApprovedTasks = createAsyncThunk(
   async (userID: string, { rejectWithValue }) => {
     try {
       const response = await apiService.get<GetApprovedTasksResponse>(
-        `Dashboard/getApprovedTaskDtl?userID=${userID}`
+        `Dashboard/getApprovedTaskDtl?userID=${userID}`,
       );
       if (response.isSuccess) {
         return response.result;
       }
       return rejectWithValue(
-        response.message || "Failed to fetch approved tasks"
+        response.message || "Failed to fetch approved tasks",
       );
     } catch (error: any) {
       return rejectWithValue(
-        error?.message || "Failed to fetch approved tasks"
+        error?.message || "Failed to fetch approved tasks",
       );
     }
-  }
+  },
 );
 
 // Fetch rejected tasks
@@ -96,20 +96,20 @@ export const fetchRejectedTasks = createAsyncThunk(
   async (userID: string, { rejectWithValue }) => {
     try {
       const response = await apiService.get<GetRejectedTasksResponse>(
-        `Dashboard/getRejectedTaskDtl?userID=${userID}`
+        `Dashboard/getRejectedTaskDtl?userID=${userID}`,
       );
       if (response.isSuccess) {
         return response.result;
       }
       return rejectWithValue(
-        response.message || "Failed to fetch rejected tasks"
+        response.message || "Failed to fetch rejected tasks",
       );
     } catch (error: any) {
       return rejectWithValue(
-        error?.message || "Failed to fetch rejected tasks"
+        error?.message || "Failed to fetch rejected tasks",
       );
     }
-  }
+  },
 );
 // Approve check task
 export const approveCheckTask = createAsyncThunk<
@@ -118,24 +118,32 @@ export const approveCheckTask = createAsyncThunk<
   { rejectValue: string }
 >("checkerDashboard/approveCheckTask", async (payload, { rejectWithValue }) => {
   try {
+    const formData = new FormData();
+    formData.append("file", payload.file);
     const response = await apiService.post<ApproveTaskResponse>(
-      `Dashboard/approveTask?taskID=${
-        payload.taskID
-      }&remark=${encodeURIComponent(payload.remark)}`,
-      {}
+      `Dashboard/approveTask?taskID=${payload.taskID}&remark=${encodeURIComponent(
+        payload.remark,
+      )}`,
+      formData,
+      {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      },
     );
     if (!response.isSuccess) {
       return rejectWithValue(
-        response.message || "Failed to approve check task"
+        response.message || "Failed to approve check task",
       );
     }
     return response;
   } catch (error: any) {
     console.error("❌ Approve check task error:", error);
-    return rejectWithValue(error?.message || "Error approving check task");
+    return rejectWithValue(
+      error?.response?.data?.message || "Error approving check task",
+    );
   }
 });
-
 // Reject check task
 export const rejectCheckTask = createAsyncThunk<
   RejectTaskResponse,
@@ -143,11 +151,18 @@ export const rejectCheckTask = createAsyncThunk<
   { rejectValue: string }
 >("checkerDashboard/rejectCheckTask", async (payload, { rejectWithValue }) => {
   try {
+    const formData = new FormData();
+    formData.append("file", payload.file);
     const response = await apiService.post<RejectTaskResponse>(
-      `Dashboard/rejectTask?taskID=${
-        payload.taskID
-      }&remark=${encodeURIComponent(payload.remark)}`,
-      {}
+      `Dashboard/rejectTask?taskID=${payload.taskID}&remark=${encodeURIComponent(
+        payload.remark,
+      )}`,
+      formData,
+      {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      },
     );
     if (!response.isSuccess) {
       return rejectWithValue(response.message || "Failed to reject check task");
@@ -155,9 +170,12 @@ export const rejectCheckTask = createAsyncThunk<
     return response;
   } catch (error: any) {
     console.error("❌ Reject check task error:", error);
-    return rejectWithValue(error?.message || "Error rejecting check task");
+    return rejectWithValue(
+      error?.response?.data?.message || "Error rejecting check task",
+    );
   }
 });
+
 const auditorDashboardSlice = createSlice({
   name: "auditorDashboard",
   initialState,

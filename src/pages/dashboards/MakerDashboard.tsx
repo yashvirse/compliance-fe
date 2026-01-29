@@ -19,6 +19,8 @@ import {
   DialogContent,
   DialogActions,
   TextField,
+  Tooltip,
+  IconButton,
 } from "@mui/material";
 import type { GridColDef } from "@mui/x-data-grid";
 import {
@@ -57,6 +59,7 @@ import {
 import { selectUser } from "../login/slice/Login.selector";
 import TaskMovementDialog from "../../components/common/TaskMovementDialog";
 import CommonDataTable from "../../components/common/CommonDataTable";
+import HourglassEmptyIcon from "@mui/icons-material/HourglassEmpty";
 
 const MakerDashboard: React.FC = () => {
   const theme = useTheme();
@@ -81,7 +84,24 @@ const MakerDashboard: React.FC = () => {
   // Column definitions for CommonDataTable
   const allTasksColumns: GridColDef[] = React.useMemo(
     () => [
-      { field: "activityName", headerName: "Activity Name", flex: 1.2, minWidth: 150 },
+      {
+        field: "sno",
+        headerName: "S.No.",
+        width: 60,
+        sortable: false,
+        filterable: false,
+        align: "left",
+        headerAlign: "left",
+        renderCell: (params) =>
+          params.api.getRowIndexRelativeToVisibleRows(params.id) + 1,
+      },
+      { field: "siteName", headerName: "Site Name", flex: 1, minWidth: 100 },
+      {
+        field: "activityName",
+        headerName: "Activity Name",
+        flex: 1.2,
+        minWidth: 250,
+      },
       { field: "actName", headerName: "Act Name", flex: 1, minWidth: 100 },
       {
         field: "departmentName",
@@ -99,12 +119,11 @@ const MakerDashboard: React.FC = () => {
           />
         ),
       },
-      { field: "siteName", headerName: "Site Name", flex: 1, minWidth: 100 },
       {
         field: "dueDate",
         headerName: "Due Date",
         flex: 1,
-        minWidth: 100,
+        minWidth: 50,
         renderCell: (params) =>
           params.value ? new Date(params.value).toLocaleDateString() : "-",
       },
@@ -135,21 +154,21 @@ const MakerDashboard: React.FC = () => {
         minWidth: 100,
         sortable: false,
         renderCell: (params) => (
-          <Button
-            size="small"
-            variant="text"
-            startIcon={<EyeIcon />}
-            onClick={() => handleViewTaskMovement(params.row)}
-            sx={{
-              color: theme.palette.primary.main,
-              textTransform: "none",
-              "&:hover": {
-                bgcolor: alpha(theme.palette.primary.main, 0.1),
-              },
-            }}
-          >
-            View
-          </Button>
+          <Tooltip title="View Task" arrow>
+            <Button
+              size="small"
+              variant="text"
+              startIcon={<EyeIcon />}
+              onClick={() => handleViewTaskMovement(params.row)}
+              sx={{
+                color: theme.palette.primary.main,
+                textTransform: "none",
+                "&:hover": {
+                  bgcolor: alpha(theme.palette.primary.main, 0.1),
+                },
+              }}
+            />
+          </Tooltip>
         ),
       },
     ],
@@ -158,13 +177,30 @@ const MakerDashboard: React.FC = () => {
 
   const pendingTasksColumns: GridColDef[] = React.useMemo(
     () => [
-      { field: "activityName", headerName: "Activity Name", flex: 1.2, minWidth: 150 },
-      { field: "actName", headerName: "Act Name", flex: 1, minWidth: 100 },
+      {
+        field: "sno",
+        headerName: "S.No.",
+        width: 60,
+        sortable: false,
+        filterable: false,
+        align: "left",
+        headerAlign: "left",
+        renderCell: (params) =>
+          params.api.getRowIndexRelativeToVisibleRows(params.id) + 1,
+      },
+      { field: "siteName", headerName: "Site Name", flex: 1, minWidth: 150 },
+      {
+        field: "activityName",
+        headerName: "Activity Name",
+        flex: 1.2,
+        minWidth: 250,
+      },
+      { field: "actName", headerName: "Act Name", flex: 1, minWidth: 150 },
       {
         field: "departmentName",
         headerName: "Department",
         flex: 1,
-        minWidth: 120,
+        minWidth: 150,
         renderCell: (params) => (
           <Chip
             label={params.value}
@@ -176,14 +212,27 @@ const MakerDashboard: React.FC = () => {
           />
         ),
       },
-      { field: "siteName", headerName: "Site Name", flex: 1, minWidth: 100 },
       {
         field: "dueDate",
         headerName: "Due Date",
         flex: 1,
-        minWidth: 100,
+        minWidth: 80,
         renderCell: (params) =>
           params.value ? new Date(params.value).toLocaleDateString() : "-",
+      },
+      {
+        field: "status",
+        headerName: "Status",
+        flex: 0.8,
+        minWidth: 100,
+        renderCell: () => (
+          <Chip
+            label="Pending"
+            size="small"
+            color="warning"
+            sx={{ fontWeight: 600 }}
+          />
+        ),
       },
       {
         field: "actions",
@@ -192,39 +241,46 @@ const MakerDashboard: React.FC = () => {
         minWidth: 150,
         sortable: false,
         renderCell: (params) => (
-          <Box sx={{ display: "flex", gap: 1 }}>
-            <Button
-              size="small"
-              variant="contained"
-              color="success"
-              startIcon={<ApproveIcon />}
-              sx={{
-                borderRadius: 1.5,
-                textTransform: "none",
-                fontWeight: 600,
-                px: 2,
-                py: 1,
-              }}
-              onClick={() => handleApproveClick(params.row.tblId)}
-            >
-              Approve
-            </Button>
-            <Button
-              size="small"
-              variant="contained"
-              color="error"
-              startIcon={<RejectIcon />}
-              sx={{
-                borderRadius: 1.5,
-                textTransform: "none",
-                fontWeight: 600,
-                px: 2,
-                py: 1,
-              }}
-              onClick={() => handleRejectClick(params.row.tblId)}
-            >
-              Reject
-            </Button>
+          <Box
+            sx={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "left",
+              height: "100%",
+              gap: 1,
+            }}
+          >
+            {/* Approve */}
+            <Tooltip title="Approve Task" arrow>
+              <IconButton
+                size="small"
+                onClick={() => handleApproveClick(params.row.tblId)}
+                sx={{
+                  color: theme.palette.success.main,
+                  "&:hover": {
+                    bgcolor: alpha(theme.palette.success.main, 0.1),
+                  },
+                }}
+              >
+                <ApproveIcon />
+              </IconButton>
+            </Tooltip>
+
+            {/* Reject */}
+            <Tooltip title="Reject Task" arrow>
+              <IconButton
+                size="small"
+                onClick={() => handleRejectClick(params.row.tblId)}
+                sx={{
+                  color: theme.palette.error.main, // ✅ sirf icon color
+                  "&:hover": {
+                    bgcolor: alpha(theme.palette.error.main, 0.1),
+                  },
+                }}
+              >
+                <RejectIcon />
+              </IconButton>
+            </Tooltip>
           </Box>
         ),
       },
@@ -234,13 +290,30 @@ const MakerDashboard: React.FC = () => {
 
   const approvedTasksColumns: GridColDef[] = React.useMemo(
     () => [
-      { field: "activityName", headerName: "Activity Name", flex: 1.2, minWidth: 150 },
+      {
+        field: "sno",
+        headerName: "S.No.",
+        width: 80,
+        sortable: false,
+        filterable: false,
+        align: "left",
+        headerAlign: "left",
+        renderCell: (params) =>
+          params.api.getRowIndexRelativeToVisibleRows(params.id) + 1,
+      },
+      { field: "siteName", headerName: "Site Name", flex: 1, minWidth: 100 },
+      {
+        field: "activityName",
+        headerName: "Activity Name",
+        flex: 1.2,
+        minWidth: 300,
+      },
       { field: "actName", headerName: "Act Name", flex: 1, minWidth: 100 },
       {
         field: "departmentName",
         headerName: "Department",
         flex: 1,
-        minWidth: 120,
+        minWidth: 150,
         renderCell: (params) => (
           <Chip
             label={params.value}
@@ -252,14 +325,27 @@ const MakerDashboard: React.FC = () => {
           />
         ),
       },
-      { field: "siteName", headerName: "Site Name", flex: 1, minWidth: 100 },
       {
         field: "dueDate",
         headerName: "Due Date",
         flex: 1,
-        minWidth: 100,
+        minWidth: 80,
         renderCell: (params) =>
           params.value ? new Date(params.value).toLocaleDateString() : "-",
+      },
+      {
+        field: "status",
+        headerName: "Status",
+        flex: 0.8,
+        minWidth: 120,
+        renderCell: () => (
+          <Chip
+            label="Approved"
+            size="small"
+            color="success"
+            sx={{ fontWeight: 600 }}
+          />
+        ),
       },
       {
         field: "actions",
@@ -268,21 +354,21 @@ const MakerDashboard: React.FC = () => {
         minWidth: 100,
         sortable: false,
         renderCell: (params) => (
-          <Button
-            size="small"
-            variant="text"
-            startIcon={<EyeIcon />}
-            onClick={() => handleViewTaskMovement(params.row)}
-            sx={{
-              color: theme.palette.primary.main,
-              textTransform: "none",
-              "&:hover": {
-                bgcolor: alpha(theme.palette.primary.main, 0.1),
-              },
-            }}
-          >
-            View
-          </Button>
+          <Tooltip title="View Task" arrow>
+            <Button
+              size="small"
+              variant="text"
+              startIcon={<EyeIcon />}
+              onClick={() => handleViewTaskMovement(params.row)}
+              sx={{
+                color: theme.palette.primary.main,
+                textTransform: "none",
+                "&:hover": {
+                  bgcolor: alpha(theme.palette.primary.main, 0.1),
+                },
+              }}
+            ></Button>
+          </Tooltip>
         ),
       },
     ],
@@ -291,13 +377,30 @@ const MakerDashboard: React.FC = () => {
 
   const rejectedTasksColumns: GridColDef[] = React.useMemo(
     () => [
-      { field: "activityName", headerName: "Activity Name", flex: 1.2, minWidth: 150 },
+      {
+        field: "sno",
+        headerName: "S.No.",
+        width: 80,
+        sortable: false,
+        filterable: false,
+        align: "left",
+        headerAlign: "left",
+        renderCell: (params) =>
+          params.api.getRowIndexRelativeToVisibleRows(params.id) + 1,
+      },
+      { field: "siteName", headerName: "Site Name", flex: 1, minWidth: 100 },
+      {
+        field: "activityName",
+        headerName: "Activity Name",
+        flex: 1.2,
+        minWidth: 300,
+      },
       { field: "actName", headerName: "Act Name", flex: 1, minWidth: 100 },
       {
         field: "departmentName",
         headerName: "Department",
         flex: 1,
-        minWidth: 120,
+        minWidth: 150,
         renderCell: (params) => (
           <Chip
             label={params.value}
@@ -309,7 +412,6 @@ const MakerDashboard: React.FC = () => {
           />
         ),
       },
-      { field: "siteName", headerName: "Site Name", flex: 1, minWidth: 100 },
       {
         field: "dueDate",
         headerName: "Due Date",
@@ -319,27 +421,41 @@ const MakerDashboard: React.FC = () => {
           params.value ? new Date(params.value).toLocaleDateString() : "-",
       },
       {
+        field: "status",
+        headerName: "Status",
+        flex: 0.8,
+        minWidth: 120,
+        renderCell: () => (
+          <Chip
+            label="Rejected"
+            size="small"
+            color="error"
+            sx={{ fontWeight: 600 }}
+          />
+        ),
+      },
+      {
         field: "actions",
         headerName: "Actions",
         flex: 0.8,
         minWidth: 100,
         sortable: false,
         renderCell: (params) => (
-          <Button
-            size="small"
-            variant="text"
-            startIcon={<EyeIcon />}
-            onClick={() => handleViewTaskMovement(params.row)}
-            sx={{
-              color: theme.palette.primary.main,
-              textTransform: "none",
-              "&:hover": {
-                bgcolor: alpha(theme.palette.primary.main, 0.1),
-              },
-            }}
-          >
-            View
-          </Button>
+          <Tooltip title="View Task" arrow>
+            <Button
+              size="small"
+              variant="text"
+              startIcon={<EyeIcon />}
+              onClick={() => handleViewTaskMovement(params.row)}
+              sx={{
+                color: theme.palette.primary.main,
+                textTransform: "none",
+                "&:hover": {
+                  bgcolor: alpha(theme.palette.primary.main, 0.1),
+                },
+              }}
+            ></Button>
+          </Tooltip>
         ),
       },
     ],
@@ -356,6 +472,7 @@ const MakerDashboard: React.FC = () => {
   const [selectedTask, setSelectedTask] = useState<any | null>(null);
   const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
   const [remark, setRemark] = useState("");
+  const [file, setFile] = useState<File | null>(null);
 
   // const handleTotalTasksClick = async () => {
   //   if (user?.id) {
@@ -449,12 +566,14 @@ const MakerDashboard: React.FC = () => {
   const handleApproveClick = (taskId: string) => {
     setSelectedTaskId(taskId);
     setRemark("");
+    setFile(null);
     setApproveDialogOpen(true);
   };
 
   const handleRejectClick = (taskId: string) => {
     setSelectedTaskId(taskId);
     setRemark("");
+    setFile(null);
     setRejectDialogOpen(true);
   };
 
@@ -469,10 +588,11 @@ const MakerDashboard: React.FC = () => {
   };
 
   const handleConfirmApprove = async () => {
-    if (selectedTaskId && remark.trim()) {
-      await dispatch(approveTask({ taskID: selectedTaskId, remark }));
+    if (selectedTaskId && remark.trim() && file) {
+      await dispatch(approveTask({ taskID: selectedTaskId, remark, file }));
       setApproveDialogOpen(false);
       setRemark("");
+      setFile(null);
       setSelectedTaskId(null);
       // Refresh pending tasks grid after approval
       if (user?.id) {
@@ -482,10 +602,11 @@ const MakerDashboard: React.FC = () => {
   };
 
   const handleConfirmReject = async () => {
-    if (selectedTaskId && remark.trim()) {
-      await dispatch(rejectTask({ taskID: selectedTaskId, remark }));
+    if (selectedTaskId && remark.trim() && file) {
+      await dispatch(rejectTask({ taskID: selectedTaskId, remark, file }));
       setRejectDialogOpen(false);
       setRemark("");
+      setFile(null);
       setSelectedTaskId(null);
       // Refresh pending tasks grid after rejection
       if (user?.id) {
@@ -497,6 +618,7 @@ const MakerDashboard: React.FC = () => {
   const handleCloseApproveDialog = () => {
     setApproveDialogOpen(false);
     setRemark("");
+    setFile(null);
     setSelectedTaskId(null);
     dispatch(clearTaskActionError());
   };
@@ -504,6 +626,7 @@ const MakerDashboard: React.FC = () => {
   const handleCloseRejectDialog = () => {
     setRejectDialogOpen(false);
     setRemark("");
+    setFile(null);
     setSelectedTaskId(null);
     dispatch(clearTaskActionError());
   };
@@ -531,7 +654,7 @@ const MakerDashboard: React.FC = () => {
     {
       label: "Pending",
       value: pendingCount.toString(),
-      icon: <Assignment />,
+      icon: <HourglassEmptyIcon />,
       color: theme.palette.warning.main,
       onClick: handlePendingTasksClick,
     },
@@ -554,9 +677,9 @@ const MakerDashboard: React.FC = () => {
   return (
     <Box>
       {!tasksOpen &&
-        !pendingTasksOpen &&
-        !approvedTasksOpen &&
-        !rejectedTasksOpen ? (
+      !pendingTasksOpen &&
+      !approvedTasksOpen &&
+      !rejectedTasksOpen ? (
         <>
           {/* Main Dashboard View */}
           <Box sx={{ mb: 4 }}>
@@ -580,24 +703,24 @@ const MakerDashboard: React.FC = () => {
                     )}`,
                     cursor:
                       stat.label === "Total Tasks" ||
-                        stat.label === "Pending" ||
-                        stat.label === "Approved" ||
-                        stat.label === "Rejected"
+                      stat.label === "Pending" ||
+                      stat.label === "Approved" ||
+                      stat.label === "Rejected"
                         ? "pointer"
                         : "default",
                     transition: "transform 0.2s, box-shadow 0.2s",
                     "&:hover":
                       stat.label === "Total Tasks" ||
-                        stat.label === "Pending" ||
-                        stat.label === "Approved" ||
-                        stat.label === "Rejected"
+                      stat.label === "Pending" ||
+                      stat.label === "Approved" ||
+                      stat.label === "Rejected"
                         ? {
-                          transform: "translateY(-4px)",
-                          boxShadow: `0 8px 30px ${alpha(
-                            theme.palette.common.black,
-                            0.12,
-                          )}`,
-                        }
+                            transform: "translateY(-4px)",
+                            boxShadow: `0 8px 30px ${alpha(
+                              theme.palette.common.black,
+                              0.12,
+                            )}`,
+                          }
                         : {},
                   }}
                   onClick={() => {
@@ -1037,6 +1160,18 @@ const MakerDashboard: React.FC = () => {
             variant="outlined"
             sx={{ mt: 2 }}
           />
+          <TextField
+            fullWidth
+            type="file"
+            label="Attachment"
+            InputLabelProps={{ shrink: true }}
+            sx={{ mt: 2 }}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+              if (e.target.files && e.target.files[0]) {
+                setFile(e.target.files[0]);
+              }
+            }}
+          />
         </DialogContent>
         <DialogActions sx={{ p: 2, gap: 1 }}>
           <Button
@@ -1093,6 +1228,18 @@ const MakerDashboard: React.FC = () => {
             variant="outlined"
             sx={{ mt: 2 }}
           />
+          <TextField
+            fullWidth
+            type="file"
+            label="Attachment"
+            InputLabelProps={{ shrink: true }}
+            sx={{ mt: 2 }}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+              if (e.target.files && e.target.files[0]) {
+                setFile(e.target.files[0]);
+              }
+            }}
+          />
         </DialogContent>
         <DialogActions sx={{ p: 2, gap: 1 }}>
           <Button
@@ -1125,7 +1272,6 @@ const MakerDashboard: React.FC = () => {
         onClose={handleCloseTaskMovementDialog}
         task={selectedTask}
       />
-
     </Box>
   );
 };

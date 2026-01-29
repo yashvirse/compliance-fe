@@ -30,6 +30,7 @@ interface Task {
   departmentName: string;
   dueDate: string;
   siteName?: string;
+  remarkFilePath?: string;
   details: TaskDetail[];
 }
 
@@ -45,6 +46,20 @@ const TaskMovementDialog: React.FC<TaskMovementDialogProps> = ({
   task,
 }) => {
   const theme = useTheme();
+  const handleDownloadFile = (filePath: string) => {
+    const baseUrl = "https://api.ocmspro.com/RemarkFile/path/";
+    const finalPath = filePath.startsWith("~")
+      ? filePath.replace("~", "")
+      : filePath;
+    const fileUrl = `${baseUrl}${finalPath}`;
+    alert("path" + JSON.stringify(fileUrl));
+    const link = document.createElement("a");
+    link.href = fileUrl;
+    link.download = filePath.split("/").pop() || "file";
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
 
   return (
     <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
@@ -128,6 +143,32 @@ const TaskMovementDialog: React.FC<TaskMovementDialogProps> = ({
                     {task.siteName || "-"}
                   </Typography>
                 </Grid>
+                <Grid size={{ xs: 12, sm: 6 }}>
+                  <Typography
+                    variant="caption"
+                    color="text.secondary"
+                    display="block"
+                  >
+                    Remark File Name
+                  </Typography>
+                  {task.remarkFilePath ? (
+                    <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                      <Typography variant="body2" fontWeight={500}>
+                        {task.remarkFilePath.split("/").pop()}
+                      </Typography>
+
+                      <Button
+                        size="small"
+                        variant="outlined"
+                        onClick={() => handleDownloadFile(task.remarkFilePath!)}
+                      >
+                        Download
+                      </Button>
+                    </Box>
+                  ) : (
+                    <Typography variant="body2">-</Typography>
+                  )}
+                </Grid>
               </Grid>
             </Box>
 
@@ -154,7 +195,7 @@ const TaskMovementDialog: React.FC<TaskMovementDialogProps> = ({
                           : detail.status === "Rejected"
                             ? theme.palette.error.main
                             : theme.palette.warning.main,
-                        0.05
+                        0.05,
                       ),
                     }}
                   >
@@ -213,7 +254,7 @@ const TaskMovementDialog: React.FC<TaskMovementDialogProps> = ({
                         </Typography>
                         <Typography variant="body2" fontWeight={500}>
                           {detail.inDate &&
-                            detail.inDate !== "0001-01-01T00:00:00Z"
+                          detail.inDate !== "0001-01-01T00:00:00Z"
                             ? new Date(detail.inDate).toLocaleDateString()
                             : "-"}
                         </Typography>
@@ -229,7 +270,7 @@ const TaskMovementDialog: React.FC<TaskMovementDialogProps> = ({
                         </Typography>
                         <Typography variant="body2" fontWeight={500}>
                           {detail.outDate &&
-                            detail.outDate !== "0001-01-01T00:00:00Z"
+                          detail.outDate !== "0001-01-01T00:00:00Z"
                             ? new Date(detail.outDate).toLocaleDateString()
                             : "-"}
                         </Typography>

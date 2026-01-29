@@ -65,6 +65,7 @@ export interface GetReviewerTaskCountResponse {
 export interface ApproveReviewTaskRequest {
   taskID: string;
   remark: string;
+  file: File;
 }
 
 export interface ApproveReviewTaskResponse {
@@ -76,6 +77,7 @@ export interface ApproveReviewTaskResponse {
 export interface RejectReviewTaskRequest {
   taskID: string;
   remark: string;
+  file: File;
 }
 
 export interface RejectReviewTaskResponse {

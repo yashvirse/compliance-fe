@@ -14,6 +14,10 @@ import {
   DialogActions,
   Button,
   TextField,
+  Paper,
+  Chip,
+  Tooltip,
+  IconButton,
 } from "@mui/material";
 import type { GridColDef } from "@mui/x-data-grid";
 import {
@@ -21,6 +25,9 @@ import {
   CheckCircle,
   Cancel as CancelIcon,
   Close as CloseIcon,
+  Visibility as EyeIcon,
+  ThumbUp as ApproveIcon,
+  ThumbDown as RejectIcon,
   AssignmentTwoTone as Assignment,
 } from "@mui/icons-material";
 import { useDispatch, useSelector } from "react-redux";
@@ -63,6 +70,7 @@ const ReviewerDashboard: React.FC = () => {
   const [rejectDialogOpen, setRejectDialogOpen] = useState(false);
   const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
   const [remark, setRemark] = useState("");
+  const [file, setFile] = useState<File | null>(null);
 
   const pendingCount = useSelector(selectReviewerPendingCount);
   const approvedCount = useSelector(selectReviewerApprovedCount);
@@ -71,13 +79,13 @@ const ReviewerDashboard: React.FC = () => {
   const approvedReviewTasks = useSelector(selectApprovedReviewTasks);
   const rejectedReviewTasks = useSelector(selectRejectedReviewTasks);
   const pendingReviewTasksLoading = useSelector(
-    selectPendingReviewTasksLoading
+    selectPendingReviewTasksLoading,
   );
   const approvedReviewTasksLoading = useSelector(
-    selectApprovedReviewTasksLoading
+    selectApprovedReviewTasksLoading,
   );
   const rejectedReviewTasksLoading = useSelector(
-    selectRejectedReviewTasksLoading
+    selectRejectedReviewTasksLoading,
   );
   const taskActionsLoading = useSelector(selectReviewerTaskActionsLoading);
 
@@ -140,6 +148,7 @@ const ReviewerDashboard: React.FC = () => {
   const handleApproveClick = (taskId: string) => {
     setSelectedTaskId(taskId);
     setRemark("");
+    setFile(null);
     setApproveDialogOpen(true);
   };
 
@@ -147,6 +156,7 @@ const ReviewerDashboard: React.FC = () => {
   const handleRejectClick = (taskId: string) => {
     setSelectedTaskId(taskId);
     setRemark("");
+    setFile(null);
     setRejectDialogOpen(true);
   };
 
@@ -164,10 +174,13 @@ const ReviewerDashboard: React.FC = () => {
 
   // Confirm approve
   const handleConfirmApprove = async () => {
-    if (selectedTaskId && remark.trim()) {
-      await dispatch(approveReviewTask({ taskID: selectedTaskId, remark }));
+    if (selectedTaskId && remark.trim() && file) {
+      await dispatch(
+        approveReviewTask({ taskID: selectedTaskId, remark, file }),
+      );
       setApproveDialogOpen(false);
       setRemark("");
+      setFile(null);
       setSelectedTaskId(null);
       // Refresh pending tasks
       if (user?.id) {
@@ -179,10 +192,13 @@ const ReviewerDashboard: React.FC = () => {
 
   // Confirm reject
   const handleConfirmReject = async () => {
-    if (selectedTaskId && remark.trim()) {
-      await dispatch(rejectReviewTask({ taskID: selectedTaskId, remark }));
+    if (selectedTaskId && remark.trim() && file) {
+      await dispatch(
+        rejectReviewTask({ taskID: selectedTaskId, remark, file }),
+      );
       setRejectDialogOpen(false);
       setRemark("");
+      setFile(null);
       setSelectedTaskId(null);
       // Refresh pending tasks
       if (user?.id) {
@@ -219,39 +235,110 @@ const ReviewerDashboard: React.FC = () => {
   // Column definitions for CommonDataTable
   const pendingTasksColumns: GridColDef[] = React.useMemo(
     () => [
-      { field: "activityName", headerName: "Activity Name", flex: 1.2, minWidth: 150 },
-      { field: "actName", headerName: "Act Name", flex: 1, minWidth: 100 },
-      { field: "departmentName", headerName: "Department", flex: 1, minWidth: 120 },
       { field: "siteName", headerName: "Site Name", flex: 1, minWidth: 100 },
-      { field: "dueDate", headerName: "Due Date", flex: 0.8, minWidth: 100 },
-      { field: "maker", headerName: "Maker", flex: 0.8, minWidth: 80 },
-      { field: "checker", headerName: "Checker", flex: 0.8, minWidth: 80 },
+      {
+        field: "sno",
+        headerName: "S.No.",
+        width: 60,
+        sortable: false,
+        filterable: false,
+        align: "left",
+        headerAlign: "left",
+        renderCell: (params) =>
+          params.api.getRowIndexRelativeToVisibleRows(params.id) + 1,
+      },
+      {
+        field: "activityName",
+        headerName: "Activity Name",
+        flex: 1.2,
+        minWidth: 250,
+      },
+      { field: "actName", headerName: "Act Name", flex: 1, minWidth: 130 },
+      {
+        field: "departmentName",
+        headerName: "Department",
+        flex: 1,
+        minWidth: 120,
+        renderCell: (params) => (
+          <Chip
+            label={params.value}
+            size="small"
+            sx={{
+              bgcolor: alpha(theme.palette.info.main, 0.1),
+              color: theme.palette.info.main,
+            }}
+          />
+        ),
+      },
+      {
+        field: "dueDate",
+        headerName: "Due Date",
+        flex: 0.8,
+        minWidth: 70,
+        renderCell: (params) =>
+          params.value ? new Date(params.value).toLocaleDateString() : "-",
+      },
+      {
+        field: "status",
+        headerName: "Status",
+        flex: 0.8,
+        minWidth: 100,
+        renderCell: () => (
+          <Chip
+            label="Pending"
+            size="small"
+            color="warning"
+            sx={{ fontWeight: 600 }}
+          />
+        ),
+      },
       {
         field: "actions",
         headerName: "Actions",
         flex: 1.2,
-        minWidth: 150,
+        minWidth: 80,
         sortable: false,
         renderCell: (params) => (
-          <Box sx={{ display: "flex", gap: 1 }}>
-            <Button
-              variant="contained"
-              color="success"
-              size="small"
-              onClick={() => handleApproveClick(params.row.tblId)}
-              disabled={taskActionsLoading}
-            >
-              Approve
-            </Button>
-            <Button
-              variant="contained"
-              color="error"
-              size="small"
-              onClick={() => handleRejectClick(params.row.tblId)}
-              disabled={taskActionsLoading}
-            >
-              Reject
-            </Button>
+          <Box
+            sx={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "left",
+              height: "100%",
+              gap: 1,
+            }}
+          >
+            {/* Approve */}
+            <Tooltip title="Approve Task" arrow>
+              <IconButton
+                size="small"
+                onClick={() => handleApproveClick(params.row.tblId)}
+                sx={{
+                  color: theme.palette.success.main, // ✅ sirf icon color
+                  "&:hover": {
+                    bgcolor: alpha(theme.palette.success.main, 0.1),
+                  },
+                }}
+              >
+                <ApproveIcon />
+              </IconButton>
+            </Tooltip>
+
+            {/* Reject */}
+            <Tooltip title="Reject Task" arrow>
+              <IconButton
+                size="small"
+                onClick={() => handleRejectClick(params.row.tblId)}
+                sx={{
+                  color: theme.palette.error.main, // ✅ sirf icon color
+                  "&:hover": {
+                    bgcolor: alpha(theme.palette.error.main, 0.1),
+                  },
+                }}
+              >
+                <RejectIcon />
+              </IconButton>
+            </Tooltip>
           </Box>
         ),
       },
@@ -261,34 +348,85 @@ const ReviewerDashboard: React.FC = () => {
 
   const approvedTasksColumns: GridColDef[] = React.useMemo(
     () => [
-      { field: "activityName", headerName: "Activity Name", flex: 1.2, minWidth: 150 },
-      { field: "actName", headerName: "Act Name", flex: 1, minWidth: 100 },
-      { field: "departmentName", headerName: "Department", flex: 1, minWidth: 120 },
+      {
+        field: "sno",
+        headerName: "S.No.",
+        width: 60,
+        sortable: false,
+        filterable: false,
+        align: "left",
+        headerAlign: "left",
+        renderCell: (params) =>
+          params.api.getRowIndexRelativeToVisibleRows(params.id) + 1,
+      },
       { field: "siteName", headerName: "Site Name", flex: 1, minWidth: 100 },
-      { field: "dueDate", headerName: "Due Date", flex: 0.8, minWidth: 100 },
-      { field: "maker", headerName: "Maker", flex: 0.8, minWidth: 80 },
-      { field: "checker", headerName: "Checker", flex: 0.8, minWidth: 80 },
+      {
+        field: "activityName",
+        headerName: "Activity Name",
+        flex: 1.2,
+        minWidth: 250,
+      },
+      { field: "actName", headerName: "Act Name", flex: 1, minWidth: 130 },
+      {
+        field: "departmentName",
+        headerName: "Department",
+        flex: 1,
+        minWidth: 120,
+        renderCell: (params) => (
+          <Chip
+            label={params.value}
+            size="small"
+            sx={{
+              bgcolor: alpha(theme.palette.success.main, 0.1),
+              color: theme.palette.success.main,
+            }}
+          />
+        ),
+      },
+      {
+        field: "dueDate",
+        headerName: "Due Date",
+        flex: 0.8,
+        minWidth: 70,
+        renderCell: (params) =>
+          params.value ? new Date(params.value).toLocaleDateString() : "-",
+      },
+      {
+        field: "status",
+        headerName: "Status",
+        flex: 0.8,
+        minWidth: 120,
+        renderCell: () => (
+          <Chip
+            label="Approved"
+            size="small"
+            color="success"
+            sx={{ fontWeight: 600 }}
+          />
+        ),
+      },
       {
         field: "actions",
         headerName: "Actions",
         flex: 0.8,
-        minWidth: 100,
+        minWidth: 80,
         sortable: false,
         renderCell: (params) => (
-          <Button
-            size="small"
-            variant="text"
-            onClick={() => handleViewTaskMovement(params.row)}
-            sx={{
-              color: theme.palette.primary.main,
-              textTransform: "none",
-              "&:hover": {
-                bgcolor: alpha(theme.palette.primary.main, 0.1),
-              },
-            }}
-          >
-            View
-          </Button>
+          <Tooltip title="View Task" arrow>
+            <Button
+              size="small"
+              variant="text"
+              startIcon={<EyeIcon />}
+              onClick={() => handleViewTaskMovement(params.row)}
+              sx={{
+                color: theme.palette.primary.main,
+                textTransform: "none",
+                "&:hover": {
+                  bgcolor: alpha(theme.palette.primary.main, 0.1),
+                },
+              }}
+            ></Button>
+          </Tooltip>
         ),
       },
     ],
@@ -297,34 +435,85 @@ const ReviewerDashboard: React.FC = () => {
 
   const rejectedTasksColumns: GridColDef[] = React.useMemo(
     () => [
-      { field: "activityName", headerName: "Activity Name", flex: 1.2, minWidth: 150 },
+      {
+        field: "sno",
+        headerName: "S.No.",
+        width: 60,
+        sortable: false,
+        filterable: false,
+        align: "left",
+        headerAlign: "left",
+        renderCell: (params) =>
+          params.api.getRowIndexRelativeToVisibleRows(params.id) + 1,
+      },
+      { field: "siteName", headerName: "Site Name", flex: 1, minWidth: 120 },
+      {
+        field: "activityName",
+        headerName: "Activity Name",
+        flex: 1.2,
+        minWidth: 250,
+      },
       { field: "actName", headerName: "Act Name", flex: 1, minWidth: 100 },
-      { field: "departmentName", headerName: "Department", flex: 1, minWidth: 120 },
-      { field: "siteName", headerName: "Site Name", flex: 1, minWidth: 100 },
-      { field: "dueDate", headerName: "Due Date", flex: 0.8, minWidth: 100 },
-      { field: "maker", headerName: "Maker", flex: 0.8, minWidth: 80 },
-      { field: "checker", headerName: "Checker", flex: 0.8, minWidth: 80 },
+      {
+        field: "departmentName",
+        headerName: "Department",
+        flex: 1,
+        minWidth: 120,
+        renderCell: (params) => (
+          <Chip
+            label={params.value}
+            size="small"
+            sx={{
+              bgcolor: alpha(theme.palette.error.main, 0.1),
+              color: theme.palette.error.main,
+            }}
+          />
+        ),
+      },
+      {
+        field: "dueDate",
+        headerName: "Due Date",
+        flex: 0.8,
+        minWidth: 100,
+        renderCell: (params) =>
+          params.value ? new Date(params.value).toLocaleDateString() : "-",
+      },
+      {
+        field: "status",
+        headerName: "Status",
+        flex: 0.8,
+        minWidth: 120,
+        renderCell: () => (
+          <Chip
+            label="Rejected"
+            size="small"
+            color="error"
+            sx={{ fontWeight: 600 }}
+          />
+        ),
+      },
       {
         field: "actions",
         headerName: "Actions",
         flex: 0.8,
-        minWidth: 100,
+        minWidth: 80,
         sortable: false,
         renderCell: (params) => (
-          <Button
-            size="small"
-            variant="text"
-            onClick={() => handleViewTaskMovement(params.row)}
-            sx={{
-              color: theme.palette.primary.main,
-              textTransform: "none",
-              "&:hover": {
-                bgcolor: alpha(theme.palette.primary.main, 0.1),
-              },
-            }}
-          >
-            View
-          </Button>
+          <Tooltip title="View Task" arrow>
+            <Button
+              size="small"
+              variant="text"
+              startIcon={<EyeIcon />}
+              onClick={() => handleViewTaskMovement(params.row)}
+              sx={{
+                color: theme.palette.primary.main,
+                textTransform: "none",
+                "&:hover": {
+                  bgcolor: alpha(theme.palette.primary.main, 0.1),
+                },
+              }}
+            ></Button>
+          </Tooltip>
         ),
       },
     ],
@@ -357,14 +546,14 @@ const ReviewerDashboard: React.FC = () => {
                       borderRadius: 3,
                       boxShadow: `0 4px 20px ${alpha(
                         theme.palette.common.black,
-                        0.08
+                        0.08,
                       )}`,
                       cursor: "pointer",
                       transition: "all 0.3s ease",
                       "&:hover": {
                         boxShadow: `0 8px 30px ${alpha(
                           theme.palette.common.black,
-                          0.15
+                          0.15,
                         )}`,
                         transform: "translateY(-4px)",
                       },
@@ -399,196 +588,296 @@ const ReviewerDashboard: React.FC = () => {
                 </Grid>
               ))}
             </Grid>
+            <Card
+              sx={{
+                mt: 3,
+                borderRadius: 3,
+                boxShadow: `0 4px 20px ${alpha(
+                  theme.palette.common.black,
+                  0.08,
+                )}`,
+              }}
+            >
+              <CardContent sx={{ p: 4 }}>
+                <Typography variant="h6" fontWeight={600} gutterBottom>
+                  Reviewer Role
+                </Typography>
+                <Typography variant="body1" paragraph>
+                  Review and approve or reject submitted tasks based on
+                  compliance requirements.
+                </Typography>
+                <Typography variant="body2" color="text.secondary">
+                  • View pending review tasks
+                  <br />
+                  • Approve compliant tasks
+                  <br />
+                  • Reject non-compliant tasks
+                  <br />• Provide feedback on rejections
+                </Typography>
+              </CardContent>
+            </Card>
           </>
         )}
 
       {/* Pending Review Tasks Screen - Full Page */}
       {pendingReviewTasksOpen && (
-        <Box>
+        <>
+          {/* Pending Review Tasks View */}
           <Box
             sx={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "space-between",
               mb: 3,
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "flex-start",
             }}
           >
             <Box>
               <Typography variant="h4" fontWeight={700} gutterBottom>
-                Pending Review Tasks
+                Pending Tasks
               </Typography>
-              <Typography variant="body2" color="text.secondary">
-                Review and approve/reject pending tasks
+              <Typography variant="body1" color="text.secondary">
+                approve/reject pending tasks
               </Typography>
             </Box>
+
             <Button
+              variant="outlined"
               startIcon={<CloseIcon />}
               onClick={handleClosePendingReviewTasksScreen}
-              variant="outlined"
+              sx={{
+                borderRadius: 2,
+                textTransform: "none",
+                fontWeight: 600,
+                px: 3,
+              }}
             >
-              Back
+              Back to Dashboard
             </Button>
           </Box>
 
-          <Card
+          <Paper
             sx={{
               borderRadius: 3,
               boxShadow: `0 4px 20px ${alpha(
                 theme.palette.common.black,
-                0.08
+                0.08,
               )}`,
+              overflow: "hidden",
             }}
           >
-            <CardContent sx={{ p: 3 }}>
-              {pendingReviewTasksLoading ? (
-                <Box sx={{ display: "flex", justifyContent: "center", p: 4 }}>
-                  <CircularProgress />
-                </Box>
-              ) : pendingReviewTasks.length === 0 ? (
-                <Box sx={{ textAlign: "center", py: 8 }}>
-                  <Assignment sx={{ fontSize: 60, color: "text.disabled", mb: 2 }} />
-                  <Typography variant="body1" color="text.secondary">
-                    No pending review tasks
-                  </Typography>
-                </Box>
-              ) : (
-                <CommonDataTable
-                  rows={pendingReviewTasks}
-                  columns={pendingTasksColumns}
-                  loading={pendingReviewTasksLoading}
-                  getRowId={(row) => row.tblId}
-                  autoHeight={true}
+            {pendingReviewTasksLoading ? (
+              <Box
+                sx={{
+                  display: "flex",
+                  justifyContent: "center",
+                  alignItems: "center",
+                  minHeight: 400,
+                  flexDirection: "column",
+                  gap: 2,
+                }}
+              >
+                <CircularProgress size={50} />
+                <Typography variant="body1" color="text.secondary">
+                  Loading Pending Review Tasks...
+                </Typography>
+              </Box>
+            ) : pendingReviewTasks.length === 0 ? (
+              <Box sx={{ textAlign: "center", py: 12 }}>
+                <Assignment
+                  sx={{ fontSize: 80, color: "text.disabled", mb: 2 }}
                 />
-              )}
-            </CardContent>
-          </Card>
-        </Box>
+                <Typography variant="h6" color="text.secondary" gutterBottom>
+                  No pending review tasks
+                </Typography>
+                <Typography variant="body2" color="text.secondary">
+                  All tasks are reviewed
+                </Typography>
+              </Box>
+            ) : (
+              <CommonDataTable
+                rows={pendingReviewTasks}
+                columns={pendingTasksColumns}
+                loading={pendingReviewTasksLoading}
+                getRowId={(row) => row.tblId}
+                autoHeight={true}
+              />
+            )}
+          </Paper>
+        </>
       )}
 
       {/* Approved Review Tasks Screen - Full Page */}
       {approvedReviewTasksOpen && (
-        <Box>
+        <>
+          {/* Approved Review Tasks View */}
           <Box
             sx={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "space-between",
               mb: 3,
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "flex-start",
             }}
           >
             <Box>
               <Typography variant="h4" fontWeight={700} gutterBottom>
-                Approved Review Tasks
+                Approved Tasks
               </Typography>
-              <Typography variant="body2" color="text.secondary">
+              <Typography variant="body1" color="text.secondary">
                 Tasks that have been approved
               </Typography>
             </Box>
+
             <Button
+              variant="outlined"
               startIcon={<CloseIcon />}
               onClick={handleCloseApprovedReviewTasksScreen}
-              variant="outlined"
+              sx={{
+                borderRadius: 2,
+                textTransform: "none",
+                fontWeight: 600,
+                px: 3,
+              }}
             >
-              Back
+              Back to Dashboard
             </Button>
           </Box>
 
-          <Card
+          <Paper
             sx={{
               borderRadius: 3,
               boxShadow: `0 4px 20px ${alpha(
                 theme.palette.common.black,
-                0.08
+                0.08,
               )}`,
+              overflow: "hidden",
             }}
           >
-            <CardContent sx={{ p: 3 }}>
-              {approvedReviewTasksLoading ? (
-                <Box sx={{ display: "flex", justifyContent: "center", p: 4 }}>
-                  <CircularProgress />
-                </Box>
-              ) : approvedReviewTasks.length === 0 ? (
-                <Box sx={{ textAlign: "center", py: 8 }}>
-                  <Assignment sx={{ fontSize: 60, color: "text.disabled", mb: 2 }} />
-                  <Typography variant="body1" color="text.secondary">
-                    No approved tasks
-                  </Typography>
-                </Box>
-              ) : (
-                <CommonDataTable
-                  rows={approvedReviewTasks}
-                  columns={approvedTasksColumns}
-                  loading={approvedReviewTasksLoading}
-                  getRowId={(row) => row.tblId}
-                  autoHeight={true}
+            {approvedReviewTasksLoading ? (
+              <Box
+                sx={{
+                  display: "flex",
+                  justifyContent: "center",
+                  alignItems: "center",
+                  minHeight: 400,
+                  flexDirection: "column",
+                  gap: 2,
+                }}
+              >
+                <CircularProgress size={50} />
+                <Typography variant="body1" color="text.secondary">
+                  Loading Approved Review Tasks...
+                </Typography>
+              </Box>
+            ) : approvedReviewTasks.length === 0 ? (
+              <Box sx={{ textAlign: "center", py: 12 }}>
+                <Assignment
+                  sx={{ fontSize: 80, color: "text.disabled", mb: 2 }}
                 />
-              )}
-            </CardContent>
-          </Card>
-        </Box>
+                <Typography variant="h6" color="text.secondary" gutterBottom>
+                  No approved tasks
+                </Typography>
+                <Typography variant="body2" color="text.secondary">
+                  No tasks have been approved yet
+                </Typography>
+              </Box>
+            ) : (
+              <CommonDataTable
+                rows={approvedReviewTasks}
+                columns={approvedTasksColumns}
+                loading={approvedReviewTasksLoading}
+                getRowId={(row) => row.tblId}
+                autoHeight={true}
+              />
+            )}
+          </Paper>
+        </>
       )}
 
       {/* Rejected Review Tasks Screen - Full Page */}
       {rejectedReviewTasksOpen && (
-        <Box>
+        <>
+          {/* Rejected Review Tasks View */}
           <Box
             sx={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "space-between",
               mb: 3,
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "flex-start",
             }}
           >
             <Box>
               <Typography variant="h4" fontWeight={700} gutterBottom>
-                Rejected Review Tasks
+                Rejected Tasks
               </Typography>
-              <Typography variant="body2" color="text.secondary">
+              <Typography variant="body1" color="text.secondary">
                 Tasks that have been rejected
               </Typography>
             </Box>
+
             <Button
+              variant="outlined"
               startIcon={<CloseIcon />}
               onClick={handleCloseRejectedReviewTasksScreen}
-              variant="outlined"
+              sx={{
+                borderRadius: 2,
+                textTransform: "none",
+                fontWeight: 600,
+                px: 3,
+              }}
             >
-              Back
+              Back to Dashboard
             </Button>
           </Box>
 
-          <Card
+          <Paper
             sx={{
               borderRadius: 3,
               boxShadow: `0 4px 20px ${alpha(
                 theme.palette.common.black,
-                0.08
+                0.08,
               )}`,
+              overflow: "hidden",
             }}
           >
-            <CardContent sx={{ p: 3 }}>
-              {rejectedReviewTasksLoading ? (
-                <Box sx={{ display: "flex", justifyContent: "center", p: 4 }}>
-                  <CircularProgress />
-                </Box>
-              ) : rejectedReviewTasks.length === 0 ? (
-                <Box sx={{ textAlign: "center", py: 8 }}>
-                  <Assignment sx={{ fontSize: 60, color: "text.disabled", mb: 2 }} />
-                  <Typography variant="body1" color="text.secondary">
-                    No rejected tasks
-                  </Typography>
-                </Box>
-              ) : (
-                <CommonDataTable
-                  rows={rejectedReviewTasks}
-                  columns={rejectedTasksColumns}
-                  loading={rejectedReviewTasksLoading}
-                  getRowId={(row) => row.tblId}
-                  autoHeight={true}
+            {rejectedReviewTasksLoading ? (
+              <Box
+                sx={{
+                  display: "flex",
+                  justifyContent: "center",
+                  alignItems: "center",
+                  minHeight: 400,
+                  flexDirection: "column",
+                  gap: 2,
+                }}
+              >
+                <CircularProgress size={50} />
+                <Typography variant="body1" color="text.secondary">
+                  Loading Rejected Review Tasks...
+                </Typography>
+              </Box>
+            ) : rejectedReviewTasks.length === 0 ? (
+              <Box sx={{ textAlign: "center", py: 12 }}>
+                <Assignment
+                  sx={{ fontSize: 80, color: "text.disabled", mb: 2 }}
                 />
-              )}
-            </CardContent>
-          </Card>
-        </Box>
+                <Typography variant="h6" color="text.secondary" gutterBottom>
+                  No rejected tasks
+                </Typography>
+                <Typography variant="body2" color="text.secondary">
+                  No tasks have been rejected
+                </Typography>
+              </Box>
+            ) : (
+              <CommonDataTable
+                rows={rejectedReviewTasks}
+                columns={rejectedTasksColumns}
+                loading={rejectedReviewTasksLoading}
+                getRowId={(row) => row.tblId}
+                autoHeight={true}
+              />
+            )}
+          </Paper>
+        </>
       )}
 
       {/* Approve Remarks Dialog */}
@@ -608,6 +897,18 @@ const ReviewerDashboard: React.FC = () => {
             value={remark}
             onChange={(e) => setRemark(e.target.value)}
             placeholder="Enter your remarks here..."
+          />
+          <TextField
+            fullWidth
+            type="file"
+            label="Attachment"
+            InputLabelProps={{ shrink: true }}
+            sx={{ mt: 2 }}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+              if (e.target.files && e.target.files[0]) {
+                setFile(e.target.files[0]);
+              }
+            }}
           />
         </DialogContent>
         <DialogActions>
@@ -641,6 +942,18 @@ const ReviewerDashboard: React.FC = () => {
             onChange={(e) => setRemark(e.target.value)}
             placeholder="Enter your remarks here..."
           />
+          <TextField
+            fullWidth
+            type="file"
+            label="Attachment"
+            InputLabelProps={{ shrink: true }}
+            sx={{ mt: 2 }}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+              if (e.target.files && e.target.files[0]) {
+                setFile(e.target.files[0]);
+              }
+            }}
+          />
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setRejectDialogOpen(false)}>Cancel</Button>
@@ -661,7 +974,6 @@ const ReviewerDashboard: React.FC = () => {
         onClose={handleCloseTaskMovementDialog}
         task={selectedTask}
       />
-
     </Box>
   );
 };
