@@ -10,12 +10,6 @@ import {
   useTheme,
   alpha,
   Button,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
   Paper,
   CircularProgress,
   Alert,
@@ -26,6 +20,7 @@ import {
   DialogActions,
   TextField,
 } from "@mui/material";
+import type { GridColDef } from "@mui/x-data-grid";
 import {
   CheckCircle,
   Assignment,
@@ -60,6 +55,7 @@ import {
 } from "./checkerslice/CheckerDashboard.Selector";
 import { selectUser } from "../login/slice/Login.selector";
 import TaskMovementDialog from "../../components/common/TaskMovementDialog";
+import CommonDataTable from "../../components/common/CommonDataTable";
 
 const CheckerDashboard: React.FC = () => {
   const theme = useTheme();
@@ -234,6 +230,198 @@ const CheckerDashboard: React.FC = () => {
     },
   ];
 
+  // Column definitions for CommonDataTable
+  const pendingCheckTasksColumns: GridColDef[] = React.useMemo(
+    () => [
+      { field: "activityName", headerName: "Activity Name", flex: 1.2, minWidth: 150 },
+      { field: "actName", headerName: "Act Name", flex: 1, minWidth: 100 },
+      {
+        field: "departmentName",
+        headerName: "Department",
+        flex: 1,
+        minWidth: 120,
+        renderCell: (params) => (
+          <Chip
+            label={params.value}
+            size="small"
+            sx={{
+              bgcolor: alpha(theme.palette.info.main, 0.1),
+              color: theme.palette.info.main,
+            }}
+          />
+        ),
+      },
+      { field: "siteName", headerName: "Site Name", flex: 1, minWidth: 100 },
+      {
+        field: "dueDate",
+        headerName: "Due Date",
+        flex: 1,
+        minWidth: 100,
+        renderCell: (params) =>
+          params.value ? new Date(params.value).toLocaleDateString() : "-",
+      },
+      { field: "maker", headerName: "Maker Name", flex: 0.8, minWidth: 100 },
+      {
+        field: "actions",
+        headerName: "Actions",
+        flex: 1.2,
+        minWidth: 150,
+        sortable: false,
+        renderCell: (params) => (
+          <Box sx={{ display: "flex", gap: 1 }}>
+            <Button
+              size="small"
+              variant="contained"
+              color="success"
+              startIcon={<ApproveIcon />}
+              sx={{
+                borderRadius: 1.5,
+                textTransform: "none",
+                fontWeight: 600,
+                px: 2,
+                py: 1,
+              }}
+              onClick={() => handleApproveClick(params.row.tblId)}
+            >
+              Approve
+            </Button>
+            <Button
+              size="small"
+              variant="contained"
+              color="error"
+              startIcon={<RejectIcon />}
+              sx={{
+                borderRadius: 1.5,
+                textTransform: "none",
+                fontWeight: 600,
+                px: 2,
+                py: 1,
+              }}
+              onClick={() => handleRejectClick(params.row.tblId)}
+            >
+              Reject
+            </Button>
+          </Box>
+        ),
+      },
+    ],
+    [theme],
+  );
+
+  const approvedCheckTasksColumns: GridColDef[] = React.useMemo(
+    () => [
+      { field: "activityName", headerName: "Activity Name", flex: 1.2, minWidth: 150 },
+      { field: "actName", headerName: "Act Name", flex: 1, minWidth: 100 },
+      {
+        field: "departmentName",
+        headerName: "Department",
+        flex: 1,
+        minWidth: 120,
+        renderCell: (params) => (
+          <Chip
+            label={params.value}
+            size="small"
+            sx={{
+              bgcolor: alpha(theme.palette.success.main, 0.1),
+              color: theme.palette.success.main,
+            }}
+          />
+        ),
+      },
+      { field: "siteName", headerName: "Site Name", flex: 1, minWidth: 100 },
+      {
+        field: "dueDate",
+        headerName: "Due Date",
+        flex: 1,
+        minWidth: 100,
+        renderCell: (params) =>
+          params.value ? new Date(params.value).toLocaleDateString() : "-",
+      },
+      {
+        field: "actions",
+        headerName: "Actions",
+        flex: 0.8,
+        minWidth: 100,
+        sortable: false,
+        renderCell: (params) => (
+          <Button
+            size="small"
+            variant="text"
+            startIcon={<EyeIcon />}
+            onClick={() => handleViewTaskMovement(params.row)}
+            sx={{
+              color: theme.palette.primary.main,
+              textTransform: "none",
+              "&:hover": {
+                bgcolor: alpha(theme.palette.primary.main, 0.1),
+              },
+            }}
+          >
+            View
+          </Button>
+        ),
+      },
+    ],
+    [theme],
+  );
+
+  const rejectedCheckTasksColumns: GridColDef[] = React.useMemo(
+    () => [
+      { field: "activityName", headerName: "Activity Name", flex: 1.2, minWidth: 150 },
+      { field: "actName", headerName: "Act Name", flex: 1, minWidth: 100 },
+      { field: "siteName", headerName: "Site Name", flex: 1, minWidth: 100 },
+      {
+        field: "departmentName",
+        headerName: "Department",
+        flex: 1,
+        minWidth: 120,
+        renderCell: (params) => (
+          <Chip
+            label={params.value}
+            size="small"
+            sx={{
+              bgcolor: alpha(theme.palette.error.main, 0.1),
+              color: theme.palette.error.main,
+            }}
+          />
+        ),
+      },
+      {
+        field: "dueDate",
+        headerName: "Due Date",
+        flex: 1,
+        minWidth: 100,
+        renderCell: (params) =>
+          params.value ? new Date(params.value).toLocaleDateString() : "-",
+      },
+      {
+        field: "actions",
+        headerName: "Actions",
+        flex: 0.8,
+        minWidth: 100,
+        sortable: false,
+        renderCell: (params) => (
+          <Button
+            size="small"
+            variant="text"
+            startIcon={<EyeIcon />}
+            onClick={() => handleViewTaskMovement(params.row)}
+            sx={{
+              color: theme.palette.primary.main,
+              textTransform: "none",
+              "&:hover": {
+                bgcolor: alpha(theme.palette.primary.main, 0.1),
+              },
+            }}
+          >
+            View
+          </Button>
+        ),
+      },
+    ],
+    [theme],
+  );
+
   return (
     <Box>
       {!pendingCheckTasksOpen &&
@@ -403,152 +591,13 @@ const CheckerDashboard: React.FC = () => {
                 </Typography>
               </Box>
             ) : (
-              <TableContainer>
-                <Table>
-                  <TableHead>
-                    <TableRow
-                      sx={{ bgcolor: alpha(theme.palette.primary.main, 0.05) }}
-                    >
-                      <TableCell>
-                        <Typography variant="subtitle2" fontWeight={600}>
-                          Activity Name
-                        </Typography>
-                      </TableCell>
-                      <TableCell>
-                        <Typography variant="subtitle2" fontWeight={600}>
-                          Act Name
-                        </Typography>
-                      </TableCell>
-                      <TableCell>
-                        <Typography variant="subtitle2" fontWeight={600}>
-                          Department
-                        </Typography>
-                      </TableCell>
-                      <TableCell>
-                        <Typography variant="subtitle2" fontWeight={600}>
-                          Site Name
-                        </Typography>
-                      </TableCell>
-                      <TableCell>
-                        <Typography variant="subtitle2" fontWeight={600}>
-                          Due Date
-                        </Typography>
-                      </TableCell>
-                      <TableCell>
-                        <Typography variant="subtitle2" fontWeight={600}>
-                          Maker Name
-                        </Typography>
-                      </TableCell>
-                      <TableCell align="center">
-                        <Typography variant="subtitle2" fontWeight={600}>
-                          Actions
-                        </Typography>
-                      </TableCell>
-                    </TableRow>
-                  </TableHead>
-                  <TableBody>
-                    {pendingCheckTasks.map((task, index) => (
-                      <TableRow
-                        key={task.tblId || index}
-                        hover
-                        sx={{ "&:last-child td": { borderBottom: 0 } }}
-                      >
-                        <TableCell>
-                          <Typography variant="body2" fontWeight={500}>
-                            {task.activityName}
-                          </Typography>
-                          {task.description && (
-                            <Typography
-                              variant="caption"
-                              color="text.secondary"
-                              sx={{ display: "block", mt: 0.5 }}
-                            >
-                              {task.description}
-                            </Typography>
-                          )}
-                        </TableCell>
-                        <TableCell>
-                          <Typography variant="body2">
-                            {task.actName}
-                          </Typography>
-                        </TableCell>
-                        <TableCell>
-                          <Chip
-                            label={task.departmentName}
-                            size="small"
-                            sx={{
-                              bgcolor: alpha(theme.palette.info.main, 0.1),
-                              color: theme.palette.info.main,
-                              fontWeight: 500,
-                              borderRadius: 2,
-                            }}
-                          />
-                        </TableCell>
-                        <TableCell>
-                          <Typography variant="body2">
-                            {task.siteName || "-"}
-                          </Typography>
-                        </TableCell>
-                        <TableCell>
-                          <Typography variant="body2">
-                            {task.dueDate
-                              ? new Date(task.dueDate).toLocaleDateString()
-                              : "-"}
-                          </Typography>
-                        </TableCell>
-                        <TableCell>
-                          <Typography variant="body2">
-                            {task.maker || "-"}
-                          </Typography>
-                        </TableCell>
-
-                        <TableCell align="center">
-                          <Box
-                            sx={{
-                              display: "flex",
-                              gap: 1,
-                              justifyContent: "center",
-                            }}
-                          >
-                            <Button
-                              size="small"
-                              variant="contained"
-                              color="success"
-                              startIcon={<ApproveIcon />}
-                              sx={{
-                                borderRadius: 1.5,
-                                textTransform: "none",
-                                fontWeight: 600,
-                                px: 2,
-                                py: 1,
-                              }}
-                              onClick={() => handleApproveClick(task.tblId)}
-                            >
-                              Approve
-                            </Button>
-                            <Button
-                              size="small"
-                              variant="contained"
-                              color="error"
-                              startIcon={<RejectIcon />}
-                              sx={{
-                                borderRadius: 1.5,
-                                textTransform: "none",
-                                fontWeight: 600,
-                                px: 2,
-                                py: 1,
-                              }}
-                              onClick={() => handleRejectClick(task.tblId)}
-                            >
-                              Reject
-                            </Button>
-                          </Box>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </TableContainer>
+              <CommonDataTable
+                rows={pendingCheckTasks}
+                columns={pendingCheckTasksColumns}
+                loading={pendingCheckTasksLoading}
+                getRowId={(row) => row.tblId}
+                autoHeight={true}
+              />
             )}
           </Paper>
         </>
@@ -629,116 +678,13 @@ const CheckerDashboard: React.FC = () => {
                 </Typography>
               </Box>
             ) : (
-              <TableContainer>
-                <Table>
-                  <TableHead>
-                    <TableRow
-                      sx={{ bgcolor: alpha(theme.palette.primary.main, 0.05) }}
-                    >
-                      <TableCell>
-                        <Typography variant="subtitle2" fontWeight={600}>
-                          Activity Name
-                        </Typography>
-                      </TableCell>
-                      <TableCell>
-                        <Typography variant="subtitle2" fontWeight={600}>
-                          Act Name
-                        </Typography>
-                      </TableCell>
-                      <TableCell>
-                        <Typography variant="subtitle2" fontWeight={600}>
-                          Department
-                        </Typography>
-                      </TableCell>
-                      <TableCell>
-                        <Typography variant="subtitle2" fontWeight={600}>
-                          Site Name
-                        </Typography>
-                      </TableCell>
-                      <TableCell>
-                        <Typography variant="subtitle2" fontWeight={600}>
-                          Due Date
-                        </Typography>
-                      </TableCell>
-                      <TableCell align="center">
-                        <Typography variant="subtitle2" fontWeight={600}>
-                          Actions
-                        </Typography>
-                      </TableCell>
-                    </TableRow>
-                  </TableHead>
-                  <TableBody>
-                    {approvedCheckTasks.map((task, index) => (
-                      <TableRow
-                        key={task.tblId || index}
-                        hover
-                        sx={{ "&:last-child td": { borderBottom: 0 } }}
-                      >
-                        <TableCell>
-                          <Typography variant="body2" fontWeight={500}>
-                            {task.activityName}
-                          </Typography>
-                          {task.description && (
-                            <Typography
-                              variant="caption"
-                              color="text.secondary"
-                              sx={{ display: "block", mt: 0.5 }}
-                            >
-                              {task.description}
-                            </Typography>
-                          )}
-                        </TableCell>
-                        <TableCell>
-                          <Typography variant="body2">
-                            {task.actName}
-                          </Typography>
-                        </TableCell>
-                        <TableCell>
-                          <Chip
-                            label={task.departmentName}
-                            size="small"
-                            sx={{
-                              bgcolor: alpha(theme.palette.success.main, 0.1),
-                              color: theme.palette.success.main,
-                              fontWeight: 500,
-                              borderRadius: 2,
-                            }}
-                          />
-                        </TableCell>
-                        <TableCell>
-                          <Typography variant="body2">
-                            {task.siteName || "-"}
-                          </Typography>
-                        </TableCell>
-                        <TableCell>
-                          <Typography variant="body2">
-                            {task.dueDate
-                              ? new Date(task.dueDate).toLocaleDateString()
-                              : "-"}
-                          </Typography>
-                        </TableCell>
-                        <TableCell align="center">
-                          <Button
-                            size="small"
-                            variant="text"
-                            startIcon={<EyeIcon />}
-                            onClick={() => handleViewTaskMovement(task)}
-                            sx={{
-                              color: theme.palette.primary.main,
-                              textTransform: "none",
-                              "&:hover": {
-                                bgcolor: alpha(theme.palette.primary.main, 0.1),
-                              },
-                            }}
-                          >
-                            View
-                          </Button>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </TableContainer>
+              <CommonDataTable
+                rows={approvedCheckTasks}
+                columns={approvedCheckTasksColumns}
+                loading={approvedCheckTasksLoading}
+                getRowId={(row) => row.tblId}
+                autoHeight={true}
+              />
             )}
           </Paper>
         </>
@@ -819,94 +765,13 @@ const CheckerDashboard: React.FC = () => {
                 </Typography>
               </Box>
             ) : (
-              <TableContainer>
-                <Table>
-                  <TableHead>
-                    <TableRow
-                      sx={{ bgcolor: alpha(theme.palette.error.main, 0.05) }}
-                    >
-                      <TableCell>
-                        <Typography variant="subtitle2" fontWeight={600}>
-                          Activity Name
-                        </Typography>
-                      </TableCell>
-                      <TableCell>
-                        <Typography variant="subtitle2" fontWeight={600}>
-                          Act Name
-                        </Typography>
-                      </TableCell>
-                      <TableCell>
-                        <Typography variant="subtitle2" fontWeight={600}>
-                          Site Name
-                        </Typography>
-                      </TableCell>
-                      <TableCell>
-                        <Typography variant="subtitle2" fontWeight={600}>
-                          Department
-                        </Typography>
-                      </TableCell>
-                      <TableCell>
-                        <Typography variant="subtitle2" fontWeight={600}>
-                          Due Date
-                        </Typography>
-                      </TableCell>
-                    </TableRow>
-                  </TableHead>
-                  <TableBody>
-                    {rejectedCheckTasks.map((task, index) => (
-                      <TableRow
-                        key={task.tblId || index}
-                        hover
-                        sx={{ "&:last-child td": { borderBottom: 0 } }}
-                      >
-                        <TableCell>
-                          <Typography variant="body2" fontWeight={500}>
-                            {task.activityName}
-                          </Typography>
-                          {task.description && (
-                            <Typography
-                              variant="caption"
-                              color="text.secondary"
-                              sx={{ display: "block", mt: 0.5 }}
-                            >
-                              {task.description}
-                            </Typography>
-                          )}
-                        </TableCell>
-                        <TableCell>
-                          <Typography variant="body2">
-                            {task.actName}
-                          </Typography>
-                        </TableCell>
-                        <TableCell>
-                          <Chip
-                            label={task.departmentName}
-                            size="small"
-                            sx={{
-                              bgcolor: alpha(theme.palette.error.main, 0.1),
-                              color: theme.palette.error.main,
-                              fontWeight: 500,
-                              borderRadius: 2,
-                            }}
-                          />
-                          <TableCell>
-                            <Typography variant="body2">
-                              {task.siteName || "-"}
-                            </Typography>
-                          </TableCell>
-                        </TableCell>
-                        <TableCell>
-                          <Typography variant="body2">
-                            {task.dueDate
-                              ? new Date(task.dueDate).toLocaleDateString()
-                              : "-"}
-                          </Typography>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </TableContainer>
+              <CommonDataTable
+                rows={rejectedCheckTasks}
+                columns={rejectedCheckTasksColumns}
+                loading={rejectedCheckTasksLoading}
+                getRowId={(row) => row.tblId}
+                autoHeight={true}
+              />
             )}
           </Paper>
         </>
