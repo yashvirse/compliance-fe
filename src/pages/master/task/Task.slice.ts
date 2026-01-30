@@ -27,11 +27,11 @@ export const fetchAssignedTasks = createAsyncThunk<
 >("task/fetchAssignedTasks", async (_, { rejectWithValue }) => {
   try {
     const response = await apiService.get<TaskApiResponse>(
-      "Dashboard/getAssinedTask"
+      "Dashboard/getAssignedTask",
     );
     if (!response.isSuccess) {
       return rejectWithValue(
-        response.message || "Failed to fetch assigned tasks"
+        response.message || "Failed to fetch assigned tasks",
       );
     }
 
@@ -40,7 +40,7 @@ export const fetchAssignedTasks = createAsyncThunk<
     return rejectWithValue(
       error?.response?.data?.message ||
         error?.message ||
-        "Failed to fetch assigned tasks"
+        "Failed to fetch assigned tasks",
     );
   }
 });

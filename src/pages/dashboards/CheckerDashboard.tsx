@@ -40,6 +40,7 @@ import {
   approveCheckTask,
   rejectCheckTask,
   clearTaskActionError,
+  clearError,
 } from "./checkerslice/CheckerDashboard.Slice";
 import {
   selectCheckerTaskCounts,
@@ -79,7 +80,10 @@ const CheckerDashboard: React.FC = () => {
     selectRejectedCheckTasksLoading,
   );
   const rejectedCheckTasksError = useSelector(selectRejectedCheckTasksError);
-
+  const [tasksOpen, setTasksOpen] = useState(false);
+  const [allTasks, setAllTasks] = useState<any[]>([]);
+  const [allTasksLoading, setAllTasksLoading] = useState(false);
+  const [allTasksError, setAllTasksError] = useState<string | null>(null);
   const [pendingCheckTasksOpen, setPendingCheckTasksOpen] = useState(false);
   const [approvedCheckTasksOpen, setApprovedCheckTasksOpen] = useState(false);
   const [rejectedCheckTasksOpen, setRejectedCheckTasksOpen] = useState(false);
@@ -111,7 +115,33 @@ const CheckerDashboard: React.FC = () => {
       setRejectedCheckTasksOpen(true);
     }
   };
+  const handleTotalTasksClick = async () => {
+    if (!user?.id) return;
 
+    setAllTasksLoading(true);
+    setAllTasksError(null);
+    setTasksOpen(true); // डायलॉग ओपन
+
+    try {
+      // तीनों API parallel में call करें
+      const [pendingRes, approvedRes, rejectedRes] = await Promise.all([
+        dispatch(fetchPendingCheckTasks(user.id)).unwrap(),
+        dispatch(fetchApprovedCheckTasks(user.id)).unwrap(),
+        dispatch(fetchRejectedCheckTasks(user.id)).unwrap(),
+      ]);
+      const combined = [
+        ...pendingRes.map((t: any) => ({ ...t, status: "Pending" })),
+        ...approvedRes.map((t: any) => ({ ...t, status: "Approved" })),
+        ...rejectedRes.map((t: any) => ({ ...t, status: "Rejected" })),
+      ];
+
+      setAllTasks(combined);
+    } catch (err: any) {
+      setAllTasksError(err.message || "Failed to load tasks");
+    } finally {
+      setAllTasksLoading(false);
+    }
+  };
   const handleClosePendingCheckTasksDialog = () => {
     setPendingCheckTasksOpen(false);
     // Refresh dashboard counts when returning to dashboard
@@ -205,44 +235,57 @@ const CheckerDashboard: React.FC = () => {
     setSelectedTaskId(null);
     dispatch(clearTaskActionError());
   };
-
   // Fetch dashboard counts when user is available
   useEffect(() => {
     if (user?.id) {
       dispatch(fetchCheckerTaskCount(user.id));
     }
   }, [dispatch, user?.id]);
-
+  const handleCloseDialog = () => {
+    setTasksOpen(false);
+    dispatch(clearError());
+    // Refresh dashboard counts when returning to dashboard
+    if (user?.id) {
+      dispatch(fetchCheckerTaskCount(user.id));
+    }
+  };
   const pendingCheckCount = counts?.pendingCount ?? 0;
   const approvedCount = counts?.approvedCount ?? 0;
   const rejectedCount = counts?.rejectedCount ?? 0;
+  const totalCount = pendingCheckCount + approvedCount + rejectedCount;
 
   const stats = [
     {
-      label: "Pending Check",
+      label: "Total Tasks",
+      value: totalCount.toString(),
+      icon: <Assignment />,
+      color: theme.palette.info.main,
+      onClick: handleTotalTasksClick,
+    },
+    {
+      label: "Pending Tasks",
       value: pendingCheckCount.toString(),
       icon: <Assignment />,
       color: theme.palette.warning.main,
       onClick: handlePendingCheckTasksClick,
     },
     {
-      label: "Approved",
+      label: "Approved Tasks",
       value: approvedCount.toString(),
       icon: <CheckCircle />,
       color: theme.palette.success.main,
       onClick: handleApprovedCheckTasksClick,
     },
     {
-      label: "Rejected",
+      label: "Rejected Tasks",
       value: rejectedCount.toString(),
       icon: <Cancel />,
       color: theme.palette.error.main,
       onClick: handleRejectedCheckTasksClick,
     },
   ];
-
   // Column definitions for CommonDataTable
-  const pendingCheckTasksColumns: GridColDef[] = React.useMemo(
+  const allTasksColumns: GridColDef[] = React.useMemo(
     () => [
       {
         field: "sno",
@@ -255,19 +298,19 @@ const CheckerDashboard: React.FC = () => {
         renderCell: (params) =>
           params.api.getRowIndexRelativeToVisibleRows(params.id) + 1,
       },
-      { field: "siteName", headerName: "Site Name", flex: 1, minWidth: 150 },
+      { field: "siteName", headerName: "Site Name", flex: 1, minWidth: 160 },
       {
         field: "activityName",
         headerName: "Activity Name",
         flex: 1.2,
-        minWidth: 250,
+        minWidth: 400,
       },
-      { field: "actName", headerName: "Act Name", flex: 1, minWidth: 100 },
+      { field: "actName", headerName: "Act Name", flex: 1, minWidth: 180 },
       {
         field: "departmentName",
         headerName: "Department",
         flex: 1,
-        minWidth: 120,
+        minWidth: 150,
         renderCell: (params) => (
           <Chip
             label={params.value}
@@ -283,7 +326,7 @@ const CheckerDashboard: React.FC = () => {
         field: "dueDate",
         headerName: "Due Date",
         flex: 1,
-        minWidth: 70,
+        minWidth: 100,
         renderCell: (params) =>
           params.value ? new Date(params.value).toLocaleDateString() : "-",
       },
@@ -291,7 +334,149 @@ const CheckerDashboard: React.FC = () => {
         field: "status",
         headerName: "Status",
         flex: 0.8,
+        minWidth: 120,
+        renderCell: (params) => (
+          <Chip
+            label={params.value}
+            size="small"
+            color={
+              params.value === "Approved"
+                ? "success"
+                : params.value === "Rejected"
+                  ? "error"
+                  : "warning"
+            }
+            sx={{ fontWeight: 600 }}
+          />
+        ),
+      },
+      {
+        field: "actions",
+        headerName: "Actions",
+        flex: 1.4,
+        minWidth: 120,
+        sortable: false,
+        filterable: false,
+        disableColumnMenu: true,
+        renderCell: (params) => {
+          const status = params.row.taskCurrentStatus;
+          const isPending = status === "Pending";
+
+          return (
+            <Box
+              sx={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "left",
+                height: "100%",
+                gap: 0.5,
+              }}
+            >
+              {isPending && (
+                <>
+                  <Tooltip title="Approve Task" arrow>
+                    <IconButton
+                      size="small"
+                      onClick={() => handleApproveClick(params.row.tblId)}
+                      sx={{
+                        color: theme.palette.success.main,
+                        "&:hover": {
+                          bgcolor: alpha(theme.palette.success.main, 0.1),
+                        },
+                      }}
+                    >
+                      <ApproveIcon fontSize="small" />
+                    </IconButton>
+                  </Tooltip>
+
+                  <Tooltip title="Reject Task" arrow>
+                    <IconButton
+                      size="small"
+                      onClick={() => handleRejectClick(params.row.tblId)}
+                      sx={{
+                        color: theme.palette.error.main,
+                        "&:hover": {
+                          bgcolor: alpha(theme.palette.error.main, 0.1),
+                        },
+                      }}
+                    >
+                      <RejectIcon fontSize="small" />
+                    </IconButton>
+                  </Tooltip>
+                </>
+              )}
+              <Tooltip title="View Task" arrow>
+                <IconButton
+                  size="small"
+                  onClick={() => handleViewTaskMovement(params.row)}
+                  sx={{
+                    color: theme.palette.primary.main,
+                    "&:hover": {
+                      bgcolor: alpha(theme.palette.primary.main, 0.1),
+                    },
+                  }}
+                >
+                  <EyeIcon fontSize="small" />
+                </IconButton>
+              </Tooltip>
+            </Box>
+          );
+        },
+      },
+    ],
+    [theme],
+  );
+  // Column definitions for CommonDataTable
+  const pendingCheckTasksColumns: GridColDef[] = React.useMemo(
+    () => [
+      {
+        field: "sno",
+        headerName: "S.No.",
+        width: 70,
+        sortable: false,
+        filterable: false,
+        align: "left",
+        headerAlign: "left",
+        renderCell: (params) =>
+          params.api.getRowIndexRelativeToVisibleRows(params.id) + 1,
+      },
+      { field: "siteName", headerName: "Site Name", flex: 1, minWidth: 160 },
+      {
+        field: "activityName",
+        headerName: "Activity Name",
+        flex: 1.2,
+        minWidth: 400,
+      },
+      { field: "actName", headerName: "Act Name", flex: 1, minWidth: 180 },
+      {
+        field: "departmentName",
+        headerName: "Department",
+        flex: 1,
+        minWidth: 150,
+        renderCell: (params) => (
+          <Chip
+            label={params.value}
+            size="small"
+            sx={{
+              bgcolor: alpha(theme.palette.info.main, 0.1),
+              color: theme.palette.info.main,
+            }}
+          />
+        ),
+      },
+      {
+        field: "dueDate",
+        headerName: "Due Date",
+        flex: 1,
         minWidth: 100,
+        renderCell: (params) =>
+          params.value ? new Date(params.value).toLocaleDateString() : "-",
+      },
+      {
+        field: "status",
+        headerName: "Status",
+        flex: 0.8,
+        minWidth: 120,
         renderCell: () => (
           <Chip
             label="Pending"
@@ -305,7 +490,7 @@ const CheckerDashboard: React.FC = () => {
         field: "actions",
         headerName: "Actions",
         flex: 1.2,
-        minWidth: 100,
+        minWidth: 120,
         sortable: false,
         renderCell: (params) => (
           <Box
@@ -314,7 +499,7 @@ const CheckerDashboard: React.FC = () => {
               alignItems: "center",
               justifyContent: "left",
               height: "100%",
-              gap: 1,
+              gap: 0.5,
             }}
           >
             {/* Approve */}
@@ -323,13 +508,13 @@ const CheckerDashboard: React.FC = () => {
                 size="small"
                 onClick={() => handleApproveClick(params.row.tblId)}
                 sx={{
-                  color: theme.palette.success.main, // ✅ sirf icon color
+                  color: theme.palette.success.main,
                   "&:hover": {
                     bgcolor: alpha(theme.palette.success.main, 0.1),
                   },
                 }}
               >
-                <ApproveIcon />
+                <ApproveIcon fontSize="small" />
               </IconButton>
             </Tooltip>
 
@@ -339,13 +524,29 @@ const CheckerDashboard: React.FC = () => {
                 size="small"
                 onClick={() => handleRejectClick(params.row.tblId)}
                 sx={{
-                  color: theme.palette.error.main, // ✅ sirf icon color
+                  color: theme.palette.error.main,
                   "&:hover": {
                     bgcolor: alpha(theme.palette.error.main, 0.1),
                   },
                 }}
               >
-                <RejectIcon />
+                <RejectIcon fontSize="small" />
+              </IconButton>
+            </Tooltip>
+
+            {/* View (LAST) */}
+            <Tooltip title="View Task" arrow>
+              <IconButton
+                size="small"
+                onClick={() => handleViewTaskMovement(params.row)}
+                sx={{
+                  color: theme.palette.primary.main,
+                  "&:hover": {
+                    bgcolor: alpha(theme.palette.primary.main, 0.1),
+                  },
+                }}
+              >
+                <EyeIcon fontSize="small" />
               </IconButton>
             </Tooltip>
           </Box>
@@ -368,19 +569,19 @@ const CheckerDashboard: React.FC = () => {
         renderCell: (params) =>
           params.api.getRowIndexRelativeToVisibleRows(params.id) + 1,
       },
-      { field: "siteName", headerName: "Site Name", flex: 1, minWidth: 150 },
+      { field: "siteName", headerName: "Site Name", flex: 1, minWidth: 160 },
       {
         field: "activityName",
         headerName: "Activity Name",
         flex: 1.2,
-        minWidth: 300,
+        minWidth: 400,
       },
-      { field: "actName", headerName: "Act Name", flex: 1, minWidth: 100 },
+      { field: "actName", headerName: "Act Name", flex: 1, minWidth: 180 },
       {
         field: "departmentName",
         headerName: "Department",
         flex: 1,
-        minWidth: 120,
+        minWidth: 150,
         renderCell: (params) => (
           <Chip
             label={params.value}
@@ -396,7 +597,7 @@ const CheckerDashboard: React.FC = () => {
         field: "dueDate",
         headerName: "Due Date",
         flex: 1,
-        minWidth: 80,
+        minWidth: 100,
         renderCell: (params) =>
           params.value ? new Date(params.value).toLocaleDateString() : "-",
       },
@@ -418,7 +619,7 @@ const CheckerDashboard: React.FC = () => {
         field: "actions",
         headerName: "Actions",
         flex: 0.8,
-        minWidth: 80,
+        minWidth: 120,
         sortable: false,
         renderCell: (params) => (
           <Tooltip title="View Task" arrow>
@@ -455,19 +656,19 @@ const CheckerDashboard: React.FC = () => {
         renderCell: (params) =>
           params.api.getRowIndexRelativeToVisibleRows(params.id) + 1,
       },
-      { field: "siteName", headerName: "Site Name", flex: 1, minWidth: 150 },
+      { field: "siteName", headerName: "Site Name", flex: 1, minWidth: 160 },
       {
         field: "activityName",
         headerName: "Activity Name",
         flex: 1.2,
-        minWidth: 300,
+        minWidth: 400,
       },
-      { field: "actName", headerName: "Act Name", flex: 1, minWidth: 100 },
+      { field: "actName", headerName: "Act Name", flex: 1, minWidth: 180 },
       {
         field: "departmentName",
         headerName: "Department",
         flex: 1,
-        minWidth: 120,
+        minWidth: 150,
         renderCell: (params) => (
           <Chip
             label={params.value}
@@ -483,7 +684,7 @@ const CheckerDashboard: React.FC = () => {
         field: "dueDate",
         headerName: "Due Date",
         flex: 1,
-        minWidth: 80,
+        minWidth: 100,
         renderCell: (params) =>
           params.value ? new Date(params.value).toLocaleDateString() : "-",
       },
@@ -505,7 +706,7 @@ const CheckerDashboard: React.FC = () => {
         field: "actions",
         headerName: "Actions",
         flex: 0.8,
-        minWidth: 80,
+        minWidth: 120,
         sortable: false,
         renderCell: (params) => (
           <Tooltip title="View Task" arrow>
@@ -531,7 +732,8 @@ const CheckerDashboard: React.FC = () => {
 
   return (
     <Box>
-      {!pendingCheckTasksOpen &&
+      {!tasksOpen &&
+      !pendingCheckTasksOpen &&
       !approvedCheckTasksOpen &&
       !rejectedCheckTasksOpen ? (
         <>
@@ -547,7 +749,7 @@ const CheckerDashboard: React.FC = () => {
 
           <Grid container spacing={3}>
             {stats.map((stat, index) => (
-              <Grid key={index} size={{ xs: 12, sm: 6, md: 4 }}>
+              <Grid key={index} size={{ xs: 12, sm: 6, md: 3 }}>
                 <Card
                   sx={{
                     borderRadius: 3,
@@ -620,6 +822,89 @@ const CheckerDashboard: React.FC = () => {
               </Typography>
             </CardContent>
           </Card>
+        </>
+      ) : tasksOpen ? (
+        <>
+          <Box
+            sx={{
+              mb: 3,
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "flex-start",
+            }}
+          >
+            <Box>
+              <Typography variant="h4" fontWeight={700} gutterBottom>
+                All Tasks ({totalCount})
+              </Typography>
+              <Typography variant="body1" color="text.secondary">
+                View all your pending, approved, and rejected tasks
+              </Typography>
+            </Box>
+            <Button
+              variant="outlined"
+              startIcon={<CloseIcon />}
+              onClick={handleCloseDialog}
+              sx={{
+                borderRadius: 2,
+                textTransform: "none",
+                fontWeight: 600,
+                px: 3,
+              }}
+            >
+              Back to Dashboard
+            </Button>
+          </Box>
+
+          <Paper
+            sx={{
+              borderRadius: 3,
+              boxShadow: `0 4px 20px ${alpha(
+                theme.palette.common.black,
+                0.08,
+              )}`,
+              overflow: "hidden",
+            }}
+          >
+            {allTasksLoading ? (
+              <Box
+                sx={{
+                  display: "flex",
+                  justifyContent: "center",
+                  alignItems: "center",
+                  minHeight: 400,
+                  flexDirection: "column",
+                  gap: 2,
+                }}
+              >
+                <CircularProgress size={50} />
+                <Typography variant="body1" color="text.secondary">
+                  Loading all tasks...
+                </Typography>
+              </Box>
+            ) : allTasksError ? (
+              <Box sx={{ p: 4 }}>
+                <Alert severity="error">{allTasksError}</Alert>
+              </Box>
+            ) : allTasks.length === 0 ? (
+              <Box sx={{ textAlign: "center", py: 12 }}>
+                <Assignment
+                  sx={{ fontSize: 80, color: "text.disabled", mb: 2 }}
+                />
+                <Typography variant="h6" color="text.secondary" gutterBottom>
+                  No tasks found
+                </Typography>
+              </Box>
+            ) : (
+              <CommonDataTable
+                rows={allTasks}
+                columns={allTasksColumns}
+                loading={allTasksLoading}
+                getRowId={(row) => row.tblId}
+                autoHeight={true}
+              />
+            )}
+          </Paper>
         </>
       ) : pendingCheckTasksOpen ? (
         <>

@@ -68,7 +68,10 @@ const AuditorDashboard: React.FC = () => {
   const counts = useSelector(selectTaskCounts);
   const loading = useSelector(selectAuditorDashboardLoading);
   const error = useSelector(selectAuditorDashboardError);
-
+  const [allTasks, setAllTasks] = useState<any[]>([]);
+  const [allTasksLoading, setAllTasksLoading] = useState(false);
+  const [allTasksError, setAllTasksError] = useState<string | null>(null);
+  const [tasksOpen, setTasksOpen] = useState(false);
   const pendingTasks = useSelector(selectPendingTasks);
   const pendingTasksLoading = useSelector(selectPendingTasksLoading);
   const pendingTasksError = useSelector(selectPendingTasksError);
@@ -113,7 +116,14 @@ const AuditorDashboard: React.FC = () => {
       setRejectedTasksOpen(true);
     }
   };
-
+  const handleCloseDialog = () => {
+    setTasksOpen(false);
+    dispatch(clearError());
+    // Refresh dashboard counts when returning to dashboard
+    if (user?.id) {
+      dispatch(fetchTaskCount(user.id));
+    }
+  };
   const handleClosePending = () => {
     setPendingTasksOpen(false);
     if (user?.id) dispatch(fetchTaskCount(user.id));
@@ -199,28 +209,64 @@ const AuditorDashboard: React.FC = () => {
       dispatch(fetchTaskCount(user.id));
     }
   }, [dispatch, user?.id]);
+  const handleTotalTasksClick = async () => {
+    if (!user?.id) return;
 
+    setAllTasksLoading(true);
+    setAllTasksError(null);
+    setTasksOpen(true); // डायलॉग ओपन
+
+    try {
+      // तीनों API parallel में call करें
+      const [pendingRes, approvedRes, rejectedRes] = await Promise.all([
+        dispatch(fetchPendingTasks(user.id)).unwrap(),
+        dispatch(fetchApprovedTasks(user.id)).unwrap(),
+        dispatch(fetchRejectedTasks(user.id)).unwrap(),
+      ]);
+
+      // सभी टास्क्स को combine करें और status ऐड करें ताकि टेबल में दिखे
+      const combined = [
+        ...pendingRes.map((t: any) => ({ ...t, status: "Pending" })),
+        ...approvedRes.map((t: any) => ({ ...t, status: "Approved" })),
+        ...rejectedRes.map((t: any) => ({ ...t, status: "Approved" })),
+      ];
+
+      setAllTasks(combined);
+    } catch (err: any) {
+      setAllTasksError(err.message || "Failed to load tasks");
+    } finally {
+      setAllTasksLoading(false);
+    }
+  };
   const pendingCount = counts?.pendingCount ?? 0;
   const approvedCount = counts?.approvedCount ?? 0;
   const rejectedCount = counts?.rejectedCount ?? 0;
+  const totalCount = pendingCount + approvedCount + rejectedCount;
 
   const stats = [
     {
-      label: "Pending Review",
+      label: "Total Tasks",
+      value: totalCount.toString(),
+      icon: <Assignment />,
+      color: theme.palette.info.main,
+      onClick: handleTotalTasksClick,
+    },
+    {
+      label: "Pending Task",
       value: pendingCount.toString(),
       icon: <Assessment />,
       color: theme.palette.warning.main,
       onClick: handlePendingTasksClick,
     },
     {
-      label: "Approved",
+      label: "Approved Task",
       value: approvedCount.toString(),
       icon: <CheckCircle />,
       color: theme.palette.success.main,
       onClick: handleApprovedTasksClick,
     },
     {
-      label: "Rejected",
+      label: "Rejected Task",
       value: rejectedCount.toString(),
       icon: <Cancel />,
       color: theme.palette.error.main,
@@ -229,6 +275,147 @@ const AuditorDashboard: React.FC = () => {
   ];
 
   // Column definitions for CommonDataTable
+  const allTasksColumns: GridColDef[] = React.useMemo(
+    () => [
+      {
+        field: "sno",
+        headerName: "S.No.",
+        width: 70,
+        sortable: false,
+        filterable: false,
+        align: "left",
+        headerAlign: "left",
+        renderCell: (params) =>
+          params.api.getRowIndexRelativeToVisibleRows(params.id) + 1,
+      },
+      { field: "siteName", headerName: "Site Name", flex: 1, minWidth: 160 },
+      {
+        field: "activityName",
+        headerName: "Activity Name",
+        flex: 1.2,
+        minWidth: 400,
+      },
+      { field: "actName", headerName: "Act Name", flex: 1, minWidth: 180 },
+      {
+        field: "departmentName",
+        headerName: "Department",
+        flex: 1,
+        minWidth: 150,
+        renderCell: (params) => (
+          <Chip
+            label={params.value}
+            size="small"
+            sx={{
+              bgcolor: alpha(theme.palette.info.main, 0.1),
+              color: theme.palette.info.main,
+            }}
+          />
+        ),
+      },
+      {
+        field: "dueDate",
+        headerName: "Due Date",
+        flex: 1,
+        minWidth: 100,
+        renderCell: (params) =>
+          params.value ? new Date(params.value).toLocaleDateString() : "-",
+      },
+      {
+        field: "status",
+        headerName: "Status",
+        flex: 0.8,
+        minWidth: 120,
+        renderCell: (params) => (
+          <Chip
+            label={params.value}
+            size="small"
+            color={
+              params.value === "Approved"
+                ? "success"
+                : params.value === "Rejected"
+                  ? "error"
+                  : "warning"
+            }
+            sx={{ fontWeight: 600 }}
+          />
+        ),
+      },
+      {
+        field: "actions",
+        headerName: "Actions",
+        flex: 1.4,
+        minWidth: 120,
+        sortable: false,
+        filterable: false,
+        disableColumnMenu: true,
+        renderCell: (params) => {
+          const status = params.row.taskCurrentStatus;
+          const isPending = status === "Pending";
+
+          return (
+            <Box
+              sx={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "left",
+                height: "100%",
+                gap: 0.5,
+              }}
+            >
+              {isPending && (
+                <>
+                  <Tooltip title="Approve Task" arrow>
+                    <IconButton
+                      size="small"
+                      onClick={() => handleApproveClick(params.row.tblId)}
+                      sx={{
+                        color: theme.palette.success.main,
+                        "&:hover": {
+                          bgcolor: alpha(theme.palette.success.main, 0.1),
+                        },
+                      }}
+                    >
+                      <ApproveIcon fontSize="small" />
+                    </IconButton>
+                  </Tooltip>
+
+                  <Tooltip title="Reject Task" arrow>
+                    <IconButton
+                      size="small"
+                      onClick={() => handleRejectClick(params.row.tblId)}
+                      sx={{
+                        color: theme.palette.error.main,
+                        "&:hover": {
+                          bgcolor: alpha(theme.palette.error.main, 0.1),
+                        },
+                      }}
+                    >
+                      <RejectIcon fontSize="small" />
+                    </IconButton>
+                  </Tooltip>
+                </>
+              )}
+              <Tooltip title="View Task" arrow>
+                <IconButton
+                  size="small"
+                  onClick={() => handleViewTaskMovement(params.row)}
+                  sx={{
+                    color: theme.palette.primary.main,
+                    "&:hover": {
+                      bgcolor: alpha(theme.palette.primary.main, 0.1),
+                    },
+                  }}
+                >
+                  <EyeIcon fontSize="small" />
+                </IconButton>
+              </Tooltip>
+            </Box>
+          );
+        },
+      },
+    ],
+    [theme],
+  );
   const pendingTasksColumns: GridColDef[] = React.useMemo(
     () => [
       {
@@ -292,7 +479,7 @@ const AuditorDashboard: React.FC = () => {
         field: "actions",
         headerName: "Actions",
         flex: 1.2,
-        minWidth: 80,
+        minWidth: 120,
         sortable: false,
         renderCell: (params) => (
           <Box
@@ -301,7 +488,7 @@ const AuditorDashboard: React.FC = () => {
               alignItems: "center",
               justifyContent: "left",
               height: "100%",
-              gap: 1,
+              gap: 0.5,
             }}
           >
             {/* Approve */}
@@ -310,13 +497,13 @@ const AuditorDashboard: React.FC = () => {
                 size="small"
                 onClick={() => handleApproveClick(params.row.tblId)}
                 sx={{
-                  color: theme.palette.success.main, // ✅ sirf icon color
+                  color: theme.palette.success.main,
                   "&:hover": {
                     bgcolor: alpha(theme.palette.success.main, 0.1),
                   },
                 }}
               >
-                <ApproveIcon />
+                <ApproveIcon fontSize="small" />
               </IconButton>
             </Tooltip>
 
@@ -326,13 +513,29 @@ const AuditorDashboard: React.FC = () => {
                 size="small"
                 onClick={() => handleRejectClick(params.row.tblId)}
                 sx={{
-                  color: theme.palette.error.main, // ✅ sirf icon color
+                  color: theme.palette.error.main,
                   "&:hover": {
                     bgcolor: alpha(theme.palette.error.main, 0.1),
                   },
                 }}
               >
-                <RejectIcon />
+                <RejectIcon fontSize="small" />
+              </IconButton>
+            </Tooltip>
+
+            {/* View */}
+            <Tooltip title="View Task" arrow>
+              <IconButton
+                size="small"
+                onClick={() => handleViewTaskMovement(params.row)}
+                sx={{
+                  color: theme.palette.primary.main,
+                  "&:hover": {
+                    bgcolor: alpha(theme.palette.primary.main, 0.1),
+                  },
+                }}
+              >
+                <EyeIcon fontSize="small" />
               </IconButton>
             </Tooltip>
           </Box>
@@ -347,7 +550,7 @@ const AuditorDashboard: React.FC = () => {
       {
         field: "sno",
         headerName: "S.No.",
-        width: 60,
+        width: 70,
         sortable: false,
         filterable: false,
         align: "left",
@@ -355,19 +558,19 @@ const AuditorDashboard: React.FC = () => {
         renderCell: (params) =>
           params.api.getRowIndexRelativeToVisibleRows(params.id) + 1,
       },
-      { field: "siteName", headerName: "Site Name", flex: 1, minWidth: 100 },
+      { field: "siteName", headerName: "Site Name", flex: 1, minWidth: 160 },
       {
         field: "activityName",
         headerName: "Activity Name",
         flex: 1.2,
-        minWidth: 300,
+        minWidth: 400,
       },
-      { field: "actName", headerName: "Act Name", flex: 1, minWidth: 100 },
+      { field: "actName", headerName: "Act Name", flex: 1, minWidth: 180 },
       {
         field: "departmentName",
         headerName: "Department",
         flex: 1,
-        minWidth: 120,
+        minWidth: 150,
         renderCell: (params) => (
           <Chip
             label={params.value}
@@ -383,7 +586,7 @@ const AuditorDashboard: React.FC = () => {
         field: "dueDate",
         headerName: "Due Date",
         flex: 1,
-        minWidth: 80,
+        minWidth: 100,
         renderCell: (params) =>
           params.value ? new Date(params.value).toLocaleDateString() : "-",
       },
@@ -405,7 +608,7 @@ const AuditorDashboard: React.FC = () => {
         field: "actions",
         headerName: "Actions",
         flex: 0.8,
-        minWidth: 80,
+        minWidth: 120,
         sortable: false,
         renderCell: (params) => (
           <Tooltip title="View Task" arrow>
@@ -434,7 +637,7 @@ const AuditorDashboard: React.FC = () => {
       {
         field: "sno",
         headerName: "S.No.",
-        width: 60,
+        width: 70,
         sortable: false,
         filterable: false,
         align: "left",
@@ -442,19 +645,19 @@ const AuditorDashboard: React.FC = () => {
         renderCell: (params) =>
           params.api.getRowIndexRelativeToVisibleRows(params.id) + 1,
       },
+      { field: "siteName", headerName: "Site Name", flex: 1, minWidth: 160 },
       {
         field: "activityName",
         headerName: "Activity Name",
         flex: 1.2,
-        minWidth: 150,
+        minWidth: 400,
       },
-      { field: "actName", headerName: "Act Name", flex: 1, minWidth: 100 },
-      { field: "siteName", headerName: "Site Name", flex: 1, minWidth: 100 },
+      { field: "actName", headerName: "Act Name", flex: 1, minWidth: 180 },
       {
         field: "departmentName",
         headerName: "Department",
         flex: 1,
-        minWidth: 120,
+        minWidth: 150,
         renderCell: (params) => (
           <Chip
             label={params.value}
@@ -470,7 +673,7 @@ const AuditorDashboard: React.FC = () => {
         field: "dueDate",
         headerName: "Due Date",
         flex: 1,
-        minWidth: 80,
+        minWidth: 100,
         renderCell: (params) =>
           params.value ? new Date(params.value).toLocaleDateString() : "-",
       },
@@ -492,7 +695,7 @@ const AuditorDashboard: React.FC = () => {
         field: "actions",
         headerName: "Actions",
         flex: 0.8,
-        minWidth: 80,
+        minWidth: 120,
         sortable: false,
         renderCell: (params) => (
           <Tooltip title="View Task" arrow>
@@ -518,7 +721,10 @@ const AuditorDashboard: React.FC = () => {
 
   return (
     <Box>
-      {!pendingTasksOpen && !approvedTasksOpen && !rejectedTasksOpen ? (
+      {!tasksOpen &&
+      !pendingTasksOpen &&
+      !approvedTasksOpen &&
+      !rejectedTasksOpen ? (
         <>
           <Box sx={{ mb: 4 }}>
             <Typography variant="h4" fontWeight={700} gutterBottom>
@@ -546,7 +752,7 @@ const AuditorDashboard: React.FC = () => {
           ) : (
             <Grid container spacing={3}>
               {stats.map((stat, index) => (
-                <Grid key={index} size={{ xs: 12, sm: 6, md: 4 }}>
+                <Grid key={index} size={{ xs: 12, sm: 6, md: 3 }}>
                   <Card
                     sx={{
                       borderRadius: 3,
@@ -626,6 +832,89 @@ const AuditorDashboard: React.FC = () => {
             </CardContent>
           </Card>
         </>
+      ) : tasksOpen ? (
+        <>
+          <Box
+            sx={{
+              mb: 3,
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "flex-start",
+            }}
+          >
+            <Box>
+              <Typography variant="h4" fontWeight={700} gutterBottom>
+                All Tasks ({totalCount})
+              </Typography>
+              <Typography variant="body1" color="text.secondary">
+                View all your pending, approved, and rejected tasks
+              </Typography>
+            </Box>
+            <Button
+              variant="outlined"
+              startIcon={<CloseIcon />}
+              onClick={handleCloseDialog}
+              sx={{
+                borderRadius: 2,
+                textTransform: "none",
+                fontWeight: 600,
+                px: 3,
+              }}
+            >
+              Back to Dashboard
+            </Button>
+          </Box>
+
+          <Paper
+            sx={{
+              borderRadius: 3,
+              boxShadow: `0 4px 20px ${alpha(
+                theme.palette.common.black,
+                0.08,
+              )}`,
+              overflow: "hidden",
+            }}
+          >
+            {allTasksLoading ? (
+              <Box
+                sx={{
+                  display: "flex",
+                  justifyContent: "center",
+                  alignItems: "center",
+                  minHeight: 400,
+                  flexDirection: "column",
+                  gap: 2,
+                }}
+              >
+                <CircularProgress size={50} />
+                <Typography variant="body1" color="text.secondary">
+                  Loading all tasks...
+                </Typography>
+              </Box>
+            ) : allTasksError ? (
+              <Box sx={{ p: 4 }}>
+                <Alert severity="error">{allTasksError}</Alert>
+              </Box>
+            ) : allTasks.length === 0 ? (
+              <Box sx={{ textAlign: "center", py: 12 }}>
+                <Assignment
+                  sx={{ fontSize: 80, color: "text.disabled", mb: 2 }}
+                />
+                <Typography variant="h6" color="text.secondary" gutterBottom>
+                  No tasks found
+                </Typography>
+              </Box>
+            ) : (
+              <CommonDataTable
+                rows={allTasks}
+                columns={allTasksColumns}
+                loading={allTasksLoading}
+                getRowId={(row) => row.tblId}
+                autoHeight={true}
+              />
+            )}
+          </Paper>
+        </>
       ) : pendingTasksOpen ? (
         /* ---------- Pending Tasks View ---------- */
         <>
@@ -639,7 +928,7 @@ const AuditorDashboard: React.FC = () => {
           >
             <Box>
               <Typography variant="h4" fontWeight={700} gutterBottom>
-                Pending Tasks for Review
+                Pending Tasks
               </Typography>
               <Typography variant="body1" color="text.secondary">
                 Review and take action on pending tasks

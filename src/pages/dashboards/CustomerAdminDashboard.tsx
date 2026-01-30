@@ -219,7 +219,7 @@ const CustomerAdminDashboard: React.FC = () => {
       {
         field: "sno",
         headerName: "S.No.",
-        width: 60,
+        width: 70,
         sortable: false,
         filterable: false,
         align: "left",
@@ -227,14 +227,14 @@ const CustomerAdminDashboard: React.FC = () => {
         renderCell: (params) =>
           params.api.getRowIndexRelativeToVisibleRows(params.id) + 1,
       },
-      { field: "siteName", headerName: "Site Name", flex: 1, minWidth: 150 },
+      { field: "siteName", headerName: "Site Name", flex: 1, minWidth: 160 },
       {
         field: "activityName",
         headerName: "Activity Name",
         flex: 1.2,
-        minWidth: 250,
+        minWidth: 400,
       },
-      { field: "actName", headerName: "Act Name", flex: 1, minWidth: 150 },
+      { field: "actName", headerName: "Act Name", flex: 1, minWidth: 180 },
       {
         field: "departmentName",
         headerName: "Department",
@@ -304,7 +304,7 @@ const CustomerAdminDashboard: React.FC = () => {
       {
         field: "sno",
         headerName: "S.No.",
-        width: 60,
+        width: 70,
         sortable: false,
         filterable: false,
         align: "left",
@@ -312,14 +312,14 @@ const CustomerAdminDashboard: React.FC = () => {
         renderCell: (params) =>
           params.api.getRowIndexRelativeToVisibleRows(params.id) + 1,
       },
-      { field: "siteName", headerName: "Site Name", flex: 1, minWidth: 150 },
+      { field: "siteName", headerName: "Site Name", flex: 1, minWidth: 160 },
       {
         field: "activityName",
         headerName: "Activity Name",
         flex: 1.2,
-        minWidth: 300,
+        minWidth: 400,
       },
-      { field: "actName", headerName: "Act Name", flex: 1, minWidth: 150 },
+      { field: "actName", headerName: "Act Name", flex: 1, minWidth: 180 },
       {
         field: "departmentName",
         headerName: "Department",
@@ -348,7 +348,7 @@ const CustomerAdminDashboard: React.FC = () => {
         field: "status",
         headerName: "Status",
         flex: 0.8,
-        minWidth: 100,
+        minWidth: 120,
         renderCell: () => (
           <Chip
             label="Pending"
@@ -389,7 +389,7 @@ const CustomerAdminDashboard: React.FC = () => {
       {
         field: "sno",
         headerName: "S.No.",
-        width: 80,
+        width: 70,
         sortable: false,
         filterable: false,
         align: "left",
@@ -397,14 +397,14 @@ const CustomerAdminDashboard: React.FC = () => {
         renderCell: (params) =>
           params.api.getRowIndexRelativeToVisibleRows(params.id) + 1,
       },
-      { field: "siteName", headerName: "Site Name", flex: 1, minWidth: 150 },
+      { field: "siteName", headerName: "Site Name", flex: 1, minWidth: 160 },
       {
         field: "activityName",
         headerName: "Activity Name",
         flex: 1.2,
-        minWidth: 300,
+        minWidth: 400,
       },
-      { field: "actName", headerName: "Act Name", flex: 1, minWidth: 150 },
+      { field: "actName", headerName: "Act Name", flex: 1, minWidth: 180 },
       {
         field: "departmentName",
         headerName: "Department",
@@ -425,7 +425,7 @@ const CustomerAdminDashboard: React.FC = () => {
         field: "dueDate",
         headerName: "Due Date",
         flex: 1,
-        minWidth: 120,
+        minWidth: 100,
         renderCell: (params) =>
           params.value ? new Date(params.value).toLocaleDateString() : "-",
       },
@@ -489,7 +489,7 @@ const CustomerAdminDashboard: React.FC = () => {
       value: dashboardData?.totalAct ?? 0,
       icon: <Gavel />,
       color: theme.palette.info.main,
-      path: "/dashboard/master/customeradminactivity",
+      path: "/dashboard/master/task",
     },
     {
       label: "Total Activity",

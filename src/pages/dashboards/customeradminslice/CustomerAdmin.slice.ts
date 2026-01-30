@@ -27,12 +27,12 @@ export const fetchCustomerAdminDashboard = createAsyncThunk<
   async (_, { rejectWithValue }) => {
     try {
       const response = await apiService.get<GetCustomerAdminDashboardResponse>(
-        "Dashboard/CustomerAdminDashboard"
+        "Dashboard/CustomerAdminDashboard",
       );
 
       if (!response.isSuccess) {
         return rejectWithValue(
-          response.message || "Failed to fetch customer admin dashboard"
+          response.message || "Failed to fetch customer admin dashboard",
         );
       }
 
@@ -41,10 +41,10 @@ export const fetchCustomerAdminDashboard = createAsyncThunk<
       return rejectWithValue(
         error?.response?.data?.message ||
           error?.message ||
-          "Failed to fetch customer admin dashboard"
+          "Failed to fetch customer admin dashboard",
       );
     }
-  }
+  },
 );
 export const fetchCompletedTasks = createAsyncThunk<
   GetCompletedTaskResponse,
@@ -53,7 +53,7 @@ export const fetchCompletedTasks = createAsyncThunk<
 >("customerAdmin/fetchCompletedTasks", async (_, { rejectWithValue }) => {
   try {
     const response = await apiService.get<GetCompletedTaskResponse>(
-      "Dashboard/getCompletedTaskDtl"
+      "Dashboard/getCompletedTaskDtl",
     );
 
     if (!response.isSuccess) {
@@ -63,7 +63,7 @@ export const fetchCompletedTasks = createAsyncThunk<
     return response;
   } catch (error: any) {
     return rejectWithValue(
-      error?.response?.data?.message || "Failed to fetch completed tasks"
+      error?.response?.data?.message || "Failed to fetch completed tasks",
     );
   }
 });
@@ -76,11 +76,11 @@ export const fetchAssignedTasks = createAsyncThunk<
 >("customerAdmin/fetchAssignedTasks", async (_, { rejectWithValue }) => {
   try {
     const response = await apiService.get<GetAssignedTaskResponse>(
-      "Dashboard/getAssinedTask"
+      "Dashboard/getAssignedTask",
     );
     if (!response.isSuccess) {
       return rejectWithValue(
-        response.message || "Failed to fetch assigned tasks"
+        response.message || "Failed to fetch assigned tasks",
       );
     }
 
@@ -89,7 +89,7 @@ export const fetchAssignedTasks = createAsyncThunk<
     return rejectWithValue(
       error?.response?.data?.message ||
         error?.message ||
-        "Failed to fetch assigned tasks"
+        "Failed to fetch assigned tasks",
     );
   }
 });
@@ -101,12 +101,12 @@ export const fetchsiteWiseTasks = createAsyncThunk<
 >("customerAdmin/fetchsiteWiseTasks", async (siteId, { rejectWithValue }) => {
   try {
     const response = await apiService.get<SiteWiseTaskResponse>(
-      `Dashboard/siteWiseData?siteId=${siteId}`
+      `Dashboard/siteWiseData?siteId=${siteId}`,
     );
 
     if (!response.isSuccess) {
       return rejectWithValue(
-        response.message || "Failed to fetch site wise tasks"
+        response.message || "Failed to fetch site wise tasks",
       );
     }
 
@@ -115,7 +115,7 @@ export const fetchsiteWiseTasks = createAsyncThunk<
     return rejectWithValue(
       error?.response?.data?.message ||
         error?.message ||
-        "Failed to fetch site wise tasks"
+        "Failed to fetch site wise tasks",
     );
   }
 });

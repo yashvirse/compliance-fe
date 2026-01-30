@@ -70,7 +70,7 @@ const Task: React.FC = () => {
     {
       field: "sno",
       headerName: "S.No.",
-      width: 80,
+      width: 70,
       sortable: false,
       renderCell: (params: GridRenderCellParams) => {
         const index = tasks.findIndex(
@@ -88,7 +88,7 @@ const Task: React.FC = () => {
       field: "activityName",
       headerName: "Activity Name",
       flex: 1,
-      minWidth: 300,
+      minWidth: 400,
     },
     {
       field: "actName",
@@ -175,9 +175,9 @@ const Task: React.FC = () => {
     },
   ];
   const filteredTasks = (tasks || []).filter((task) => {
-    if (!task.reminderDate) return false;
+    if (!task.dueDate) return false;
 
-    const due = new Date(task.reminderDate);
+    const due = new Date(task.dueDate);
     const monthMatch =
       due.getMonth() === currentMonth.getMonth() &&
       due.getFullYear() === currentMonth.getFullYear();
