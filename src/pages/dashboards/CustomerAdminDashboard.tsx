@@ -13,6 +13,10 @@ import {
   Button,
   LinearProgress,
   IconButton,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
 } from "@mui/material";
 import type { GridColDef } from "@mui/x-data-grid";
 import {
@@ -24,7 +28,6 @@ import {
   HourglassTop,
   ListAlt,
   People,
-  Close as CloseIcon,
   Visibility as EyeIcon,
   FilterList as FilterListIcon,
 } from "@mui/icons-material";
@@ -56,6 +59,10 @@ import { useNavigate } from "react-router-dom";
 import SiteMap from "../../components/SiteMap";
 import TaskMovementDialog from "../../components/common/TaskMovementDialog";
 import CommonDataTable from "../../components/common/CommonDataTable";
+import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
+import { DatePicker } from "@mui/x-date-pickers/DatePicker";
+import dayjs from "dayjs";
+import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 
 const CustomerAdminDashboard: React.FC = () => {
   const theme = useTheme();
@@ -121,15 +128,15 @@ const CustomerAdminDashboard: React.FC = () => {
   const rejectedTasks = assignedTasks.filter(
     (task) => task.taskCurrentStatus === "Rejected",
   );
-  const handleBackToDashboard = () => {
-    setShowCompletedTable(false);
-    setShowPendingTable(false);
-    setShowRejectedTable(false);
-    setShowSiteWiseTable(false);
-    setLoading(false);
-    setFetchError(null);
-    dispatch(fetchCustomerAdminDashboard()); // optional: refresh counts
-  };
+  // const handleBackToDashboard = () => {
+  //   setShowCompletedTable(false);
+  //   setShowPendingTable(false);
+  //   setShowRejectedTable(false);
+  //   setShowSiteWiseTable(false);
+  //   setLoading(false);
+  //   setFetchError(null);
+  //   dispatch(fetchCustomerAdminDashboard()); // optional: refresh counts
+  // };
 
   // compliance Calculation
   const today = new Date();
@@ -902,19 +909,39 @@ const CustomerAdminDashboard: React.FC = () => {
               View all completed tasks
             </Typography>
           </Box>
-          <Button
-            variant="outlined"
-            startIcon={<CloseIcon />}
-            onClick={handleBackToDashboard}
-            sx={{
-              borderRadius: 2,
-              textTransform: "none",
-              fontWeight: 600,
-              px: 3,
-            }}
-          >
-            Back to Dashboard
-          </Button>
+          <Box sx={{ display: "flex", gap: 1, alignItems: "center" }}>
+            <LocalizationProvider dateAdapter={AdapterDayjs}>
+              <DatePicker
+                views={["year", "month"]}
+                label="Select Month"
+                value={dayjs()}
+                // onChange={(newValue) => {
+                //   if (newValue) {
+                //     setCurrentMonth(newValue.toDate());
+                //   }
+                // }}
+                slotProps={{
+                  textField: {
+                    size: "small",
+                  },
+                }}
+              />
+            </LocalizationProvider>
+
+            <FormControl size="small" sx={{ minWidth: 140 }}>
+              <InputLabel>Status</InputLabel>
+              <Select
+                label="Status"
+                value={"All"}
+                // onChange={(e) => setStatusFilter(e.target.value)}
+              >
+                <MenuItem value="All">All</MenuItem>
+                <MenuItem value="Pending">Pending</MenuItem>
+                <MenuItem value="Completed">Completed</MenuItem>
+                <MenuItem value="Rejected">Rejected</MenuItem>
+              </Select>
+            </FormControl>
+          </Box>
         </Box>
 
         <Paper
@@ -980,19 +1007,39 @@ const CustomerAdminDashboard: React.FC = () => {
               View all pending tasks
             </Typography>
           </Box>
-          <Button
-            variant="outlined"
-            startIcon={<CloseIcon />}
-            onClick={handleBackToDashboard}
-            sx={{
-              borderRadius: 2,
-              textTransform: "none",
-              fontWeight: 600,
-              px: 3,
-            }}
-          >
-            Back to Dashboard
-          </Button>
+          <Box sx={{ display: "flex", gap: 1, alignItems: "center" }}>
+            <LocalizationProvider dateAdapter={AdapterDayjs}>
+              <DatePicker
+                views={["year", "month"]}
+                label="Select Month"
+                value={dayjs()}
+                // onChange={(newValue) => {
+                //   if (newValue) {
+                //     setCurrentMonth(newValue.toDate());
+                //   }
+                // }}
+                slotProps={{
+                  textField: {
+                    size: "small",
+                  },
+                }}
+              />
+            </LocalizationProvider>
+
+            <FormControl size="small" sx={{ minWidth: 140 }}>
+              <InputLabel>Status</InputLabel>
+              <Select
+                label="Status"
+                value={"All"}
+                // onChange={(e) => setStatusFilter(e.target.value)}
+              >
+                <MenuItem value="All">All</MenuItem>
+                <MenuItem value="Pending">Pending</MenuItem>
+                <MenuItem value="Completed">Completed</MenuItem>
+                <MenuItem value="Rejected">Rejected</MenuItem>
+              </Select>
+            </FormControl>
+          </Box>
         </Box>
 
         <Paper
@@ -1058,19 +1105,39 @@ const CustomerAdminDashboard: React.FC = () => {
               View all rejected tasks
             </Typography>
           </Box>
-          <Button
-            variant="outlined"
-            startIcon={<CloseIcon />}
-            onClick={handleBackToDashboard}
-            sx={{
-              borderRadius: 2,
-              textTransform: "none",
-              fontWeight: 600,
-              px: 3,
-            }}
-          >
-            Back to Dashboard
-          </Button>
+          <Box sx={{ display: "flex", gap: 1, alignItems: "center" }}>
+            <LocalizationProvider dateAdapter={AdapterDayjs}>
+              <DatePicker
+                views={["year", "month"]}
+                label="Select Month"
+                value={dayjs()}
+                // onChange={(newValue) => {
+                //   if (newValue) {
+                //     setCurrentMonth(newValue.toDate());
+                //   }
+                // }}
+                slotProps={{
+                  textField: {
+                    size: "small",
+                  },
+                }}
+              />
+            </LocalizationProvider>
+
+            <FormControl size="small" sx={{ minWidth: 140 }}>
+              <InputLabel>Status</InputLabel>
+              <Select
+                label="Status"
+                value={"All"}
+                // onChange={(e) => setStatusFilter(e.target.value)}
+              >
+                <MenuItem value="All">All</MenuItem>
+                <MenuItem value="Pending">Pending</MenuItem>
+                <MenuItem value="Completed">Completed</MenuItem>
+                <MenuItem value="Rejected">Rejected</MenuItem>
+              </Select>
+            </FormControl>
+          </Box>
         </Box>
 
         <Paper

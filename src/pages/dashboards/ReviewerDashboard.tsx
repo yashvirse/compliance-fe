@@ -19,13 +19,16 @@ import {
   Tooltip,
   IconButton,
   Alert,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
 } from "@mui/material";
 import type { GridColDef } from "@mui/x-data-grid";
 import {
   HourglassEmpty,
   CheckCircle,
   Cancel as CancelIcon,
-  Close as CloseIcon,
   Visibility as EyeIcon,
   ThumbUp as ApproveIcon,
   ThumbDown as RejectIcon,
@@ -41,7 +44,6 @@ import {
   fetchRejectedReviewTasks,
   approveReviewTask,
   rejectReviewTask,
-  clearError,
 } from "./reviewerslice/ReviewerDashboard.Slice";
 import {
   selectReviewerPendingCount,
@@ -57,6 +59,10 @@ import {
 } from "./reviewerslice/ReviewerDashboard.Selector";
 import TaskMovementDialog from "../../components/common/TaskMovementDialog";
 import CommonDataTable from "../../components/common/CommonDataTable";
+import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
+import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
+import { DatePicker } from "@mui/x-date-pickers/DatePicker";
+import dayjs from "dayjs";
 
 const ReviewerDashboard: React.FC = () => {
   const theme = useTheme();
@@ -153,29 +159,26 @@ const ReviewerDashboard: React.FC = () => {
     }
   };
 
-  // Close pending review tasks screen
-  const handleClosePendingReviewTasksScreen = () => {
-    setPendingReviewTasksOpen(false);
-    if (user?.id) {
-      dispatch(fetchReviewerTaskCount(user.id));
-    }
-  };
+  // const handleClosePendingReviewTasksScreen = () => {
+  //   setPendingReviewTasksOpen(false);
+  //   if (user?.id) {
+  //     dispatch(fetchReviewerTaskCount(user.id));
+  //   }
+  // };
 
-  // Close approved review tasks screen
-  const handleCloseApprovedReviewTasksScreen = () => {
-    setApprovedReviewTasksOpen(false);
-    if (user?.id) {
-      dispatch(fetchReviewerTaskCount(user.id));
-    }
-  };
+  // const handleCloseApprovedReviewTasksScreen = () => {
+  //   setApprovedReviewTasksOpen(false);
+  //   if (user?.id) {
+  //     dispatch(fetchReviewerTaskCount(user.id));
+  //   }
+  // };
 
-  // Close rejected review tasks screen
-  const handleCloseRejectedReviewTasksScreen = () => {
-    setRejectedReviewTasksOpen(false);
-    if (user?.id) {
-      dispatch(fetchReviewerTaskCount(user.id));
-    }
-  };
+  // const handleCloseRejectedReviewTasksScreen = () => {
+  //   setRejectedReviewTasksOpen(false);
+  //   if (user?.id) {
+  //     dispatch(fetchReviewerTaskCount(user.id));
+  //   }
+  // };
 
   // Handle approve click
   const handleApproveClick = (taskId: string) => {
@@ -240,14 +243,13 @@ const ReviewerDashboard: React.FC = () => {
       }
     }
   };
-  const handleCloseDialog = () => {
-    setTasksOpen(false);
-    dispatch(clearError());
-    // Refresh dashboard counts when returning to dashboard
-    if (user?.id) {
-      dispatch(fetchReviewerTaskCount(user.id));
-    }
-  };
+  // const handleCloseDialog = () => {
+  //   setTasksOpen(false);
+  //   dispatch(clearError());
+  //   if (user?.id) {
+  //     dispatch(fetchReviewerTaskCount(user.id));
+  //   }
+  // };
   const totalCount = pendingCount + approvedCount + rejectedCount;
   const stats = [
     {
@@ -842,19 +844,39 @@ const ReviewerDashboard: React.FC = () => {
                 View all your pending, approved, and rejected tasks
               </Typography>
             </Box>
-            <Button
-              variant="outlined"
-              startIcon={<CloseIcon />}
-              onClick={handleCloseDialog}
-              sx={{
-                borderRadius: 2,
-                textTransform: "none",
-                fontWeight: 600,
-                px: 3,
-              }}
-            >
-              Back to Dashboard
-            </Button>
+            <Box sx={{ display: "flex", gap: 1, alignItems: "center" }}>
+              <LocalizationProvider dateAdapter={AdapterDayjs}>
+                <DatePicker
+                  views={["year", "month"]}
+                  label="Select Month"
+                  value={dayjs()}
+                  // onChange={(newValue) => {
+                  //   if (newValue) {
+                  //     setCurrentMonth(newValue.toDate());
+                  //   }
+                  // }}
+                  slotProps={{
+                    textField: {
+                      size: "small",
+                    },
+                  }}
+                />
+              </LocalizationProvider>
+
+              <FormControl size="small" sx={{ minWidth: 140 }}>
+                <InputLabel>Status</InputLabel>
+                <Select
+                  label="Status"
+                  value={"All"}
+                  // onChange={(e) => setStatusFilter(e.target.value)}
+                >
+                  <MenuItem value="All">All</MenuItem>
+                  <MenuItem value="Pending">Pending</MenuItem>
+                  <MenuItem value="Completed">Completed</MenuItem>
+                  <MenuItem value="Rejected">Rejected</MenuItem>
+                </Select>
+              </FormControl>
+            </Box>
           </Box>
 
           <Paper
@@ -929,19 +951,39 @@ const ReviewerDashboard: React.FC = () => {
               </Typography>
             </Box>
 
-            <Button
-              variant="outlined"
-              startIcon={<CloseIcon />}
-              onClick={handleClosePendingReviewTasksScreen}
-              sx={{
-                borderRadius: 2,
-                textTransform: "none",
-                fontWeight: 600,
-                px: 3,
-              }}
-            >
-              Back to Dashboard
-            </Button>
+            <Box sx={{ display: "flex", gap: 1, alignItems: "center" }}>
+              <LocalizationProvider dateAdapter={AdapterDayjs}>
+                <DatePicker
+                  views={["year", "month"]}
+                  label="Select Month"
+                  value={dayjs()}
+                  // onChange={(newValue) => {
+                  //   if (newValue) {
+                  //     setCurrentMonth(newValue.toDate());
+                  //   }
+                  // }}
+                  slotProps={{
+                    textField: {
+                      size: "small",
+                    },
+                  }}
+                />
+              </LocalizationProvider>
+
+              <FormControl size="small" sx={{ minWidth: 140 }}>
+                <InputLabel>Status</InputLabel>
+                <Select
+                  label="Status"
+                  value={"All"}
+                  // onChange={(e) => setStatusFilter(e.target.value)}
+                >
+                  <MenuItem value="All">All</MenuItem>
+                  <MenuItem value="Pending">Pending</MenuItem>
+                  <MenuItem value="Completed">Completed</MenuItem>
+                  <MenuItem value="Rejected">Rejected</MenuItem>
+                </Select>
+              </FormControl>
+            </Box>
           </Box>
 
           <Paper
@@ -1016,19 +1058,39 @@ const ReviewerDashboard: React.FC = () => {
               </Typography>
             </Box>
 
-            <Button
-              variant="outlined"
-              startIcon={<CloseIcon />}
-              onClick={handleCloseApprovedReviewTasksScreen}
-              sx={{
-                borderRadius: 2,
-                textTransform: "none",
-                fontWeight: 600,
-                px: 3,
-              }}
-            >
-              Back to Dashboard
-            </Button>
+            <Box sx={{ display: "flex", gap: 1, alignItems: "center" }}>
+              <LocalizationProvider dateAdapter={AdapterDayjs}>
+                <DatePicker
+                  views={["year", "month"]}
+                  label="Select Month"
+                  value={dayjs()}
+                  // onChange={(newValue) => {
+                  //   if (newValue) {
+                  //     setCurrentMonth(newValue.toDate());
+                  //   }
+                  // }}
+                  slotProps={{
+                    textField: {
+                      size: "small",
+                    },
+                  }}
+                />
+              </LocalizationProvider>
+
+              <FormControl size="small" sx={{ minWidth: 140 }}>
+                <InputLabel>Status</InputLabel>
+                <Select
+                  label="Status"
+                  value={"All"}
+                  // onChange={(e) => setStatusFilter(e.target.value)}
+                >
+                  <MenuItem value="All">All</MenuItem>
+                  <MenuItem value="Pending">Pending</MenuItem>
+                  <MenuItem value="Completed">Completed</MenuItem>
+                  <MenuItem value="Rejected">Rejected</MenuItem>
+                </Select>
+              </FormControl>
+            </Box>
           </Box>
 
           <Paper
@@ -1103,19 +1165,39 @@ const ReviewerDashboard: React.FC = () => {
               </Typography>
             </Box>
 
-            <Button
-              variant="outlined"
-              startIcon={<CloseIcon />}
-              onClick={handleCloseRejectedReviewTasksScreen}
-              sx={{
-                borderRadius: 2,
-                textTransform: "none",
-                fontWeight: 600,
-                px: 3,
-              }}
-            >
-              Back to Dashboard
-            </Button>
+            <Box sx={{ display: "flex", gap: 1, alignItems: "center" }}>
+              <LocalizationProvider dateAdapter={AdapterDayjs}>
+                <DatePicker
+                  views={["year", "month"]}
+                  label="Select Month"
+                  value={dayjs()}
+                  // onChange={(newValue) => {
+                  //   if (newValue) {
+                  //     setCurrentMonth(newValue.toDate());
+                  //   }
+                  // }}
+                  slotProps={{
+                    textField: {
+                      size: "small",
+                    },
+                  }}
+                />
+              </LocalizationProvider>
+
+              <FormControl size="small" sx={{ minWidth: 140 }}>
+                <InputLabel>Status</InputLabel>
+                <Select
+                  label="Status"
+                  value={"All"}
+                  // onChange={(e) => setStatusFilter(e.target.value)}
+                >
+                  <MenuItem value="All">All</MenuItem>
+                  <MenuItem value="Pending">Pending</MenuItem>
+                  <MenuItem value="Completed">Completed</MenuItem>
+                  <MenuItem value="Rejected">Rejected</MenuItem>
+                </Select>
+              </FormControl>
+            </Box>
           </Box>
 
           <Paper

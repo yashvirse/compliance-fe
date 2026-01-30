@@ -21,13 +21,16 @@ import {
   TextField,
   Tooltip,
   IconButton,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
 } from "@mui/material";
 import type { GridColDef } from "@mui/x-data-grid";
 import {
   CheckCircle,
   Assignment,
   Cancel,
-  Close as CloseIcon,
   ThumbUp as ApproveIcon,
   ThumbDown as RejectIcon,
   Visibility as EyeIcon,
@@ -40,7 +43,6 @@ import {
   approveCheckTask,
   rejectCheckTask,
   clearTaskActionError,
-  clearError,
 } from "./checkerslice/CheckerDashboard.Slice";
 import {
   selectCheckerTaskCounts,
@@ -59,6 +61,10 @@ import {
 import { selectUser } from "../login/slice/Login.selector";
 import TaskMovementDialog from "../../components/common/TaskMovementDialog";
 import CommonDataTable from "../../components/common/CommonDataTable";
+import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
+import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
+import { DatePicker } from "@mui/x-date-pickers/DatePicker";
+import dayjs from "dayjs";
 
 const CheckerDashboard: React.FC = () => {
   const theme = useTheme();
@@ -142,29 +148,26 @@ const CheckerDashboard: React.FC = () => {
       setAllTasksLoading(false);
     }
   };
-  const handleClosePendingCheckTasksDialog = () => {
-    setPendingCheckTasksOpen(false);
-    // Refresh dashboard counts when returning to dashboard
-    if (user?.id) {
-      dispatch(fetchCheckerTaskCount(user.id));
-    }
-  };
+  // const handleClosePendingCheckTasksDialog = () => {
+  //   setPendingCheckTasksOpen(false);
+  //   if (user?.id) {
+  //     dispatch(fetchCheckerTaskCount(user.id));
+  //   }
+  // };
 
-  const handleCloseApprovedCheckTasksDialog = () => {
-    setApprovedCheckTasksOpen(false);
-    // Refresh dashboard counts when returning to dashboard
-    if (user?.id) {
-      dispatch(fetchCheckerTaskCount(user.id));
-    }
-  };
+  // const handleCloseApprovedCheckTasksDialog = () => {
+  //   setApprovedCheckTasksOpen(false);
+  //   if (user?.id) {
+  //     dispatch(fetchCheckerTaskCount(user.id));
+  //   }
+  // };
 
-  const handleCloseRejectedCheckTasksDialog = () => {
-    setRejectedCheckTasksOpen(false);
-    // Refresh dashboard counts when returning to dashboard
-    if (user?.id) {
-      dispatch(fetchCheckerTaskCount(user.id));
-    }
-  };
+  // const handleCloseRejectedCheckTasksDialog = () => {
+  //   setRejectedCheckTasksOpen(false);
+  //   if (user?.id) {
+  //     dispatch(fetchCheckerTaskCount(user.id));
+  //   }
+  // };
 
   const handleApproveClick = (taskId: string) => {
     setSelectedTaskId(taskId);
@@ -241,14 +244,13 @@ const CheckerDashboard: React.FC = () => {
       dispatch(fetchCheckerTaskCount(user.id));
     }
   }, [dispatch, user?.id]);
-  const handleCloseDialog = () => {
-    setTasksOpen(false);
-    dispatch(clearError());
-    // Refresh dashboard counts when returning to dashboard
-    if (user?.id) {
-      dispatch(fetchCheckerTaskCount(user.id));
-    }
-  };
+  // const handleCloseDialog = () => {
+  //   setTasksOpen(false);
+  //   dispatch(clearError());
+  //   if (user?.id) {
+  //     dispatch(fetchCheckerTaskCount(user.id));
+  //   }
+  // };
   const pendingCheckCount = counts?.pendingCount ?? 0;
   const approvedCount = counts?.approvedCount ?? 0;
   const rejectedCount = counts?.rejectedCount ?? 0;
@@ -841,19 +843,39 @@ const CheckerDashboard: React.FC = () => {
                 View all your pending, approved, and rejected tasks
               </Typography>
             </Box>
-            <Button
-              variant="outlined"
-              startIcon={<CloseIcon />}
-              onClick={handleCloseDialog}
-              sx={{
-                borderRadius: 2,
-                textTransform: "none",
-                fontWeight: 600,
-                px: 3,
-              }}
-            >
-              Back to Dashboard
-            </Button>
+            <Box sx={{ display: "flex", gap: 1, alignItems: "center" }}>
+              <LocalizationProvider dateAdapter={AdapterDayjs}>
+                <DatePicker
+                  views={["year", "month"]}
+                  label="Select Month"
+                  value={dayjs()}
+                  // onChange={(newValue) => {
+                  //   if (newValue) {
+                  //     setCurrentMonth(newValue.toDate());
+                  //   }
+                  // }}
+                  slotProps={{
+                    textField: {
+                      size: "small",
+                    },
+                  }}
+                />
+              </LocalizationProvider>
+
+              <FormControl size="small" sx={{ minWidth: 140 }}>
+                <InputLabel>Status</InputLabel>
+                <Select
+                  label="Status"
+                  value={"All"}
+                  // onChange={(e) => setStatusFilter(e.target.value)}
+                >
+                  <MenuItem value="All">All</MenuItem>
+                  <MenuItem value="Pending">Pending</MenuItem>
+                  <MenuItem value="Completed">Completed</MenuItem>
+                  <MenuItem value="Rejected">Rejected</MenuItem>
+                </Select>
+              </FormControl>
+            </Box>
           </Box>
 
           <Paper
@@ -925,19 +947,39 @@ const CheckerDashboard: React.FC = () => {
                 Review and verify pending tasks
               </Typography>
             </Box>
-            <Button
-              variant="outlined"
-              startIcon={<CloseIcon />}
-              onClick={handleClosePendingCheckTasksDialog}
-              sx={{
-                borderRadius: 2,
-                textTransform: "none",
-                fontWeight: 600,
-                px: 3,
-              }}
-            >
-              Back to Dashboard
-            </Button>
+            <Box sx={{ display: "flex", gap: 1, alignItems: "center" }}>
+              <LocalizationProvider dateAdapter={AdapterDayjs}>
+                <DatePicker
+                  views={["year", "month"]}
+                  label="Select Month"
+                  value={dayjs()}
+                  // onChange={(newValue) => {
+                  //   if (newValue) {
+                  //     setCurrentMonth(newValue.toDate());
+                  //   }
+                  // }}
+                  slotProps={{
+                    textField: {
+                      size: "small",
+                    },
+                  }}
+                />
+              </LocalizationProvider>
+
+              <FormControl size="small" sx={{ minWidth: 140 }}>
+                <InputLabel>Status</InputLabel>
+                <Select
+                  label="Status"
+                  value={"All"}
+                  // onChange={(e) => setStatusFilter(e.target.value)}
+                >
+                  <MenuItem value="All">All</MenuItem>
+                  <MenuItem value="Pending">Pending</MenuItem>
+                  <MenuItem value="Completed">Completed</MenuItem>
+                  <MenuItem value="Rejected">Rejected</MenuItem>
+                </Select>
+              </FormControl>
+            </Box>
           </Box>
 
           <Paper
@@ -1012,19 +1054,39 @@ const CheckerDashboard: React.FC = () => {
                 View your approved tasks
               </Typography>
             </Box>
-            <Button
-              variant="outlined"
-              startIcon={<CloseIcon />}
-              onClick={handleCloseApprovedCheckTasksDialog}
-              sx={{
-                borderRadius: 2,
-                textTransform: "none",
-                fontWeight: 600,
-                px: 3,
-              }}
-            >
-              Back to Dashboard
-            </Button>
+            <Box sx={{ display: "flex", gap: 1, alignItems: "center" }}>
+              <LocalizationProvider dateAdapter={AdapterDayjs}>
+                <DatePicker
+                  views={["year", "month"]}
+                  label="Select Month"
+                  value={dayjs()}
+                  // onChange={(newValue) => {
+                  //   if (newValue) {
+                  //     setCurrentMonth(newValue.toDate());
+                  //   }
+                  // }}
+                  slotProps={{
+                    textField: {
+                      size: "small",
+                    },
+                  }}
+                />
+              </LocalizationProvider>
+
+              <FormControl size="small" sx={{ minWidth: 140 }}>
+                <InputLabel>Status</InputLabel>
+                <Select
+                  label="Status"
+                  value={"All"}
+                  // onChange={(e) => setStatusFilter(e.target.value)}
+                >
+                  <MenuItem value="All">All</MenuItem>
+                  <MenuItem value="Pending">Pending</MenuItem>
+                  <MenuItem value="Completed">Completed</MenuItem>
+                  <MenuItem value="Rejected">Rejected</MenuItem>
+                </Select>
+              </FormControl>
+            </Box>
           </Box>
 
           <Paper
@@ -1099,19 +1161,39 @@ const CheckerDashboard: React.FC = () => {
                 View your rejected check tasks
               </Typography>
             </Box>
-            <Button
-              variant="outlined"
-              startIcon={<CloseIcon />}
-              onClick={handleCloseRejectedCheckTasksDialog}
-              sx={{
-                borderRadius: 2,
-                textTransform: "none",
-                fontWeight: 600,
-                px: 3,
-              }}
-            >
-              Back to Dashboard
-            </Button>
+            <Box sx={{ display: "flex", gap: 1, alignItems: "center" }}>
+              <LocalizationProvider dateAdapter={AdapterDayjs}>
+                <DatePicker
+                  views={["year", "month"]}
+                  label="Select Month"
+                  value={dayjs()}
+                  // onChange={(newValue) => {
+                  //   if (newValue) {
+                  //     setCurrentMonth(newValue.toDate());
+                  //   }
+                  // }}
+                  slotProps={{
+                    textField: {
+                      size: "small",
+                    },
+                  }}
+                />
+              </LocalizationProvider>
+
+              <FormControl size="small" sx={{ minWidth: 140 }}>
+                <InputLabel>Status</InputLabel>
+                <Select
+                  label="Status"
+                  value={"All"}
+                  // onChange={(e) => setStatusFilter(e.target.value)}
+                >
+                  <MenuItem value="All">All</MenuItem>
+                  <MenuItem value="Pending">Pending</MenuItem>
+                  <MenuItem value="Completed">Completed</MenuItem>
+                  <MenuItem value="Rejected">Rejected</MenuItem>
+                </Select>
+              </FormControl>
+            </Box>
           </Box>
 
           <Paper

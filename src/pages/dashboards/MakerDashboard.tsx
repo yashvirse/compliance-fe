@@ -21,13 +21,16 @@ import {
   TextField,
   Tooltip,
   IconButton,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
 } from "@mui/material";
 import type { GridColDef } from "@mui/x-data-grid";
 import {
   CheckCircle,
   Assignment,
   Cancel,
-  Close as CloseIcon,
   ThumbUp as ApproveIcon,
   ThumbDown as RejectIcon,
   Visibility as EyeIcon,
@@ -39,7 +42,6 @@ import {
   fetchRejectedTasks,
   approveTask,
   rejectTask,
-  clearError,
   clearTaskActionError,
 } from "./makerslice/MakerDashboard.Slice";
 import {
@@ -60,6 +62,10 @@ import { selectUser } from "../login/slice/Login.selector";
 import TaskMovementDialog from "../../components/common/TaskMovementDialog";
 import CommonDataTable from "../../components/common/CommonDataTable";
 import HourglassEmptyIcon from "@mui/icons-material/HourglassEmpty";
+import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
+import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
+import { DatePicker } from "@mui/x-date-pickers/DatePicker";
+import dayjs from "dayjs";
 
 const MakerDashboard: React.FC = () => {
   const theme = useTheme();
@@ -594,38 +600,34 @@ const MakerDashboard: React.FC = () => {
     }
   };
 
-  const handleCloseDialog = () => {
-    setTasksOpen(false);
-    dispatch(clearError());
-    // Refresh dashboard counts when returning to dashboard
-    if (user?.id) {
-      dispatch(fetchTaskCount(user.id));
-    }
-  };
+  // const handleCloseDialog = () => {
+  //   setTasksOpen(false);
+  //   dispatch(clearError());
+  //   if (user?.id) {
+  //     dispatch(fetchTaskCount(user.id));
+  //   }
+  // };
 
-  const handleClosePendingTasksDialog = () => {
-    setPendingTasksOpen(false);
-    // Refresh dashboard counts when returning to dashboard
-    if (user?.id) {
-      dispatch(fetchTaskCount(user.id));
-    }
-  };
+  // const handleClosePendingTasksDialog = () => {
+  //   setPendingTasksOpen(false);
+  //   if (user?.id) {
+  //     dispatch(fetchTaskCount(user.id));
+  //   }
+  // };
 
-  const handleCloseApprovedTasksDialog = () => {
-    setApprovedTasksOpen(false);
-    // Refresh dashboard counts when returning to dashboard
-    if (user?.id) {
-      dispatch(fetchTaskCount(user.id));
-    }
-  };
+  // const handleCloseApprovedTasksDialog = () => {
+  //   setApprovedTasksOpen(false);
+  //   if (user?.id) {
+  //     dispatch(fetchTaskCount(user.id));
+  //   }
+  // };
 
-  const handleCloseRejectedTasksDialog = () => {
-    setRejectedTasksOpen(false);
-    // Refresh dashboard counts when returning to dashboard
-    if (user?.id) {
-      dispatch(fetchTaskCount(user.id));
-    }
-  };
+  // const handleCloseRejectedTasksDialog = () => {
+  //   setRejectedTasksOpen(false);
+  //   if (user?.id) {
+  //     dispatch(fetchTaskCount(user.id));
+  //   }
+  // };
 
   const handleApproveClick = (taskId: string) => {
     setSelectedTaskId(taskId);
@@ -869,19 +871,39 @@ const MakerDashboard: React.FC = () => {
                 View all your pending, approved, and rejected tasks
               </Typography>
             </Box>
-            <Button
-              variant="outlined"
-              startIcon={<CloseIcon />}
-              onClick={handleCloseDialog}
-              sx={{
-                borderRadius: 2,
-                textTransform: "none",
-                fontWeight: 600,
-                px: 3,
-              }}
-            >
-              Back to Dashboard
-            </Button>
+            <Box sx={{ display: "flex", gap: 1, alignItems: "center" }}>
+              <LocalizationProvider dateAdapter={AdapterDayjs}>
+                <DatePicker
+                  views={["year", "month"]}
+                  label="Select Month"
+                  value={dayjs()}
+                  // onChange={(newValue) => {
+                  //   if (newValue) {
+                  //     setCurrentMonth(newValue.toDate());
+                  //   }
+                  // }}
+                  slotProps={{
+                    textField: {
+                      size: "small",
+                    },
+                  }}
+                />
+              </LocalizationProvider>
+
+              <FormControl size="small" sx={{ minWidth: 140 }}>
+                <InputLabel>Status</InputLabel>
+                <Select
+                  label="Status"
+                  value={"All"}
+                  // onChange={(e) => setStatusFilter(e.target.value)}
+                >
+                  <MenuItem value="All">All</MenuItem>
+                  <MenuItem value="Pending">Pending</MenuItem>
+                  <MenuItem value="Completed">Completed</MenuItem>
+                  <MenuItem value="Rejected">Rejected</MenuItem>
+                </Select>
+              </FormControl>
+            </Box>
           </Box>
 
           <Paper
@@ -953,19 +975,39 @@ const MakerDashboard: React.FC = () => {
                 Review and take action on pending tasks
               </Typography>
             </Box>
-            <Button
-              variant="outlined"
-              startIcon={<CloseIcon />}
-              onClick={handleClosePendingTasksDialog}
-              sx={{
-                borderRadius: 2,
-                textTransform: "none",
-                fontWeight: 600,
-                px: 3,
-              }}
-            >
-              Back to Dashboard
-            </Button>
+            <Box sx={{ display: "flex", gap: 1, alignItems: "center" }}>
+              <LocalizationProvider dateAdapter={AdapterDayjs}>
+                <DatePicker
+                  views={["year", "month"]}
+                  label="Select Month"
+                  value={dayjs()}
+                  // onChange={(newValue) => {
+                  //   if (newValue) {
+                  //     setCurrentMonth(newValue.toDate());
+                  //   }
+                  // }}
+                  slotProps={{
+                    textField: {
+                      size: "small",
+                    },
+                  }}
+                />
+              </LocalizationProvider>
+
+              <FormControl size="small" sx={{ minWidth: 140 }}>
+                <InputLabel>Status</InputLabel>
+                <Select
+                  label="Status"
+                  value={"All"}
+                  // onChange={(e) => setStatusFilter(e.target.value)}
+                >
+                  <MenuItem value="All">All</MenuItem>
+                  <MenuItem value="Pending">Pending</MenuItem>
+                  <MenuItem value="Completed">Completed</MenuItem>
+                  <MenuItem value="Rejected">Rejected</MenuItem>
+                </Select>
+              </FormControl>
+            </Box>
           </Box>
 
           <Paper
@@ -1040,19 +1082,39 @@ const MakerDashboard: React.FC = () => {
                 View your approved tasks
               </Typography>
             </Box>
-            <Button
-              variant="outlined"
-              startIcon={<CloseIcon />}
-              onClick={handleCloseApprovedTasksDialog}
-              sx={{
-                borderRadius: 2,
-                textTransform: "none",
-                fontWeight: 600,
-                px: 3,
-              }}
-            >
-              Back to Dashboard
-            </Button>
+            <Box sx={{ display: "flex", gap: 1, alignItems: "center" }}>
+              <LocalizationProvider dateAdapter={AdapterDayjs}>
+                <DatePicker
+                  views={["year", "month"]}
+                  label="Select Month"
+                  value={dayjs()}
+                  // onChange={(newValue) => {
+                  //   if (newValue) {
+                  //     setCurrentMonth(newValue.toDate());
+                  //   }
+                  // }}
+                  slotProps={{
+                    textField: {
+                      size: "small",
+                    },
+                  }}
+                />
+              </LocalizationProvider>
+
+              <FormControl size="small" sx={{ minWidth: 140 }}>
+                <InputLabel>Status</InputLabel>
+                <Select
+                  label="Status"
+                  value={"All"}
+                  // onChange={(e) => setStatusFilter(e.target.value)}
+                >
+                  <MenuItem value="All">All</MenuItem>
+                  <MenuItem value="Pending">Pending</MenuItem>
+                  <MenuItem value="Completed">Completed</MenuItem>
+                  <MenuItem value="Rejected">Rejected</MenuItem>
+                </Select>
+              </FormControl>
+            </Box>
           </Box>
 
           <Paper
@@ -1127,19 +1189,39 @@ const MakerDashboard: React.FC = () => {
                 View your rejected tasks
               </Typography>
             </Box>
-            <Button
-              variant="outlined"
-              startIcon={<CloseIcon />}
-              onClick={handleCloseRejectedTasksDialog}
-              sx={{
-                borderRadius: 2,
-                textTransform: "none",
-                fontWeight: 600,
-                px: 3,
-              }}
-            >
-              Back to Dashboard
-            </Button>
+            <Box sx={{ display: "flex", gap: 1, alignItems: "center" }}>
+              <LocalizationProvider dateAdapter={AdapterDayjs}>
+                <DatePicker
+                  views={["year", "month"]}
+                  label="Select Month"
+                  value={dayjs()}
+                  // onChange={(newValue) => {
+                  //   if (newValue) {
+                  //     setCurrentMonth(newValue.toDate());
+                  //   }
+                  // }}
+                  slotProps={{
+                    textField: {
+                      size: "small",
+                    },
+                  }}
+                />
+              </LocalizationProvider>
+
+              <FormControl size="small" sx={{ minWidth: 140 }}>
+                <InputLabel>Status</InputLabel>
+                <Select
+                  label="Status"
+                  value={"All"}
+                  // onChange={(e) => setStatusFilter(e.target.value)}
+                >
+                  <MenuItem value="All">All</MenuItem>
+                  <MenuItem value="Pending">Pending</MenuItem>
+                  <MenuItem value="Completed">Completed</MenuItem>
+                  <MenuItem value="Rejected">Rejected</MenuItem>
+                </Select>
+              </FormControl>
+            </Box>
           </Box>
 
           <Paper
