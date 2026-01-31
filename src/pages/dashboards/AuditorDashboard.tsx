@@ -66,6 +66,7 @@ import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import dayjs from "dayjs";
+import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 
 const AuditorDashboard: React.FC = () => {
   const theme = useTheme();
@@ -123,27 +124,27 @@ const AuditorDashboard: React.FC = () => {
       setRejectedTasksOpen(true);
     }
   };
-  // const handleCloseDialog = () => {
-  //   setTasksOpen(false);
-  //   dispatch(clearError());
-  //   if (user?.id) {
-  //     dispatch(fetchTaskCount(user.id));
-  //   }
-  // };
-  // const handleClosePending = () => {
-  //   setPendingTasksOpen(false);
-  //   if (user?.id) dispatch(fetchTaskCount(user.id));
-  // };
+  const handleCloseDialog = () => {
+    setTasksOpen(false);
+    dispatch(clearError());
+    if (user?.id) {
+      dispatch(fetchTaskCount(user.id));
+    }
+  };
+  const handleClosePending = () => {
+    setPendingTasksOpen(false);
+    if (user?.id) dispatch(fetchTaskCount(user.id));
+  };
 
-  // const handleCloseApproved = () => {
-  //   setApprovedTasksOpen(false);
-  //   if (user?.id) dispatch(fetchTaskCount(user.id));
-  // };
+  const handleCloseApproved = () => {
+    setApprovedTasksOpen(false);
+    if (user?.id) dispatch(fetchTaskCount(user.id));
+  };
 
-  // const handleCloseRejected = () => {
-  //   setRejectedTasksOpen(false);
-  //   if (user?.id) dispatch(fetchTaskCount(user.id));
-  // };
+  const handleCloseRejected = () => {
+    setRejectedTasksOpen(false);
+    if (user?.id) dispatch(fetchTaskCount(user.id));
+  };
 
   const handleViewTaskMovement = (task: any) => {
     setSelectedTask(task);
@@ -288,11 +289,15 @@ const AuditorDashboard: React.FC = () => {
         headerName: "S.No.",
         width: 70,
         sortable: false,
-        filterable: false,
-        align: "left",
-        headerAlign: "left",
-        renderCell: (params) =>
-          params.api.getRowIndexRelativeToVisibleRows(params.id) + 1,
+        renderCell: (params) => {
+          const page = params.api.state.pagination.paginationModel.page;
+          const pageSize = params.api.state.pagination.paginationModel.pageSize;
+          const rowIndex = params.api.getRowIndexRelativeToVisibleRows(
+            params.id,
+          );
+
+          return page * pageSize + rowIndex + 1;
+        },
       },
       { field: "siteName", headerName: "Site Name", flex: 1, minWidth: 160 },
       {
@@ -427,13 +432,17 @@ const AuditorDashboard: React.FC = () => {
       {
         field: "sno",
         headerName: "S.No.",
-        width: 60,
+        width: 70,
         sortable: false,
-        filterable: false,
-        align: "left",
-        headerAlign: "left",
-        renderCell: (params) =>
-          params.api.getRowIndexRelativeToVisibleRows(params.id) + 1,
+        renderCell: (params) => {
+          const page = params.api.state.pagination.paginationModel.page;
+          const pageSize = params.api.state.pagination.paginationModel.pageSize;
+          const rowIndex = params.api.getRowIndexRelativeToVisibleRows(
+            params.id,
+          );
+
+          return page * pageSize + rowIndex + 1;
+        },
       },
       { field: "siteName", headerName: "Site Name", flex: 1, minWidth: 100 },
       {
@@ -558,11 +567,15 @@ const AuditorDashboard: React.FC = () => {
         headerName: "S.No.",
         width: 70,
         sortable: false,
-        filterable: false,
-        align: "left",
-        headerAlign: "left",
-        renderCell: (params) =>
-          params.api.getRowIndexRelativeToVisibleRows(params.id) + 1,
+        renderCell: (params) => {
+          const page = params.api.state.pagination.paginationModel.page;
+          const pageSize = params.api.state.pagination.paginationModel.pageSize;
+          const rowIndex = params.api.getRowIndexRelativeToVisibleRows(
+            params.id,
+          );
+
+          return page * pageSize + rowIndex + 1;
+        },
       },
       { field: "siteName", headerName: "Site Name", flex: 1, minWidth: 160 },
       {
@@ -645,11 +658,15 @@ const AuditorDashboard: React.FC = () => {
         headerName: "S.No.",
         width: 70,
         sortable: false,
-        filterable: false,
-        align: "left",
-        headerAlign: "left",
-        renderCell: (params) =>
-          params.api.getRowIndexRelativeToVisibleRows(params.id) + 1,
+        renderCell: (params) => {
+          const page = params.api.state.pagination.paginationModel.page;
+          const pageSize = params.api.state.pagination.paginationModel.pageSize;
+          const rowIndex = params.api.getRowIndexRelativeToVisibleRows(
+            params.id,
+          );
+
+          return page * pageSize + rowIndex + 1;
+        },
       },
       { field: "siteName", headerName: "Site Name", flex: 1, minWidth: 160 },
       {
@@ -888,6 +905,22 @@ const AuditorDashboard: React.FC = () => {
                   <MenuItem value="Rejected">Rejected</MenuItem>
                 </Select>
               </FormControl>
+              <Button
+                variant="contained"
+                startIcon={<ArrowBackIcon />}
+                onClick={handleCloseDialog}
+                sx={{
+                  borderRadius: 2,
+                  textTransform: "none",
+                  px: 3,
+                  boxShadow: `0 4px 15px ${alpha(theme.palette.primary.main, 0.3)}`,
+                  "&:hover": {
+                    boxShadow: `0 6px 20px ${alpha(theme.palette.primary.main, 0.4)}`,
+                  },
+                }}
+              >
+                Back
+              </Button>
             </Box>
           </Box>
 
@@ -992,6 +1025,22 @@ const AuditorDashboard: React.FC = () => {
                   <MenuItem value="Rejected">Rejected</MenuItem>
                 </Select>
               </FormControl>
+              <Button
+                variant="contained"
+                startIcon={<ArrowBackIcon />}
+                onClick={handleClosePending}
+                sx={{
+                  borderRadius: 2,
+                  textTransform: "none",
+                  px: 3,
+                  boxShadow: `0 4px 15px ${alpha(theme.palette.primary.main, 0.3)}`,
+                  "&:hover": {
+                    boxShadow: `0 6px 20px ${alpha(theme.palette.primary.main, 0.4)}`,
+                  },
+                }}
+              >
+                Back
+              </Button>
             </Box>
           </Box>
 
@@ -1104,6 +1153,22 @@ const AuditorDashboard: React.FC = () => {
                   <MenuItem value="Rejected">Rejected</MenuItem>
                 </Select>
               </FormControl>
+              <Button
+                variant="contained"
+                startIcon={<ArrowBackIcon />}
+                onClick={handleCloseApproved}
+                sx={{
+                  borderRadius: 2,
+                  textTransform: "none",
+                  px: 3,
+                  boxShadow: `0 4px 15px ${alpha(theme.palette.primary.main, 0.3)}`,
+                  "&:hover": {
+                    boxShadow: `0 6px 20px ${alpha(theme.palette.primary.main, 0.4)}`,
+                  },
+                }}
+              >
+                Back
+              </Button>
             </Box>
           </Box>
 
@@ -1208,6 +1273,22 @@ const AuditorDashboard: React.FC = () => {
                   <MenuItem value="Rejected">Rejected</MenuItem>
                 </Select>
               </FormControl>
+              <Button
+                variant="contained"
+                startIcon={<ArrowBackIcon />}
+                onClick={handleCloseRejected}
+                sx={{
+                  borderRadius: 2,
+                  textTransform: "none",
+                  px: 3,
+                  boxShadow: `0 4px 15px ${alpha(theme.palette.primary.main, 0.3)}`,
+                  "&:hover": {
+                    boxShadow: `0 6px 20px ${alpha(theme.palette.primary.main, 0.4)}`,
+                  },
+                }}
+              >
+                Back
+              </Button>
             </Box>
           </Box>
 

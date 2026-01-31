@@ -13,10 +13,6 @@ import {
   Button,
   LinearProgress,
   IconButton,
-  FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
 } from "@mui/material";
 import type { GridColDef } from "@mui/x-data-grid";
 import {
@@ -63,6 +59,7 @@ import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import dayjs from "dayjs";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
+import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 
 const CustomerAdminDashboard: React.FC = () => {
   const theme = useTheme();
@@ -82,6 +79,7 @@ const CustomerAdminDashboard: React.FC = () => {
   const [fetchError, setFetchError] = useState<string | null>(null);
   const [taskMovementDialogOpen, setTaskMovementDialogOpen] = useState(false);
   const [selectedTask, setSelectedTask] = useState<any | null>(null);
+
   const handleCompletedTasksClick = async () => {
     setLoading(true);
     setFetchError(null);
@@ -128,15 +126,15 @@ const CustomerAdminDashboard: React.FC = () => {
   const rejectedTasks = assignedTasks.filter(
     (task) => task.taskCurrentStatus === "Rejected",
   );
-  // const handleBackToDashboard = () => {
-  //   setShowCompletedTable(false);
-  //   setShowPendingTable(false);
-  //   setShowRejectedTable(false);
-  //   setShowSiteWiseTable(false);
-  //   setLoading(false);
-  //   setFetchError(null);
-  //   dispatch(fetchCustomerAdminDashboard()); // optional: refresh counts
-  // };
+  const handleBackToDashboard = () => {
+    setShowCompletedTable(false);
+    setShowPendingTable(false);
+    setShowRejectedTable(false);
+    setShowSiteWiseTable(false);
+    setLoading(false);
+    setFetchError(null);
+    dispatch(fetchCustomerAdminDashboard()); // optional: refresh counts
+  };
 
   // compliance Calculation
   const today = new Date();
@@ -228,11 +226,15 @@ const CustomerAdminDashboard: React.FC = () => {
         headerName: "S.No.",
         width: 70,
         sortable: false,
-        filterable: false,
-        align: "left",
-        headerAlign: "left",
-        renderCell: (params) =>
-          params.api.getRowIndexRelativeToVisibleRows(params.id) + 1,
+        renderCell: (params) => {
+          const page = params.api.state.pagination.paginationModel.page;
+          const pageSize = params.api.state.pagination.paginationModel.pageSize;
+          const rowIndex = params.api.getRowIndexRelativeToVisibleRows(
+            params.id,
+          );
+
+          return page * pageSize + rowIndex + 1;
+        },
       },
       { field: "siteName", headerName: "Site Name", flex: 1, minWidth: 160 },
       {
@@ -313,11 +315,15 @@ const CustomerAdminDashboard: React.FC = () => {
         headerName: "S.No.",
         width: 70,
         sortable: false,
-        filterable: false,
-        align: "left",
-        headerAlign: "left",
-        renderCell: (params) =>
-          params.api.getRowIndexRelativeToVisibleRows(params.id) + 1,
+        renderCell: (params) => {
+          const page = params.api.state.pagination.paginationModel.page;
+          const pageSize = params.api.state.pagination.paginationModel.pageSize;
+          const rowIndex = params.api.getRowIndexRelativeToVisibleRows(
+            params.id,
+          );
+
+          return page * pageSize + rowIndex + 1;
+        },
       },
       { field: "siteName", headerName: "Site Name", flex: 1, minWidth: 160 },
       {
@@ -398,11 +404,15 @@ const CustomerAdminDashboard: React.FC = () => {
         headerName: "S.No.",
         width: 70,
         sortable: false,
-        filterable: false,
-        align: "left",
-        headerAlign: "left",
-        renderCell: (params) =>
-          params.api.getRowIndexRelativeToVisibleRows(params.id) + 1,
+        renderCell: (params) => {
+          const page = params.api.state.pagination.paginationModel.page;
+          const pageSize = params.api.state.pagination.paginationModel.pageSize;
+          const rowIndex = params.api.getRowIndexRelativeToVisibleRows(
+            params.id,
+          );
+
+          return page * pageSize + rowIndex + 1;
+        },
       },
       { field: "siteName", headerName: "Site Name", flex: 1, minWidth: 160 },
       {
@@ -927,20 +937,22 @@ const CustomerAdminDashboard: React.FC = () => {
                 }}
               />
             </LocalizationProvider>
-
-            <FormControl size="small" sx={{ minWidth: 140 }}>
-              <InputLabel>Status</InputLabel>
-              <Select
-                label="Status"
-                value={"All"}
-                // onChange={(e) => setStatusFilter(e.target.value)}
-              >
-                <MenuItem value="All">All</MenuItem>
-                <MenuItem value="Pending">Pending</MenuItem>
-                <MenuItem value="Completed">Completed</MenuItem>
-                <MenuItem value="Rejected">Rejected</MenuItem>
-              </Select>
-            </FormControl>
+            <Button
+              variant="contained"
+              startIcon={<ArrowBackIcon />}
+              onClick={handleBackToDashboard}
+              sx={{
+                borderRadius: 2,
+                textTransform: "none",
+                px: 3,
+                boxShadow: `0 4px 15px ${alpha(theme.palette.primary.main, 0.3)}`,
+                "&:hover": {
+                  boxShadow: `0 6px 20px ${alpha(theme.palette.primary.main, 0.4)}`,
+                },
+              }}
+            >
+              Back
+            </Button>
           </Box>
         </Box>
 
@@ -1026,19 +1038,22 @@ const CustomerAdminDashboard: React.FC = () => {
               />
             </LocalizationProvider>
 
-            <FormControl size="small" sx={{ minWidth: 140 }}>
-              <InputLabel>Status</InputLabel>
-              <Select
-                label="Status"
-                value={"All"}
-                // onChange={(e) => setStatusFilter(e.target.value)}
-              >
-                <MenuItem value="All">All</MenuItem>
-                <MenuItem value="Pending">Pending</MenuItem>
-                <MenuItem value="Completed">Completed</MenuItem>
-                <MenuItem value="Rejected">Rejected</MenuItem>
-              </Select>
-            </FormControl>
+            <Button
+              variant="contained"
+              startIcon={<ArrowBackIcon />}
+              onClick={handleBackToDashboard}
+              sx={{
+                borderRadius: 2,
+                textTransform: "none",
+                px: 3,
+                boxShadow: `0 4px 15px ${alpha(theme.palette.primary.main, 0.3)}`,
+                "&:hover": {
+                  boxShadow: `0 6px 20px ${alpha(theme.palette.primary.main, 0.4)}`,
+                },
+              }}
+            >
+              Back
+            </Button>
           </Box>
         </Box>
 
@@ -1124,19 +1139,22 @@ const CustomerAdminDashboard: React.FC = () => {
               />
             </LocalizationProvider>
 
-            <FormControl size="small" sx={{ minWidth: 140 }}>
-              <InputLabel>Status</InputLabel>
-              <Select
-                label="Status"
-                value={"All"}
-                // onChange={(e) => setStatusFilter(e.target.value)}
-              >
-                <MenuItem value="All">All</MenuItem>
-                <MenuItem value="Pending">Pending</MenuItem>
-                <MenuItem value="Completed">Completed</MenuItem>
-                <MenuItem value="Rejected">Rejected</MenuItem>
-              </Select>
-            </FormControl>
+            <Button
+              variant="contained"
+              startIcon={<ArrowBackIcon />}
+              onClick={handleBackToDashboard}
+              sx={{
+                borderRadius: 2,
+                textTransform: "none",
+                px: 3,
+                boxShadow: `0 4px 15px ${alpha(theme.palette.primary.main, 0.3)}`,
+                "&:hover": {
+                  boxShadow: `0 6px 20px ${alpha(theme.palette.primary.main, 0.4)}`,
+                },
+              }}
+            >
+              Back
+            </Button>
           </Box>
         </Box>
 

@@ -43,6 +43,7 @@ import {
   approveCheckTask,
   rejectCheckTask,
   clearTaskActionError,
+  clearError,
 } from "./checkerslice/CheckerDashboard.Slice";
 import {
   selectCheckerTaskCounts,
@@ -65,6 +66,7 @@ import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import dayjs from "dayjs";
+import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 
 const CheckerDashboard: React.FC = () => {
   const theme = useTheme();
@@ -148,26 +150,26 @@ const CheckerDashboard: React.FC = () => {
       setAllTasksLoading(false);
     }
   };
-  // const handleClosePendingCheckTasksDialog = () => {
-  //   setPendingCheckTasksOpen(false);
-  //   if (user?.id) {
-  //     dispatch(fetchCheckerTaskCount(user.id));
-  //   }
-  // };
+  const handleClosePendingCheckTasksDialog = () => {
+    setPendingCheckTasksOpen(false);
+    if (user?.id) {
+      dispatch(fetchCheckerTaskCount(user.id));
+    }
+  };
 
-  // const handleCloseApprovedCheckTasksDialog = () => {
-  //   setApprovedCheckTasksOpen(false);
-  //   if (user?.id) {
-  //     dispatch(fetchCheckerTaskCount(user.id));
-  //   }
-  // };
+  const handleCloseApprovedCheckTasksDialog = () => {
+    setApprovedCheckTasksOpen(false);
+    if (user?.id) {
+      dispatch(fetchCheckerTaskCount(user.id));
+    }
+  };
 
-  // const handleCloseRejectedCheckTasksDialog = () => {
-  //   setRejectedCheckTasksOpen(false);
-  //   if (user?.id) {
-  //     dispatch(fetchCheckerTaskCount(user.id));
-  //   }
-  // };
+  const handleCloseRejectedCheckTasksDialog = () => {
+    setRejectedCheckTasksOpen(false);
+    if (user?.id) {
+      dispatch(fetchCheckerTaskCount(user.id));
+    }
+  };
 
   const handleApproveClick = (taskId: string) => {
     setSelectedTaskId(taskId);
@@ -244,13 +246,13 @@ const CheckerDashboard: React.FC = () => {
       dispatch(fetchCheckerTaskCount(user.id));
     }
   }, [dispatch, user?.id]);
-  // const handleCloseDialog = () => {
-  //   setTasksOpen(false);
-  //   dispatch(clearError());
-  //   if (user?.id) {
-  //     dispatch(fetchCheckerTaskCount(user.id));
-  //   }
-  // };
+  const handleCloseDialog = () => {
+    setTasksOpen(false);
+    dispatch(clearError());
+    if (user?.id) {
+      dispatch(fetchCheckerTaskCount(user.id));
+    }
+  };
   const pendingCheckCount = counts?.pendingCount ?? 0;
   const approvedCount = counts?.approvedCount ?? 0;
   const rejectedCount = counts?.rejectedCount ?? 0;
@@ -294,11 +296,15 @@ const CheckerDashboard: React.FC = () => {
         headerName: "S.No.",
         width: 70,
         sortable: false,
-        filterable: false,
-        align: "left",
-        headerAlign: "left",
-        renderCell: (params) =>
-          params.api.getRowIndexRelativeToVisibleRows(params.id) + 1,
+        renderCell: (params) => {
+          const page = params.api.state.pagination.paginationModel.page;
+          const pageSize = params.api.state.pagination.paginationModel.pageSize;
+          const rowIndex = params.api.getRowIndexRelativeToVisibleRows(
+            params.id,
+          );
+
+          return page * pageSize + rowIndex + 1;
+        },
       },
       { field: "siteName", headerName: "Site Name", flex: 1, minWidth: 160 },
       {
@@ -436,11 +442,15 @@ const CheckerDashboard: React.FC = () => {
         headerName: "S.No.",
         width: 70,
         sortable: false,
-        filterable: false,
-        align: "left",
-        headerAlign: "left",
-        renderCell: (params) =>
-          params.api.getRowIndexRelativeToVisibleRows(params.id) + 1,
+        renderCell: (params) => {
+          const page = params.api.state.pagination.paginationModel.page;
+          const pageSize = params.api.state.pagination.paginationModel.pageSize;
+          const rowIndex = params.api.getRowIndexRelativeToVisibleRows(
+            params.id,
+          );
+
+          return page * pageSize + rowIndex + 1;
+        },
       },
       { field: "siteName", headerName: "Site Name", flex: 1, minWidth: 160 },
       {
@@ -565,11 +575,15 @@ const CheckerDashboard: React.FC = () => {
         headerName: "S.No.",
         width: 70,
         sortable: false,
-        filterable: false,
-        align: "left",
-        headerAlign: "left",
-        renderCell: (params) =>
-          params.api.getRowIndexRelativeToVisibleRows(params.id) + 1,
+        renderCell: (params) => {
+          const page = params.api.state.pagination.paginationModel.page;
+          const pageSize = params.api.state.pagination.paginationModel.pageSize;
+          const rowIndex = params.api.getRowIndexRelativeToVisibleRows(
+            params.id,
+          );
+
+          return page * pageSize + rowIndex + 1;
+        },
       },
       { field: "siteName", headerName: "Site Name", flex: 1, minWidth: 160 },
       {
@@ -652,11 +666,15 @@ const CheckerDashboard: React.FC = () => {
         headerName: "S.No.",
         width: 70,
         sortable: false,
-        filterable: false,
-        align: "left",
-        headerAlign: "left",
-        renderCell: (params) =>
-          params.api.getRowIndexRelativeToVisibleRows(params.id) + 1,
+        renderCell: (params) => {
+          const page = params.api.state.pagination.paginationModel.page;
+          const pageSize = params.api.state.pagination.paginationModel.pageSize;
+          const rowIndex = params.api.getRowIndexRelativeToVisibleRows(
+            params.id,
+          );
+
+          return page * pageSize + rowIndex + 1;
+        },
       },
       { field: "siteName", headerName: "Site Name", flex: 1, minWidth: 160 },
       {
@@ -875,6 +893,22 @@ const CheckerDashboard: React.FC = () => {
                   <MenuItem value="Rejected">Rejected</MenuItem>
                 </Select>
               </FormControl>
+              <Button
+                variant="contained"
+                startIcon={<ArrowBackIcon />}
+                onClick={handleCloseDialog}
+                sx={{
+                  borderRadius: 2,
+                  textTransform: "none",
+                  px: 3,
+                  boxShadow: `0 4px 15px ${alpha(theme.palette.primary.main, 0.3)}`,
+                  "&:hover": {
+                    boxShadow: `0 6px 20px ${alpha(theme.palette.primary.main, 0.4)}`,
+                  },
+                }}
+              >
+                Back
+              </Button>
             </Box>
           </Box>
 
@@ -941,7 +975,7 @@ const CheckerDashboard: React.FC = () => {
           >
             <Box>
               <Typography variant="h4" fontWeight={700} gutterBottom>
-                Pending Check Tasks
+                Pending Tasks
               </Typography>
               <Typography variant="body1" color="text.secondary">
                 Review and verify pending tasks
@@ -979,6 +1013,22 @@ const CheckerDashboard: React.FC = () => {
                   <MenuItem value="Rejected">Rejected</MenuItem>
                 </Select>
               </FormControl>
+              <Button
+                variant="contained"
+                startIcon={<ArrowBackIcon />}
+                onClick={handleClosePendingCheckTasksDialog}
+                sx={{
+                  borderRadius: 2,
+                  textTransform: "none",
+                  px: 3,
+                  boxShadow: `0 4px 15px ${alpha(theme.palette.primary.main, 0.3)}`,
+                  "&:hover": {
+                    boxShadow: `0 6px 20px ${alpha(theme.palette.primary.main, 0.4)}`,
+                  },
+                }}
+              >
+                Back
+              </Button>
             </Box>
           </Box>
 
@@ -1048,7 +1098,7 @@ const CheckerDashboard: React.FC = () => {
           >
             <Box>
               <Typography variant="h4" fontWeight={700} gutterBottom>
-                Approved Check Tasks
+                Approved Tasks
               </Typography>
               <Typography variant="body1" color="text.secondary">
                 View your approved tasks
@@ -1086,6 +1136,22 @@ const CheckerDashboard: React.FC = () => {
                   <MenuItem value="Rejected">Rejected</MenuItem>
                 </Select>
               </FormControl>
+              <Button
+                variant="contained"
+                startIcon={<ArrowBackIcon />}
+                onClick={handleCloseApprovedCheckTasksDialog}
+                sx={{
+                  borderRadius: 2,
+                  textTransform: "none",
+                  px: 3,
+                  boxShadow: `0 4px 15px ${alpha(theme.palette.primary.main, 0.3)}`,
+                  "&:hover": {
+                    boxShadow: `0 6px 20px ${alpha(theme.palette.primary.main, 0.4)}`,
+                  },
+                }}
+              >
+                Back
+              </Button>
             </Box>
           </Box>
 
@@ -1155,7 +1221,7 @@ const CheckerDashboard: React.FC = () => {
           >
             <Box>
               <Typography variant="h4" fontWeight={700} gutterBottom>
-                Rejected Check Tasks
+                Rejected Tasks
               </Typography>
               <Typography variant="body1" color="text.secondary">
                 View your rejected check tasks
@@ -1193,6 +1259,22 @@ const CheckerDashboard: React.FC = () => {
                   <MenuItem value="Rejected">Rejected</MenuItem>
                 </Select>
               </FormControl>
+              <Button
+                variant="contained"
+                startIcon={<ArrowBackIcon />}
+                onClick={handleCloseRejectedCheckTasksDialog}
+                sx={{
+                  borderRadius: 2,
+                  textTransform: "none",
+                  px: 3,
+                  boxShadow: `0 4px 15px ${alpha(theme.palette.primary.main, 0.3)}`,
+                  "&:hover": {
+                    boxShadow: `0 6px 20px ${alpha(theme.palette.primary.main, 0.4)}`,
+                  },
+                }}
+              >
+                Back
+              </Button>
             </Box>
           </Box>
 

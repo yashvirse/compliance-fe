@@ -39,13 +39,24 @@ const Task: React.FC = () => {
   const tasks = useSelector(selectTaskList);
   const loading = useSelector(selectTaskLoading);
   const error = useSelector(selectTaskError);
-  const [currentMonth, setCurrentMonth] = useState(new Date());
   const [showSnackbar, setShowSnackbar] = useState(false);
-  const [statusFilter, setStatusFilter] = useState<string>("All");
+  const [currentMonth, setCurrentMonth] = useState(new Date());
+  const [statusFilter, setStatusFilter] = useState<string>("Pending");
+
+  const getFromDateISO = (date: Date) => {
+    const lastDayOfMonth = new Date(date.getFullYear(), date.getMonth() + 1, 0);
+    return lastDayOfMonth.toISOString();
+  };
 
   useEffect(() => {
-    dispatch(fetchAssignedTasks());
-  }, [dispatch]);
+    const fromDate = getFromDateISO(currentMonth);
+    dispatch(
+      fetchAssignedTasks({
+        fromDate,
+        status: statusFilter,
+      }),
+    );
+  }, [dispatch, currentMonth, statusFilter]);
 
   useEffect(() => {
     if (error) {
@@ -174,19 +185,6 @@ const Task: React.FC = () => {
       },
     },
   ];
-  const filteredTasks = (tasks || []).filter((task) => {
-    if (!task.dueDate) return false;
-
-    const due = new Date(task.dueDate);
-    const monthMatch =
-      due.getMonth() === currentMonth.getMonth() &&
-      due.getFullYear() === currentMonth.getFullYear();
-
-    const statusMatch =
-      statusFilter === "All" || task.taskCurrentStatus === statusFilter;
-
-    return monthMatch && statusMatch;
-  });
 
   return (
     <Box>
@@ -210,6 +208,7 @@ const Task: React.FC = () => {
         </Box>
         <Box sx={{ display: "flex", gap: 1, alignItems: "center" }}>
           <LocalizationProvider dateAdapter={AdapterDayjs}>
+            {" "}
             <DatePicker
               views={["year", "month"]}
               label="Select Month"
@@ -219,12 +218,8 @@ const Task: React.FC = () => {
                   setCurrentMonth(newValue.toDate());
                 }
               }}
-              slotProps={{
-                textField: {
-                  size: "small",
-                },
-              }}
-            />
+              slotProps={{ textField: { size: "small" } }}
+            />{" "}
           </LocalizationProvider>
 
           <FormControl size="small" sx={{ minWidth: 140 }}>
@@ -234,7 +229,6 @@ const Task: React.FC = () => {
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
             >
-              <MenuItem value="All">All</MenuItem>
               <MenuItem value="Pending">Pending</MenuItem>
               <MenuItem value="Completed">Completed</MenuItem>
               <MenuItem value="Rejected">Rejected</MenuItem>
@@ -244,7 +238,7 @@ const Task: React.FC = () => {
       </Box>
 
       <CommonDataTable
-        rows={filteredTasks}
+        rows={tasks}
         columns={columns}
         getRowId={(row) => row.tblId}
         loading={loading}

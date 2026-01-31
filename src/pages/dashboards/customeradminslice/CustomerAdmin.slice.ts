@@ -96,7 +96,7 @@ export const fetchAssignedTasks = createAsyncThunk<
 // ✅ Site Wise Tasks API
 export const fetchsiteWiseTasks = createAsyncThunk<
   SiteWiseTaskResponse,
-  string, // 👈 siteId type
+  string,
   { rejectValue: string }
 >("customerAdmin/fetchsiteWiseTasks", async (siteId, { rejectWithValue }) => {
   try {

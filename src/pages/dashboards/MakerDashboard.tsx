@@ -43,6 +43,7 @@ import {
   approveTask,
   rejectTask,
   clearTaskActionError,
+  clearError,
 } from "./makerslice/MakerDashboard.Slice";
 import {
   selectTaskCounts,
@@ -66,6 +67,7 @@ import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import dayjs from "dayjs";
+import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 
 const MakerDashboard: React.FC = () => {
   const theme = useTheme();
@@ -95,11 +97,15 @@ const MakerDashboard: React.FC = () => {
         headerName: "S.No.",
         width: 70,
         sortable: false,
-        filterable: false,
-        align: "left",
-        headerAlign: "left",
-        renderCell: (params) =>
-          params.api.getRowIndexRelativeToVisibleRows(params.id) + 1,
+        renderCell: (params) => {
+          const page = params.api.state.pagination.paginationModel.page;
+          const pageSize = params.api.state.pagination.paginationModel.pageSize;
+          const rowIndex = params.api.getRowIndexRelativeToVisibleRows(
+            params.id,
+          );
+
+          return page * pageSize + rowIndex + 1;
+        },
       },
       { field: "siteName", headerName: "Site Name", flex: 1, minWidth: 160 },
       {
@@ -237,11 +243,15 @@ const MakerDashboard: React.FC = () => {
         headerName: "S.No.",
         width: 70,
         sortable: false,
-        filterable: false,
-        align: "left",
-        headerAlign: "left",
-        renderCell: (params) =>
-          params.api.getRowIndexRelativeToVisibleRows(params.id) + 1,
+        renderCell: (params) => {
+          const page = params.api.state.pagination.paginationModel.page;
+          const pageSize = params.api.state.pagination.paginationModel.pageSize;
+          const rowIndex = params.api.getRowIndexRelativeToVisibleRows(
+            params.id,
+          );
+
+          return page * pageSize + rowIndex + 1;
+        },
       },
       { field: "siteName", headerName: "Site Name", flex: 1, minWidth: 160 },
       {
@@ -365,11 +375,15 @@ const MakerDashboard: React.FC = () => {
         headerName: "S.No.",
         width: 70,
         sortable: false,
-        filterable: false,
-        align: "left",
-        headerAlign: "left",
-        renderCell: (params) =>
-          params.api.getRowIndexRelativeToVisibleRows(params.id) + 1,
+        renderCell: (params) => {
+          const page = params.api.state.pagination.paginationModel.page;
+          const pageSize = params.api.state.pagination.paginationModel.pageSize;
+          const rowIndex = params.api.getRowIndexRelativeToVisibleRows(
+            params.id,
+          );
+
+          return page * pageSize + rowIndex + 1;
+        },
       },
       { field: "siteName", headerName: "Site Name", flex: 1, minWidth: 160 },
       {
@@ -452,11 +466,15 @@ const MakerDashboard: React.FC = () => {
         headerName: "S.No.",
         width: 70,
         sortable: false,
-        filterable: false,
-        align: "left",
-        headerAlign: "left",
-        renderCell: (params) =>
-          params.api.getRowIndexRelativeToVisibleRows(params.id) + 1,
+        renderCell: (params) => {
+          const page = params.api.state.pagination.paginationModel.page;
+          const pageSize = params.api.state.pagination.paginationModel.pageSize;
+          const rowIndex = params.api.getRowIndexRelativeToVisibleRows(
+            params.id,
+          );
+
+          return page * pageSize + rowIndex + 1;
+        },
       },
       { field: "siteName", headerName: "Site Name", flex: 1, minWidth: 160 },
       {
@@ -600,34 +618,34 @@ const MakerDashboard: React.FC = () => {
     }
   };
 
-  // const handleCloseDialog = () => {
-  //   setTasksOpen(false);
-  //   dispatch(clearError());
-  //   if (user?.id) {
-  //     dispatch(fetchTaskCount(user.id));
-  //   }
-  // };
+  const handleCloseDialog = () => {
+    setTasksOpen(false);
+    dispatch(clearError());
+    if (user?.id) {
+      dispatch(fetchTaskCount(user.id));
+    }
+  };
 
-  // const handleClosePendingTasksDialog = () => {
-  //   setPendingTasksOpen(false);
-  //   if (user?.id) {
-  //     dispatch(fetchTaskCount(user.id));
-  //   }
-  // };
+  const handleClosePendingTasksDialog = () => {
+    setPendingTasksOpen(false);
+    if (user?.id) {
+      dispatch(fetchTaskCount(user.id));
+    }
+  };
 
-  // const handleCloseApprovedTasksDialog = () => {
-  //   setApprovedTasksOpen(false);
-  //   if (user?.id) {
-  //     dispatch(fetchTaskCount(user.id));
-  //   }
-  // };
+  const handleCloseApprovedTasksDialog = () => {
+    setApprovedTasksOpen(false);
+    if (user?.id) {
+      dispatch(fetchTaskCount(user.id));
+    }
+  };
 
-  // const handleCloseRejectedTasksDialog = () => {
-  //   setRejectedTasksOpen(false);
-  //   if (user?.id) {
-  //     dispatch(fetchTaskCount(user.id));
-  //   }
-  // };
+  const handleCloseRejectedTasksDialog = () => {
+    setRejectedTasksOpen(false);
+    if (user?.id) {
+      dispatch(fetchTaskCount(user.id));
+    }
+  };
 
   const handleApproveClick = (taskId: string) => {
     setSelectedTaskId(taskId);
@@ -903,6 +921,22 @@ const MakerDashboard: React.FC = () => {
                   <MenuItem value="Rejected">Rejected</MenuItem>
                 </Select>
               </FormControl>
+              <Button
+                variant="contained"
+                startIcon={<ArrowBackIcon />}
+                onClick={handleCloseDialog}
+                sx={{
+                  borderRadius: 2,
+                  textTransform: "none",
+                  px: 3,
+                  boxShadow: `0 4px 15px ${alpha(theme.palette.primary.main, 0.3)}`,
+                  "&:hover": {
+                    boxShadow: `0 6px 20px ${alpha(theme.palette.primary.main, 0.4)}`,
+                  },
+                }}
+              >
+                Back
+              </Button>
             </Box>
           </Box>
 
@@ -1007,6 +1041,22 @@ const MakerDashboard: React.FC = () => {
                   <MenuItem value="Rejected">Rejected</MenuItem>
                 </Select>
               </FormControl>
+              <Button
+                variant="contained"
+                startIcon={<ArrowBackIcon />}
+                onClick={handleClosePendingTasksDialog}
+                sx={{
+                  borderRadius: 2,
+                  textTransform: "none",
+                  px: 3,
+                  boxShadow: `0 4px 15px ${alpha(theme.palette.primary.main, 0.3)}`,
+                  "&:hover": {
+                    boxShadow: `0 6px 20px ${alpha(theme.palette.primary.main, 0.4)}`,
+                  },
+                }}
+              >
+                Back
+              </Button>
             </Box>
           </Box>
 
@@ -1114,6 +1164,22 @@ const MakerDashboard: React.FC = () => {
                   <MenuItem value="Rejected">Rejected</MenuItem>
                 </Select>
               </FormControl>
+              <Button
+                variant="contained"
+                startIcon={<ArrowBackIcon />}
+                onClick={handleCloseApprovedTasksDialog}
+                sx={{
+                  borderRadius: 2,
+                  textTransform: "none",
+                  px: 3,
+                  boxShadow: `0 4px 15px ${alpha(theme.palette.primary.main, 0.3)}`,
+                  "&:hover": {
+                    boxShadow: `0 6px 20px ${alpha(theme.palette.primary.main, 0.4)}`,
+                  },
+                }}
+              >
+                Back
+              </Button>
             </Box>
           </Box>
 
@@ -1221,6 +1287,22 @@ const MakerDashboard: React.FC = () => {
                   <MenuItem value="Rejected">Rejected</MenuItem>
                 </Select>
               </FormControl>
+              <Button
+                variant="contained"
+                startIcon={<ArrowBackIcon />}
+                onClick={handleCloseRejectedTasksDialog}
+                sx={{
+                  borderRadius: 2,
+                  textTransform: "none",
+                  px: 3,
+                  boxShadow: `0 4px 15px ${alpha(theme.palette.primary.main, 0.3)}`,
+                  "&:hover": {
+                    boxShadow: `0 6px 20px ${alpha(theme.palette.primary.main, 0.4)}`,
+                  },
+                }}
+              >
+                Back
+              </Button>
             </Box>
           </Box>
 

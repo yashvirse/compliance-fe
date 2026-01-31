@@ -46,19 +46,37 @@ const TaskMovementDialog: React.FC<TaskMovementDialogProps> = ({
   task,
 }) => {
   const theme = useTheme();
-  const handleDownloadFile = (filePath: string) => {
-    const baseUrl = "https://api.ocmspro.com/RemarkFile/path/";
-    const finalPath = filePath.startsWith("~")
-      ? filePath.replace("~", "")
-      : filePath;
-    const fileUrl = `${baseUrl}${finalPath}`;
-    alert("path" + JSON.stringify(fileUrl));
-    const link = document.createElement("a");
-    link.href = fileUrl;
-    link.download = filePath.split("/").pop() || "file";
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+  const handleDownloadFile = async (filePath: string) => {
+    try {
+      const baseUrl = "https://api.ocmspro.com/RemarkFile/";
+      const finalPath = filePath.startsWith("~")
+        ? filePath.replace("~", "")
+        : filePath;
+
+      const fileUrl = `${baseUrl}${finalPath}`;
+
+      // 🔽 fetch file as blob
+      const response = await fetch(fileUrl);
+      if (!response.ok) {
+        throw new Error("File download failed");
+      }
+
+      const blob = await response.blob();
+
+      // 🔽 create download link
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = finalPath.split("/").pop() || "file";
+      document.body.appendChild(link);
+      link.click();
+
+      // cleanup
+      link.remove();
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error("❌ Download error:", error);
+    }
   };
 
   return (

@@ -22,28 +22,32 @@ const initialState: TaskState = {
 
 export const fetchAssignedTasks = createAsyncThunk<
   TaskApiResponse,
-  void,
+  { fromDate: string; status: string },
   { rejectValue: string }
->("task/fetchAssignedTasks", async (_, { rejectWithValue }) => {
-  try {
-    const response = await apiService.get<TaskApiResponse>(
-      "Dashboard/getAssignedTask",
-    );
-    if (!response.isSuccess) {
+>(
+  "task/fetchAssignedTasks",
+  async ({ fromDate, status }, { rejectWithValue }) => {
+    try {
+      const response = await apiService.get<TaskApiResponse>(
+        `Dashboard/getAssignedTask?fromDate=${encodeURIComponent(fromDate)}&status=${encodeURIComponent(status)}`,
+      );
+
+      if (!response.isSuccess) {
+        return rejectWithValue(
+          response.message || "Failed to fetch assigned tasks",
+        );
+      }
+
+      return response;
+    } catch (error: any) {
       return rejectWithValue(
-        response.message || "Failed to fetch assigned tasks",
+        error?.response?.data?.message ||
+          error?.message ||
+          "Failed to fetch assigned tasks",
       );
     }
-
-    return response;
-  } catch (error: any) {
-    return rejectWithValue(
-      error?.response?.data?.message ||
-        error?.message ||
-        "Failed to fetch assigned tasks",
-    );
-  }
-});
+  },
+);
 
 /* ================= SLICE ================= */
 
