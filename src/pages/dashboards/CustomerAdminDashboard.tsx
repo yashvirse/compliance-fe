@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useMemo } from "react";
+import React, { useEffect, useState, useMemo, useRef } from "react";
 import {
   Box,
   Typography,
@@ -42,12 +42,16 @@ import { useDispatch, useSelector } from "react-redux";
 import {
   selectAssignedTasks,
   selectCompletedTasks,
+  selectRejectedTasks,
+  selectPendingTasks,
   selectCustomerAdminDashboardData,
   selectCustomerAdminError,
 } from "./customeradminslice/CustomerAdmin.selector"; // सिर्फ़ ये वाले selectors
 import {
   fetchAssignedTasks,
   fetchCompletedTasks,
+  fetchRejectedTasks,
+  fetchPendingTasks,
   fetchCustomerAdminDashboard,
   fetchsiteWiseTasks,
 } from "./customeradminslice/CustomerAdmin.slice";
@@ -68,9 +72,15 @@ const CustomerAdminDashboard: React.FC = () => {
   const error = useSelector(selectCustomerAdminError);
   const dashboardData = useSelector(selectCustomerAdminDashboardData);
   const completedTasks = useSelector(selectCompletedTasks);
+  const rejectedTasks = useSelector(selectRejectedTasks);
+  const pendingTasks = useSelector(selectPendingTasks);
   const assignedTasks = useSelector(selectAssignedTasks);
   const isSameOrBefore = (d1: Date, d2: Date) => d1.getTime() <= d2.getTime();
   const assignedTasksResponse = useSelector(selectAssignedTasks);
+  
+  // Prevent double API calls in StrictMode (React 18+ development)
+  const initializationRef = useRef(false);
+  
   const [showCompletedTable, setShowCompletedTable] = useState(false);
   const [showSiteWiseTable, setShowSiteWiseTable] = useState(false);
   const [showPendingTable, setShowPendingTable] = useState(false);
@@ -93,39 +103,34 @@ const CustomerAdminDashboard: React.FC = () => {
       setLoading(false);
     }
   };
-
   const handlePendingTasksClick = async () => {
     setLoading(true);
     setFetchError(null);
     setShowPendingTable(true);
 
     try {
-      await dispatch(fetchAssignedTasks()).unwrap();
+      await dispatch(fetchPendingTasks()).unwrap();
     } catch (err: any) {
-      setFetchError(err.message || "Failed to load completed tasks");
+      setFetchError(err.message || "Failed to load pending tasks");
     } finally {
       setLoading(false);
     }
   };
-  const pendingTasks = assignedTasks.filter(
-    (task) => task.taskCurrentStatus === "Pending",
-  );
+  // Pending tasks are now fetched from API and stored in selector
   const handleRejectedTasksClick = async () => {
     setLoading(true);
     setFetchError(null);
     setShowRejectedTable(true);
 
     try {
-      await dispatch(fetchAssignedTasks()).unwrap();
+      await dispatch(fetchRejectedTasks()).unwrap();
     } catch (err: any) {
-      setFetchError(err.message || "Failed to load completed tasks");
+      setFetchError(err.message || "Failed to load rejected tasks");
     } finally {
       setLoading(false);
     }
   };
-  const rejectedTasks = assignedTasks.filter(
-    (task) => task.taskCurrentStatus === "Rejected",
-  );
+  // Rejected tasks are now fetched from API and stored in selector
   const handleBackToDashboard = () => {
     setShowCompletedTable(false);
     setShowPendingTable(false);
@@ -546,6 +551,12 @@ const CustomerAdminDashboard: React.FC = () => {
   ];
 
   useEffect(() => {
+    // Prevent double effect execution in StrictMode during development
+    if (initializationRef.current) {
+      return;
+    }
+    initializationRef.current = true;
+    
     dispatch(fetchCustomerAdminDashboard());
     dispatch(fetchAssignedTasks());
   }, [dispatch]);

@@ -22,7 +22,9 @@ export interface CustomerAdminState {
   loading: boolean;
   error: string | null;
   dashboardData: CustomerAdminDashboardResult | null;
-  completedTasks: CompletedTask[];
+  completedTasks: AssignedTask[];
+  rejectedTasks: AssignedTask[];
+  pendingTasks: AssignedTask[];
   asignedTasks: AssignedTask[];
   siteWiseTasks: SiteWiseTask[];
 }

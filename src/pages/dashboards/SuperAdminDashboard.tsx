@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useRef } from "react";
 import {
   Box,
   Typography,
@@ -35,8 +35,17 @@ const SuperAdminDashboard: React.FC = () => {
   const loading = useAppSelector(selectSuperAdminLoading);
   const error = useAppSelector(selectSuperAdminError);
   const dashboardData = useAppSelector(selectSuperAdminDashboardData);
+  
+  // Prevent double API calls in StrictMode (React 18+ development)
+  const initializationRef = useRef(false);
 
   useEffect(() => {
+    // Prevent double effect execution in StrictMode during development
+    if (initializationRef.current) {
+      return;
+    }
+    initializationRef.current = true;
+    
     dispatch(fetchSuperAdminDashboard());
   }, [dispatch]);
 
