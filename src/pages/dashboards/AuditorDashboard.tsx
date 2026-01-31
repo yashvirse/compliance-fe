@@ -11,16 +11,15 @@ import {
   alpha,
   Button,
   Paper,
-  CircularProgress,
-  Alert,
-  Chip,
   Dialog,
   DialogTitle,
   DialogContent,
   DialogActions,
   TextField,
+  Chip,
   Tooltip,
-  IconButton,
+  Alert,
+  CircularProgress,
   FormControl,
   InputLabel,
   MenuItem,
@@ -33,35 +32,35 @@ import {
   Cancel,
   Assignment,
   Visibility as EyeIcon,
-  ThumbUp as ApproveIcon,
-  ThumbDown as RejectIcon,
 } from "@mui/icons-material";
+
+// Redux
 import {
   fetchTaskCount,
   fetchPendingTasks,
-  fetchApprovedTasks, // ये actions आपको slice में add करने होंगे
-  fetchRejectedTasks, // ये actions आपको slice में add करने होंगे
+  fetchApprovedTasks,
+  fetchRejectedTasks,
   clearError,
-  clearPendingTasksError,
   approveCheckTask,
   rejectCheckTask,
 } from "./auditorslice/AuditorDashboard.Slice";
 import {
   selectTaskCounts,
-  selectAuditorDashboardLoading,
-  selectAuditorDashboardError,
   selectPendingTasks,
-  selectPendingTasksLoading,
-  selectPendingTasksError,
-  selectApprovedTasks, // selectors add करने होंगे
-  selectApprovedTasksLoading,
-  selectApprovedTasksError,
+  selectApprovedTasks,
   selectRejectedTasks,
-  selectRejectedTasksLoading,
-  selectRejectedTasksError,
 } from "./auditorslice/AuditorDashboard.Selector";
 import { selectUser } from "../login/slice/Login.selector";
+
+// Components & Common
 import CommonDataTable from "../../components/common/CommonDataTable";
+import { LoadingState, EmptyState, ErrorState } from "../../components/common";
+
+// ✨ Utilities & Hooks
+import { useDashboardTasks } from "../../hooks/useDashboardTasks";
+import { createDepartmentChipColumn, createStatusColumn, createActionsColumn } from "../../utils/gridColumns.utils.tsx";
+
+// Date Picker
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
@@ -73,31 +72,35 @@ const AuditorDashboard: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
   const user = useSelector(selectUser);
 
-  const counts = useSelector(selectTaskCounts);
-  const loading = useSelector(selectAuditorDashboardLoading);
-  const error = useSelector(selectAuditorDashboardError);
+  // ✨ Consolidated state management using custom hook
+  const { data: dashboardData, loading, error } = useDashboardTasks({
+    selectPending: selectPendingTasks,
+    selectApproved: selectApprovedTasks,
+    selectRejected: selectRejectedTasks,
+    selectPendingLoading: (state) => (state as any).auditorDashboard?.pendingTasksLoading || false,
+    selectApprovedLoading: (state) => (state as any).auditorDashboard?.approvedTasksLoading || false,
+    selectRejectedLoading: (state) => (state as any).auditorDashboard?.rejectedTasksLoading || false,
+    selectCounts: selectTaskCounts,
+  });
+
+  // ✨ Extract data from consolidated state
+  const counts = dashboardData?.counts || {};
+  const pendingTasks = dashboardData?.pending || [];
+  const approvedTasks = dashboardData?.approved || [];
+  const rejectedTasks = dashboardData?.rejected || [];
+
+  // UI Navigation States
   const [allTasks, setAllTasks] = useState<any[]>([]);
   const [allTasksLoading, setAllTasksLoading] = useState(false);
   const [allTasksError, setAllTasksError] = useState<string | null>(null);
   const [tasksOpen, setTasksOpen] = useState(false);
-  const pendingTasks = useSelector(selectPendingTasks);
-  const pendingTasksLoading = useSelector(selectPendingTasksLoading);
-  const pendingTasksError = useSelector(selectPendingTasksError);
-
-  const approvedTasks = useSelector(selectApprovedTasks);
-  const approvedTasksLoading = useSelector(selectApprovedTasksLoading);
-  const approvedTasksError = useSelector(selectApprovedTasksError);
-
-  const rejectedTasks = useSelector(selectRejectedTasks);
-  const rejectedTasksLoading = useSelector(selectRejectedTasksLoading);
-  const rejectedTasksError = useSelector(selectRejectedTasksError);
-
   const [pendingTasksOpen, setPendingTasksOpen] = useState(false);
   const [approvedTasksOpen, setApprovedTasksOpen] = useState(false);
   const [rejectedTasksOpen, setRejectedTasksOpen] = useState(false);
   const [taskMovementDialogOpen, setTaskMovementDialogOpen] = useState(false);
   const [selectedTask, setSelectedTask] = useState<any | null>(null);
-  // Approve & Reject Dialog States
+  
+  // Dialog States
   const [approveDialogOpen, setApproveDialogOpen] = useState(false);
   const [rejectDialogOpen, setRejectDialogOpen] = useState(false);
   const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
@@ -124,6 +127,7 @@ const AuditorDashboard: React.FC = () => {
       setRejectedTasksOpen(true);
     }
   };
+
   const handleCloseDialog = () => {
     setTasksOpen(false);
     dispatch(clearError());
@@ -131,6 +135,7 @@ const AuditorDashboard: React.FC = () => {
       dispatch(fetchTaskCount(user.id));
     }
   };
+
   const handleClosePending = () => {
     setPendingTasksOpen(false);
     if (user?.id) dispatch(fetchTaskCount(user.id));
@@ -155,7 +160,7 @@ const AuditorDashboard: React.FC = () => {
     setTaskMovementDialogOpen(false);
     setSelectedTask(null);
   };
-  // Approve & Reject Handlers HR
+
   const handleApproveClick = (taskId: string) => {
     setSelectedTaskId(taskId);
     setRemark("");
@@ -169,6 +174,7 @@ const AuditorDashboard: React.FC = () => {
     setFile(null);
     setRejectDialogOpen(true);
   };
+
   const handleCloseApproveDialog = () => {
     setApproveDialogOpen(false);
     setSelectedTaskId(null);
@@ -182,32 +188,49 @@ const AuditorDashboard: React.FC = () => {
     setRemark("");
     setFile(null);
   };
+
   const handleConfirmApprove = async () => {
     if (selectedTaskId && remark.trim() && file) {
-      await dispatch(
-        approveCheckTask({ taskID: selectedTaskId, remark, file }),
-      );
-      setApproveDialogOpen(false);
-      setRemark("");
-      setFile(null);
-      setSelectedTaskId(null);
-      if (user?.id) {
-        dispatch(fetchPendingTasks(user.id));
-        dispatch(fetchTaskCount(user.id));
+      const payload = {
+        taskID: selectedTaskId,
+        remark,
+        file,
+      };
+      try {
+        await dispatch(approveCheckTask(payload) as any).unwrap();
+        setApproveDialogOpen(false);
+        setRemark("");
+        setFile(null);
+        setSelectedTaskId(null);
+        if (user?.id) {
+          dispatch(fetchPendingTasks(user.id));
+          dispatch(fetchTaskCount(user.id));
+        }
+      } catch (err) {
+        console.error('Approve failed:', err);
       }
     }
   };
 
   const handleConfirmReject = async () => {
     if (selectedTaskId && remark.trim() && file) {
-      await dispatch(rejectCheckTask({ taskID: selectedTaskId, remark, file }));
-      setRejectDialogOpen(false);
-      setRemark("");
-      setFile(null);
-      setSelectedTaskId(null);
-      if (user?.id) {
-        dispatch(fetchPendingTasks(user.id));
-        dispatch(fetchTaskCount(user.id));
+      const payload = {
+        taskID: selectedTaskId,
+        remark,
+        file,
+      };
+      try {
+        await dispatch(rejectCheckTask(payload) as any).unwrap();
+        setRejectDialogOpen(false);
+        setRemark("");
+        setFile(null);
+        setSelectedTaskId(null);
+        if (user?.id) {
+          dispatch(fetchPendingTasks(user.id));
+          dispatch(fetchTaskCount(user.id));
+        }
+      } catch (err) {
+        console.error('Reject failed:', err);
       }
     }
   };
@@ -282,6 +305,7 @@ const AuditorDashboard: React.FC = () => {
   ];
 
   // Column definitions for CommonDataTable
+  // ✨ Simplified using reusable utility functions
   const allTasksColumns: GridColDef[] = React.useMemo(
     () => [
       {
@@ -292,138 +316,26 @@ const AuditorDashboard: React.FC = () => {
         renderCell: (params) => {
           const page = params.api.state.pagination.paginationModel.page;
           const pageSize = params.api.state.pagination.paginationModel.pageSize;
-          const rowIndex = params.api.getRowIndexRelativeToVisibleRows(
-            params.id,
-          );
-
+          const rowIndex = params.api.getRowIndexRelativeToVisibleRows(params.id);
           return page * pageSize + rowIndex + 1;
         },
       },
       { field: "siteName", headerName: "Site Name", flex: 1, minWidth: 160 },
-      {
-        field: "activityName",
-        headerName: "Activity Name",
-        flex: 1.2,
-        minWidth: 400,
-      },
+      { field: "activityName", headerName: "Activity Name", flex: 1.2, minWidth: 400 },
       { field: "actName", headerName: "Act Name", flex: 1, minWidth: 180 },
-      {
-        field: "departmentName",
-        headerName: "Department",
-        flex: 1,
-        minWidth: 150,
-        renderCell: (params) => (
-          <Chip
-            label={params.value}
-            size="small"
-            sx={{
-              bgcolor: alpha(theme.palette.info.main, 0.1),
-              color: theme.palette.info.main,
-            }}
-          />
-        ),
-      },
+      createDepartmentChipColumn(theme, "info"),
       {
         field: "dueDate",
         headerName: "Due Date",
         flex: 1,
         minWidth: 100,
-        renderCell: (params) =>
-          params.value ? new Date(params.value).toLocaleDateString() : "-",
+        renderCell: (params) => params.value ? new Date(params.value).toLocaleDateString() : "-",
       },
-      {
-        field: "status",
-        headerName: "Status",
-        flex: 0.8,
-        minWidth: 120,
-        renderCell: (params) => (
-          <Chip
-            label={params.value}
-            size="small"
-            color={
-              params.value === "Approved"
-                ? "success"
-                : params.value === "Rejected"
-                  ? "error"
-                  : "warning"
-            }
-            sx={{ fontWeight: 600 }}
-          />
-        ),
-      },
-      {
-        field: "actions",
-        headerName: "Actions",
-        flex: 1.4,
-        minWidth: 120,
-        sortable: false,
-        filterable: false,
-        disableColumnMenu: true,
-        renderCell: (params) => {
-          const status = params.row.taskCurrentStatus;
-          const isPending = status === "Pending";
-
-          return (
-            <Box
-              sx={{
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "left",
-                height: "100%",
-                gap: 0.5,
-              }}
-            >
-              {isPending && (
-                <>
-                  <Tooltip title="Approve Task" arrow>
-                    <IconButton
-                      size="small"
-                      onClick={() => handleApproveClick(params.row.tblId)}
-                      sx={{
-                        color: theme.palette.success.main,
-                        "&:hover": {
-                          bgcolor: alpha(theme.palette.success.main, 0.1),
-                        },
-                      }}
-                    >
-                      <ApproveIcon fontSize="small" />
-                    </IconButton>
-                  </Tooltip>
-
-                  <Tooltip title="Reject Task" arrow>
-                    <IconButton
-                      size="small"
-                      onClick={() => handleRejectClick(params.row.tblId)}
-                      sx={{
-                        color: theme.palette.error.main,
-                        "&:hover": {
-                          bgcolor: alpha(theme.palette.error.main, 0.1),
-                        },
-                      }}
-                    >
-                      <RejectIcon fontSize="small" />
-                    </IconButton>
-                  </Tooltip>
-                </>
-              )}
-              <Tooltip title="View Task" arrow>
-                <IconButton
-                  size="small"
-                  onClick={() => handleViewTaskMovement(params.row)}
-                  sx={{
-                    color: theme.palette.primary.main,
-                    "&:hover": {
-                      bgcolor: alpha(theme.palette.primary.main, 0.1),
-                    },
-                  }}
-                >
-                  <EyeIcon fontSize="small" />
-                </IconButton>
-              </Tooltip>
-            </Box>
-          );
-        },
-      },
+      createStatusColumn(theme),
+      createActionsColumn(
+        { onView: handleViewTaskMovement, onApprove: handleApproveClick, onReject: handleRejectClick },
+        theme
+      ),
     ],
     [theme],
   );
@@ -437,125 +349,32 @@ const AuditorDashboard: React.FC = () => {
         renderCell: (params) => {
           const page = params.api.state.pagination.paginationModel.page;
           const pageSize = params.api.state.pagination.paginationModel.pageSize;
-          const rowIndex = params.api.getRowIndexRelativeToVisibleRows(
-            params.id,
-          );
-
+          const rowIndex = params.api.getRowIndexRelativeToVisibleRows(params.id);
           return page * pageSize + rowIndex + 1;
         },
       },
       { field: "siteName", headerName: "Site Name", flex: 1, minWidth: 100 },
-      {
-        field: "activityName",
-        headerName: "Activity Name",
-        flex: 1.2,
-        minWidth: 250,
-      },
+      { field: "activityName", headerName: "Activity Name", flex: 1.2, minWidth: 250 },
       { field: "actName", headerName: "Act Name", flex: 1, minWidth: 100 },
-      {
-        field: "departmentName",
-        headerName: "Department",
-        flex: 1,
-        minWidth: 120,
-        renderCell: (params) => (
-          <Chip
-            label={params.value}
-            size="small"
-            sx={{
-              bgcolor: alpha(theme.palette.info.main, 0.1),
-              color: theme.palette.info.main,
-            }}
-          />
-        ),
-      },
+      createDepartmentChipColumn(theme, "info"),
       {
         field: "dueDate",
         headerName: "Due Date",
         flex: 1,
         minWidth: 80,
-        renderCell: (params) =>
-          params.value ? new Date(params.value).toLocaleDateString() : "-",
+        renderCell: (params) => params.value ? new Date(params.value).toLocaleDateString() : "-",
       },
       {
         field: "status",
         headerName: "Status",
         flex: 0.8,
         minWidth: 100,
-        renderCell: () => (
-          <Chip
-            label="Pending"
-            size="small"
-            color="warning"
-            sx={{ fontWeight: 600 }}
-          />
-        ),
+        renderCell: () => <Chip label="Pending" size="small" color="warning" sx={{ fontWeight: 600 }} />,
       },
-      {
-        field: "actions",
-        headerName: "Actions",
-        flex: 1.2,
-        minWidth: 120,
-        sortable: false,
-        renderCell: (params) => (
-          <Box
-            sx={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "left",
-              height: "100%",
-              gap: 0.5,
-            }}
-          >
-            {/* Approve */}
-            <Tooltip title="Approve Task" arrow>
-              <IconButton
-                size="small"
-                onClick={() => handleApproveClick(params.row.tblId)}
-                sx={{
-                  color: theme.palette.success.main,
-                  "&:hover": {
-                    bgcolor: alpha(theme.palette.success.main, 0.1),
-                  },
-                }}
-              >
-                <ApproveIcon fontSize="small" />
-              </IconButton>
-            </Tooltip>
-
-            {/* Reject */}
-            <Tooltip title="Reject Task" arrow>
-              <IconButton
-                size="small"
-                onClick={() => handleRejectClick(params.row.tblId)}
-                sx={{
-                  color: theme.palette.error.main,
-                  "&:hover": {
-                    bgcolor: alpha(theme.palette.error.main, 0.1),
-                  },
-                }}
-              >
-                <RejectIcon fontSize="small" />
-              </IconButton>
-            </Tooltip>
-
-            {/* View */}
-            <Tooltip title="View Task" arrow>
-              <IconButton
-                size="small"
-                onClick={() => handleViewTaskMovement(params.row)}
-                sx={{
-                  color: theme.palette.primary.main,
-                  "&:hover": {
-                    bgcolor: alpha(theme.palette.primary.main, 0.1),
-                  },
-                }}
-              >
-                <EyeIcon fontSize="small" />
-              </IconButton>
-            </Tooltip>
-          </Box>
-        ),
-      },
+      createActionsColumn(
+        { onView: handleViewTaskMovement, onApprove: handleApproveClick, onReject: handleRejectClick },
+        theme
+      ),
     ],
     [theme],
   );
@@ -570,58 +389,27 @@ const AuditorDashboard: React.FC = () => {
         renderCell: (params) => {
           const page = params.api.state.pagination.paginationModel.page;
           const pageSize = params.api.state.pagination.paginationModel.pageSize;
-          const rowIndex = params.api.getRowIndexRelativeToVisibleRows(
-            params.id,
-          );
-
+          const rowIndex = params.api.getRowIndexRelativeToVisibleRows(params.id);
           return page * pageSize + rowIndex + 1;
         },
       },
       { field: "siteName", headerName: "Site Name", flex: 1, minWidth: 160 },
-      {
-        field: "activityName",
-        headerName: "Activity Name",
-        flex: 1.2,
-        minWidth: 400,
-      },
+      { field: "activityName", headerName: "Activity Name", flex: 1.2, minWidth: 400 },
       { field: "actName", headerName: "Act Name", flex: 1, minWidth: 180 },
-      {
-        field: "departmentName",
-        headerName: "Department",
-        flex: 1,
-        minWidth: 150,
-        renderCell: (params) => (
-          <Chip
-            label={params.value}
-            size="small"
-            sx={{
-              bgcolor: alpha(theme.palette.success.main, 0.1),
-              color: theme.palette.success.main,
-            }}
-          />
-        ),
-      },
+      createDepartmentChipColumn(theme, "success"),
       {
         field: "dueDate",
         headerName: "Due Date",
         flex: 1,
         minWidth: 100,
-        renderCell: (params) =>
-          params.value ? new Date(params.value).toLocaleDateString() : "-",
+        renderCell: (params) => params.value ? new Date(params.value).toLocaleDateString() : "-",
       },
       {
         field: "status",
         headerName: "Status",
         flex: 0.8,
         minWidth: 120,
-        renderCell: () => (
-          <Chip
-            label="Approved"
-            size="small"
-            color="success"
-            sx={{ fontWeight: 600 }}
-          />
-        ),
+        renderCell: () => <Chip label="Approved" size="small" color="success" sx={{ fontWeight: 600 }} />,
       },
       {
         field: "actions",
@@ -636,14 +424,8 @@ const AuditorDashboard: React.FC = () => {
               variant="text"
               startIcon={<EyeIcon />}
               onClick={() => handleViewTaskMovement(params.row)}
-              sx={{
-                color: theme.palette.primary.main,
-                textTransform: "none",
-                "&:hover": {
-                  bgcolor: alpha(theme.palette.primary.main, 0.1),
-                },
-              }}
-            ></Button>
+              sx={{ color: theme.palette.primary.main, textTransform: "none", "&:hover": { bgcolor: alpha(theme.palette.primary.main, 0.1) } }}
+            />
           </Tooltip>
         ),
       },
@@ -661,58 +443,27 @@ const AuditorDashboard: React.FC = () => {
         renderCell: (params) => {
           const page = params.api.state.pagination.paginationModel.page;
           const pageSize = params.api.state.pagination.paginationModel.pageSize;
-          const rowIndex = params.api.getRowIndexRelativeToVisibleRows(
-            params.id,
-          );
-
+          const rowIndex = params.api.getRowIndexRelativeToVisibleRows(params.id);
           return page * pageSize + rowIndex + 1;
         },
       },
       { field: "siteName", headerName: "Site Name", flex: 1, minWidth: 160 },
-      {
-        field: "activityName",
-        headerName: "Activity Name",
-        flex: 1.2,
-        minWidth: 400,
-      },
+      { field: "activityName", headerName: "Activity Name", flex: 1.2, minWidth: 400 },
       { field: "actName", headerName: "Act Name", flex: 1, minWidth: 180 },
-      {
-        field: "departmentName",
-        headerName: "Department",
-        flex: 1,
-        minWidth: 150,
-        renderCell: (params) => (
-          <Chip
-            label={params.value}
-            size="small"
-            sx={{
-              bgcolor: alpha(theme.palette.error.main, 0.1),
-              color: theme.palette.error.main,
-            }}
-          />
-        ),
-      },
+      createDepartmentChipColumn(theme, "error"),
       {
         field: "dueDate",
         headerName: "Due Date",
         flex: 1,
         minWidth: 100,
-        renderCell: (params) =>
-          params.value ? new Date(params.value).toLocaleDateString() : "-",
+        renderCell: (params) => params.value ? new Date(params.value).toLocaleDateString() : "-",
       },
       {
         field: "status",
         headerName: "Status",
         flex: 0.8,
         minWidth: 120,
-        renderCell: () => (
-          <Chip
-            label="Rejected"
-            size="small"
-            color="error"
-            sx={{ fontWeight: 600 }}
-          />
-        ),
+        renderCell: () => <Chip label="Rejected" size="small" color="error" sx={{ fontWeight: 600 }} />,
       },
       {
         field: "actions",
@@ -727,14 +478,8 @@ const AuditorDashboard: React.FC = () => {
               variant="text"
               startIcon={<EyeIcon />}
               onClick={() => handleViewTaskMovement(params.row)}
-              sx={{
-                color: theme.palette.primary.main,
-                textTransform: "none",
-                "&:hover": {
-                  bgcolor: alpha(theme.palette.primary.main, 0.1),
-                },
-              }}
-            ></Button>
+              sx={{ color: theme.palette.primary.main, textTransform: "none", "&:hover": { bgcolor: alpha(theme.palette.primary.main, 0.1) } }}
+            />
           </Tooltip>
         ),
       },
@@ -758,17 +503,17 @@ const AuditorDashboard: React.FC = () => {
             </Typography>
           </Box>
 
-          {error && (
+          {error?.overall && (
             <Alert
               severity="error"
               sx={{ mb: 3 }}
               onClose={() => dispatch(clearError())}
             >
-              {error}
+              {error.overall}
             </Alert>
           )}
 
-          {loading ? (
+          {loading.overall ? (
             <Box sx={{ display: "flex", justifyContent: "center", py: 4 }}>
               <CircularProgress />
             </Box>
@@ -935,34 +680,18 @@ const AuditorDashboard: React.FC = () => {
             }}
           >
             {allTasksLoading ? (
-              <Box
-                sx={{
-                  display: "flex",
-                  justifyContent: "center",
-                  alignItems: "center",
-                  minHeight: 400,
-                  flexDirection: "column",
-                  gap: 2,
-                }}
-              >
-                <CircularProgress size={50} />
-                <Typography variant="body1" color="text.secondary">
-                  Loading all tasks...
-                </Typography>
-              </Box>
+              <LoadingState message="Loading all tasks..." minHeight={400} />
             ) : allTasksError ? (
-              <Box sx={{ p: 4 }}>
-                <Alert severity="error">{allTasksError}</Alert>
-              </Box>
+              <ErrorState 
+                error={allTasksError}
+                onRetry={handleTotalTasksClick}
+              />
             ) : allTasks.length === 0 ? (
-              <Box sx={{ textAlign: "center", py: 12 }}>
-                <Assignment
-                  sx={{ fontSize: 80, color: "text.disabled", mb: 2 }}
-                />
-                <Typography variant="h6" color="text.secondary" gutterBottom>
-                  No tasks found
-                </Typography>
-              </Box>
+              <EmptyState 
+                icon={<Assignment />} 
+                title="No Tasks Found"
+                minHeight={400}
+              />
             ) : (
               <CommonDataTable
                 rows={allTasks}
@@ -1054,48 +783,25 @@ const AuditorDashboard: React.FC = () => {
               overflow: "hidden",
             }}
           >
-            {pendingTasksLoading ? (
-              <Box
-                sx={{
-                  display: "flex",
-                  justifyContent: "center",
-                  alignItems: "center",
-                  minHeight: 400,
-                  flexDirection: "column",
-                  gap: 2,
-                }}
-              >
-                <CircularProgress size={50} />
-                <Typography variant="body1" color="text.secondary">
-                  Loading Pending Tasks...
-                </Typography>
-              </Box>
-            ) : pendingTasksError ? (
-              <Box sx={{ p: 4 }}>
-                <Alert
-                  severity="error"
-                  onClose={() => dispatch(clearPendingTasksError())}
-                >
-                  {pendingTasksError}
-                </Alert>
-              </Box>
+            {loading.pending ? (
+              <LoadingState message="Loading Pending Tasks..." minHeight={400} />
+            ) : error.pending ? (
+              <ErrorState 
+                error={error.pending} 
+                onRetry={() => user?.id && dispatch(fetchPendingTasks(user.id))}
+              />
             ) : pendingTasks.length === 0 ? (
-              <Box sx={{ textAlign: "center", py: 12 }}>
-                <Assignment
-                  sx={{ fontSize: 80, color: "text.disabled", mb: 2 }}
-                />
-                <Typography variant="h6" color="text.secondary" gutterBottom>
-                  No pending tasks
-                </Typography>
-                <Typography variant="body2" color="text.secondary">
-                  All tasks have been reviewed
-                </Typography>
-              </Box>
+              <EmptyState 
+                icon={<Assignment />} 
+                title="No Pending Tasks"
+                message="All tasks have been reviewed"
+                minHeight={400}
+              />
             ) : (
               <CommonDataTable
                 rows={pendingTasks}
                 columns={pendingTasksColumns}
-                loading={pendingTasksLoading}
+                loading={loading.pending}
                 getRowId={(row) => row.tblId}
                 autoHeight={true}
               />
@@ -1182,40 +888,24 @@ const AuditorDashboard: React.FC = () => {
               overflow: "hidden",
             }}
           >
-            {approvedTasksLoading ? (
-              <Box
-                sx={{
-                  display: "flex",
-                  justifyContent: "center",
-                  alignItems: "center",
-                  minHeight: 400,
-                  flexDirection: "column",
-                  gap: 2,
-                }}
-              >
-                <CircularProgress size={50} />
-                <Typography variant="body1" color="text.secondary">
-                  Loading Approved Tasks...
-                </Typography>
-              </Box>
-            ) : approvedTasksError ? (
-              <Box sx={{ p: 4 }}>
-                <Alert severity="error">{approvedTasksError}</Alert>
-              </Box>
+            {loading.approved ? (
+              <LoadingState message="Loading Approved Tasks..." minHeight={400} />
+            ) : error.approved ? (
+              <ErrorState 
+                error={error.approved}
+                onRetry={() => user?.id && dispatch(fetchApprovedTasks(user.id))}
+              />
             ) : approvedTasks.length === 0 ? (
-              <Box sx={{ textAlign: "center", py: 12 }}>
-                <Assignment
-                  sx={{ fontSize: 80, color: "text.disabled", mb: 2 }}
-                />
-                <Typography variant="h6" color="text.secondary" gutterBottom>
-                  No approved tasks
-                </Typography>
-              </Box>
+              <EmptyState 
+                icon={<Assignment />} 
+                title="No Approved Tasks"
+                minHeight={400}
+              />
             ) : (
               <CommonDataTable
                 rows={approvedTasks}
                 columns={approvedTasksColumns}
-                loading={approvedTasksLoading}
+                loading={loading.approved}
                 getRowId={(row) => row.tblId}
                 autoHeight={true}
               />
@@ -1302,40 +992,24 @@ const AuditorDashboard: React.FC = () => {
               overflow: "hidden",
             }}
           >
-            {rejectedTasksLoading ? (
-              <Box
-                sx={{
-                  display: "flex",
-                  justifyContent: "center",
-                  alignItems: "center",
-                  minHeight: 400,
-                  flexDirection: "column",
-                  gap: 2,
-                }}
-              >
-                <CircularProgress size={50} />
-                <Typography variant="body1" color="text.secondary">
-                  Loading Rejected Tasks...
-                </Typography>
-              </Box>
-            ) : rejectedTasksError ? (
-              <Box sx={{ p: 4 }}>
-                <Alert severity="error">{rejectedTasksError}</Alert>
-              </Box>
+            {loading.rejected ? (
+              <LoadingState message="Loading Rejected Tasks..." minHeight={400} />
+            ) : error.rejected ? (
+              <ErrorState 
+                error={error.rejected}
+                onRetry={() => user?.id && dispatch(fetchRejectedTasks(user.id))}
+              />
             ) : rejectedTasks.length === 0 ? (
-              <Box sx={{ textAlign: "center", py: 12 }}>
-                <Assignment
-                  sx={{ fontSize: 80, color: "text.disabled", mb: 2 }}
-                />
-                <Typography variant="h6" color="text.secondary" gutterBottom>
-                  No rejected tasks
-                </Typography>
-              </Box>
+              <EmptyState 
+                icon={<Assignment />} 
+                title="No Rejected Tasks"
+                minHeight={400}
+              />
             ) : (
               <CommonDataTable
                 rows={rejectedTasks}
                 columns={rejectedTasksColumns}
-                loading={rejectedTasksLoading}
+                loading={loading.rejected}
                 getRowId={(row) => row.tblId}
                 autoHeight={true}
               />
