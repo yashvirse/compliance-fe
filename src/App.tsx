@@ -62,6 +62,7 @@ import FileUploader from "./pages/tools/FileUploder.tsx";
 import AddFileUploader from "./pages/tools/AddFileUploader.tsx";
 import TemplateFormatter from "./pages/tools/TemplateFormatter.tsx";
 import AddTemplateFormater from "./pages/tools/AddTemplateFormater.tsx";
+import ScoreCard from "./pages/reports/ScoreCard/ScoreCard.tsx";
 
 const theme = createTheme({
   palette: {
@@ -449,6 +450,14 @@ function App() {
                 element={
                   <RoleBasedRoute allowedRoles={[UserRole.CUSTOMER_ADMIN]}>
                     <AddTemplateFormater />
+                  </RoleBasedRoute>
+                }
+              />
+              <Route
+                path="reports/score-card"
+                element={
+                  <RoleBasedRoute allowedRoles={[UserRole.CUSTOMER_ADMIN]}>
+                    <ScoreCard />
                   </RoleBasedRoute>
                 }
               />

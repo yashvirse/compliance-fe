@@ -58,7 +58,7 @@ const AddCustomerAdminUserPage: React.FC = () => {
   const [showSnackbar, setShowSnackbar] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState("");
   const [snackbarSeverity, setSnackbarSeverity] = useState<"success" | "error">(
-    "success"
+    "success",
   );
   const [showPassword, setShowPassword] = useState(false);
 
@@ -267,7 +267,7 @@ const AddCustomerAdminUserPage: React.FC = () => {
       }
 
       setSnackbarMessage(
-        isEditMode ? "User updated successfully" : "User added successfully"
+        isEditMode ? "User updated successfully" : "User added successfully",
       );
       setSnackbarSeverity("success");
       setShowSnackbar(true);
@@ -276,7 +276,7 @@ const AddCustomerAdminUserPage: React.FC = () => {
       }, 1500);
     } catch (err) {
       setSnackbarMessage(
-        error || (isEditMode ? "Failed to update user" : "Failed to add user")
+        error || (isEditMode ? "Failed to update user" : "Failed to add user"),
       );
       setSnackbarSeverity("error");
       setShowSnackbar(true);
@@ -611,15 +611,15 @@ const AddCustomerAdminUserPage: React.FC = () => {
                   fontWeight: 600,
                   boxShadow: `0 4px 12px ${alpha(
                     theme.palette.primary.main,
-                    0.3
+                    0.3,
                   )}`,
                 }}
               >
                 {loading
                   ? "Saving..."
                   : isEditMode
-                  ? "Update User"
-                  : "Save User"}
+                    ? "Update User"
+                    : "Save User"}
               </Button>
             </Box>
           </Grid>

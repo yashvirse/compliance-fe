@@ -57,7 +57,7 @@ const AddTemplateFormater: React.FC = () => {
   const [formErrors, setFormErrors] = useState<Record<string, string>>({});
   const companyId = localStorage.getItem("companyID") || "";
   const activityList = useSelector(
-    (state: any) => state.templateFormater.activities
+    (state: any) => state.templateFormater.activities,
   );
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -117,7 +117,7 @@ const AddTemplateFormater: React.FC = () => {
       setFileType(templateDetail.fileTye);
       const selectedStates = states
         .filter((s: StateItem) =>
-          templateDetail.stateName?.split(", ").includes(s.stateName)
+          templateDetail.stateName?.split(", ").includes(s.stateName),
         )
         .map((s: StateItem) => s.stateId);
 
@@ -159,14 +159,14 @@ const AddTemplateFormater: React.FC = () => {
       return;
     }
     const selectedStates = states.filter((s: StateItem) =>
-      stateId.includes(s.stateId)
+      stateId.includes(s.stateId),
     );
 
     const stateNames = selectedStates
       .map((s: { stateName: any }) => s.stateName)
       .join(", ");
     const selectedActivity = activityList.find(
-      (a: any) => a.activityId === activity
+      (a: any) => a.activityId === activity,
     );
     if (templateId) {
       dispatch(
@@ -183,7 +183,7 @@ const AddTemplateFormater: React.FC = () => {
             ? `${selectedActivity.actName} - ${selectedActivity.activityName}`
             : "",
           createdOn: new Date().toISOString(),
-        })
+        }),
       );
     } else {
       dispatch(
@@ -200,7 +200,7 @@ const AddTemplateFormater: React.FC = () => {
             ? `${selectedActivity.actName} - ${selectedActivity.activityName}`
             : "",
           createdOn: new Date().toISOString(),
-        })
+        }),
       );
     }
   };
@@ -245,7 +245,6 @@ const AddTemplateFormater: React.FC = () => {
                     name="slipName"
                     value={slipName}
                     onChange={handleChange}
-                    required
                     error={!!formErrors.slipName}
                     helperText={formErrors.slipName}
                   />
@@ -260,7 +259,6 @@ const AddTemplateFormater: React.FC = () => {
                       { label: "Muster Roll", value: "Muster Roll" },
                       { label: "Salary Register", value: "Salary Register" },
                     ]}
-                    required
                     error={!!formErrors.fileType}
                     helperText={formErrors.fileType}
                   />
@@ -274,7 +272,6 @@ const AddTemplateFormater: React.FC = () => {
                     name="stateId"
                     value={stateId}
                     onChange={handleChange}
-                    required
                     error={!!formErrors.stateId}
                     helperText={formErrors.stateId}
                     SelectProps={{ multiple: true }}
@@ -294,7 +291,7 @@ const AddTemplateFormater: React.FC = () => {
                     }
                     value={
                       activityList.find(
-                        (a: any) => a.activityId === activity
+                        (a: any) => a.activityId === activity,
                       ) || null
                     }
                     onChange={(_, newValue) => {
@@ -304,7 +301,6 @@ const AddTemplateFormater: React.FC = () => {
                       <TextField
                         {...params}
                         label="Applicable Activity"
-                        required
                         error={!!formErrors.activity}
                         helperText={formErrors.activity}
                       />

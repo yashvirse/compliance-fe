@@ -1,4 +1,4 @@
-import type { RootState } from '../../../app/store';
+import type { RootState } from "../../../app/store";
 
 // Task counts selectors
 export const selectReviewerTaskCounts = (state: RootState) =>
@@ -49,3 +49,6 @@ export const selectRejectedReviewTasksLoading = (state: RootState) =>
 
 export const selectRejectedReviewTasksError = (state: RootState) =>
   state.reviewerDashboard.rejectedReviewTasksError;
+
+export const selectAssignedTasks = (state: RootState) =>
+  state.reviewerDashboard.tasks;

@@ -47,114 +47,36 @@ export const fetchCustomerAdminDashboard = createAsyncThunk<
     }
   },
 );
-export const fetchCompletedTasks = createAsyncThunk<
-  GetAssignedTaskResponse,
-  void,
-  { rejectValue: string }
->("customerAdmin/fetchCompletedTasks", async (_, { rejectWithValue }) => {
-  try {
-    // Get first day of current month
-    const now = new Date();
-    const firstDayOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-    const fromDate = firstDayOfMonth.toISOString();
-
-    const response = await apiService.get<GetAssignedTaskResponse>(
-      `Dashboard/getAssignedTask?fromDate=${encodeURIComponent(fromDate)}&status=completed`,
-    );
-
-    if (!response.isSuccess) {
-      return rejectWithValue(response.message);
-    }
-
-    return response;
-  } catch (error: any) {
-    return rejectWithValue(
-      error?.response?.data?.message || "Failed to fetch completed tasks",
-    );
-  }
-});
 
 // ✅ Assigned Tasks API
 export const fetchAssignedTasks = createAsyncThunk<
   GetAssignedTaskResponse,
-  void,
+  { fromDate: string },
   { rejectValue: string }
->("customerAdmin/fetchAssignedTasks", async (_, { rejectWithValue }) => {
-  try {
-    const response = await apiService.get<GetAssignedTaskResponse>(
-      "Dashboard/getAssignedTask",
-    );
-    if (!response.isSuccess) {
+>(
+  "customerAdmin/fetchAssignedTasks",
+  async ({ fromDate }, { rejectWithValue }) => {
+    try {
+      const response = await apiService.get<GetAssignedTaskResponse>(
+        `Dashboard/getAssignedTask?fromDate=${encodeURIComponent(fromDate)}`,
+      );
+
+      if (!response.isSuccess) {
+        return rejectWithValue(
+          response.message || "Failed to fetch assigned tasks",
+        );
+      }
+
+      return response;
+    } catch (error: any) {
       return rejectWithValue(
-        response.message || "Failed to fetch assigned tasks",
+        error?.response?.data?.message ||
+          error?.message ||
+          "Failed to fetch assigned tasks",
       );
     }
-
-    return response;
-  } catch (error: any) {
-    return rejectWithValue(
-      error?.response?.data?.message ||
-        error?.message ||
-        "Failed to fetch assigned tasks",
-    );
-  }
-});
-
-// ✅ Rejected Tasks API
-export const fetchRejectedTasks = createAsyncThunk<
-  GetAssignedTaskResponse,
-  void,
-  { rejectValue: string }
->("customerAdmin/fetchRejectedTasks", async (_, { rejectWithValue }) => {
-  try {
-    // Get first day of current month
-    const now = new Date();
-    const firstDayOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-    const fromDate = firstDayOfMonth.toISOString();
-
-    const response = await apiService.get<GetAssignedTaskResponse>(
-      `Dashboard/getAssignedTask?fromDate=${encodeURIComponent(fromDate)}&status=Rejected`,
-    );
-
-    if (!response.isSuccess) {
-      return rejectWithValue(response.message);
-    }
-
-    return response;
-  } catch (error: any) {
-    return rejectWithValue(
-      error?.response?.data?.message || "Failed to fetch rejected tasks",
-    );
-  }
-});
-
-// ✅ Pending Tasks API
-export const fetchPendingTasks = createAsyncThunk<
-  GetAssignedTaskResponse,
-  void,
-  { rejectValue: string }
->("customerAdmin/fetchPendingTasks", async (_, { rejectWithValue }) => {
-  try {
-    // Get first day of current month
-    const now = new Date();
-    const firstDayOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-    const fromDate = firstDayOfMonth.toISOString();
-
-    const response = await apiService.get<GetAssignedTaskResponse>(
-      `Dashboard/getAssignedTask?fromDate=${encodeURIComponent(fromDate)}&status=Pending`,
-    );
-
-    if (!response.isSuccess) {
-      return rejectWithValue(response.message);
-    }
-
-    return response;
-  } catch (error: any) {
-    return rejectWithValue(
-      error?.response?.data?.message || "Failed to fetch pending tasks",
-    );
-  }
-});
+  },
+);
 
 // ✅ Site Wise Tasks API
 export const fetchsiteWiseTasks = createAsyncThunk<
@@ -205,18 +127,7 @@ const customerAdminSlice = createSlice({
         state.loading = false;
         state.error = action.payload || "Something went wrong";
       });
-    builder
-      .addCase(fetchCompletedTasks.pending, (state) => {
-        state.loading = true;
-      })
-      .addCase(fetchCompletedTasks.fulfilled, (state, action) => {
-        state.loading = false;
-        state.completedTasks = action.payload.result;
-      })
-      .addCase(fetchCompletedTasks.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload || "Something went wrong";
-      });
+
     builder
       .addCase(fetchAssignedTasks.pending, (state) => {
         state.loading = true;
@@ -230,30 +141,7 @@ const customerAdminSlice = createSlice({
         state.loading = false;
         state.error = action.payload || "Something went wrong";
       });
-    builder
-      .addCase(fetchRejectedTasks.pending, (state) => {
-        state.loading = true;
-      })
-      .addCase(fetchRejectedTasks.fulfilled, (state, action) => {
-        state.loading = false;
-        state.rejectedTasks = action.payload.result;
-      })
-      .addCase(fetchRejectedTasks.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload || "Something went wrong";
-      });
-    builder
-      .addCase(fetchPendingTasks.pending, (state) => {
-        state.loading = true;
-      })
-      .addCase(fetchPendingTasks.fulfilled, (state, action) => {
-        state.loading = false;
-        state.pendingTasks = action.payload.result;
-      })
-      .addCase(fetchPendingTasks.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload || "Something went wrong";
-      });
+
     builder
       .addCase(fetchsiteWiseTasks.pending, (state) => {
         state.loading = true;

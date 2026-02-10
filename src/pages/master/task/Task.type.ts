@@ -45,6 +45,7 @@ export interface Task {
   siteID: string | null;
   siteName: string | null;
   companyDomain: string;
+  frequency: string;
 }
 
 /* ================= TASK DETAILS (FLOW HISTORY) ================= */

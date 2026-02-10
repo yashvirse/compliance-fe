@@ -3,17 +3,16 @@ import { apiService } from "../../../services/api";
 import type {
   CheckerDashboardState,
   GetCheckerTaskCountResponse,
-  GetPendingCheckTasksResponse,
-  GetApprovedCheckTasksResponse,
-  GetRejectedCheckTasksResponse,
   ApproveCheckTaskRequest,
   ApproveCheckTaskResponse,
   RejectCheckTaskRequest,
   RejectCheckTaskResponse,
+  GetAssignedTasksResponse,
 } from "./CheckerDashboard.Type";
 
 // Initial state
 const initialState: CheckerDashboardState = {
+  tasks: [],
   pendingCheckTasks: [],
   approvedCheckTasks: [],
   rejectedCheckTasks: [],
@@ -42,104 +41,49 @@ export const fetchCheckerTaskCount = createAsyncThunk(
       );
 
       if (response.isSuccess && response.result) {
-        console.log("✅ Task counts received:", response.result);
         return response.result;
       }
 
-      console.error("❌ API error:", response.message);
       return rejectWithValue(
         response.message || "Failed to fetch dashboard counts",
       );
     } catch (error: any) {
-      console.error("❌ Fetch error:", error);
       return rejectWithValue(
         error?.message || "Failed to fetch dashboard counts",
       );
     }
   },
 );
-
-// Fetch pending check tasks
-export const fetchPendingCheckTasks = createAsyncThunk(
-  "checkerDashboard/fetchPendingCheckTasks",
-  async (userID: string, { rejectWithValue }) => {
+export const fetchAssignedTasks = createAsyncThunk<
+  GetAssignedTasksResponse,
+  { userID: string; fromDate: string; userStatus: string },
+  { rejectValue: string }
+>(
+  "customerAdmin/fetchAssignedTasks",
+  async ({ userID, fromDate, userStatus }, { rejectWithValue }) => {
     try {
-      const response = await apiService.get<GetPendingCheckTasksResponse>(
-        `Dashboard/getPendingTaskDtl?userID=${userID}`,
+      const response = await apiService.get<GetAssignedTasksResponse>(
+        `Dashboard/getAssignedTask?userID=${encodeURIComponent(
+          userID,
+        )}&fromDate=${encodeURIComponent(fromDate)}&userStatus=${encodeURIComponent(userStatus)}`,
       );
 
-      if (response.isSuccess) {
-        console.log("✅ Pending check tasks received:", response.result);
-        return response.result;
+      if (!response.isSuccess) {
+        return rejectWithValue(
+          response.message || "Failed to fetch assigned tasks",
+        );
       }
 
-      console.error("❌ API error:", response.message);
-      return rejectWithValue(
-        response.message || "Failed to fetch pending check tasks",
-      );
+      return response;
     } catch (error: any) {
-      console.error("❌ Fetch error:", error);
       return rejectWithValue(
-        error?.message || "Failed to fetch pending check tasks",
+        error?.response?.data?.message ||
+          error?.message ||
+          "Failed to fetch assigned tasks",
       );
     }
   },
 );
-
-// Fetch approved check tasks
-export const fetchApprovedCheckTasks = createAsyncThunk(
-  "checkerDashboard/fetchApprovedCheckTasks",
-  async (userID: string, { rejectWithValue }) => {
-    try {
-      const response = await apiService.get<GetApprovedCheckTasksResponse>(
-        `Dashboard/getApprovedTaskDtl?userID=${userID}`,
-      );
-
-      if (response.isSuccess) {
-        console.log("✅ Approved check tasks received:", response.result);
-        return response.result;
-      }
-
-      console.error("❌ API error:", response.message);
-      return rejectWithValue(
-        response.message || "Failed to fetch approved check tasks",
-      );
-    } catch (error: any) {
-      console.error("❌ Fetch error:", error);
-      return rejectWithValue(
-        error?.message || "Failed to fetch approved check tasks",
-      );
-    }
-  },
-);
-
-// Fetch rejected check tasks
-export const fetchRejectedCheckTasks = createAsyncThunk(
-  "checkerDashboard/fetchRejectedCheckTasks",
-  async (userID: string, { rejectWithValue }) => {
-    try {
-      const response = await apiService.get<GetRejectedCheckTasksResponse>(
-        `Dashboard/getRejectedTaskDtl?userID=${userID}`,
-      );
-
-      if (response.isSuccess) {
-        console.log("✅ Rejected check tasks received:", response.result);
-        return response.result;
-      }
-
-      console.error("❌ API error:", response.message);
-      return rejectWithValue(
-        response.message || "Failed to fetch rejected check tasks",
-      );
-    } catch (error: any) {
-      console.error("❌ Fetch error:", error);
-      return rejectWithValue(
-        error?.message || "Failed to fetch rejected check tasks",
-      );
-    }
-  },
-);
-
 // Approve check task
 export const approveCheckTask = createAsyncThunk<
   ApproveCheckTaskResponse,
@@ -233,45 +177,6 @@ const checkerDashboardSlice = createSlice({
         state.loading = false;
         state.error = action.payload as string;
       })
-      // Fetch pending check tasks
-      .addCase(fetchPendingCheckTasks.pending, (state) => {
-        state.pendingCheckTasksLoading = true;
-        state.pendingCheckTasksError = null;
-      })
-      .addCase(fetchPendingCheckTasks.fulfilled, (state, action) => {
-        state.pendingCheckTasksLoading = false;
-        state.pendingCheckTasks = action.payload;
-      })
-      .addCase(fetchPendingCheckTasks.rejected, (state, action) => {
-        state.pendingCheckTasksLoading = false;
-        state.pendingCheckTasksError = action.payload as string;
-      })
-      // Fetch approved check tasks
-      .addCase(fetchApprovedCheckTasks.pending, (state) => {
-        state.approvedCheckTasksLoading = true;
-        state.approvedCheckTasksError = null;
-      })
-      .addCase(fetchApprovedCheckTasks.fulfilled, (state, action) => {
-        state.approvedCheckTasksLoading = false;
-        state.approvedCheckTasks = action.payload;
-      })
-      .addCase(fetchApprovedCheckTasks.rejected, (state, action) => {
-        state.approvedCheckTasksLoading = false;
-        state.approvedCheckTasksError = action.payload as string;
-      })
-      // Fetch rejected check tasks
-      .addCase(fetchRejectedCheckTasks.pending, (state) => {
-        state.rejectedCheckTasksLoading = true;
-        state.rejectedCheckTasksError = null;
-      })
-      .addCase(fetchRejectedCheckTasks.fulfilled, (state, action) => {
-        state.rejectedCheckTasksLoading = false;
-        state.rejectedCheckTasks = action.payload;
-      })
-      .addCase(fetchRejectedCheckTasks.rejected, (state, action) => {
-        state.rejectedCheckTasksLoading = false;
-        state.rejectedCheckTasksError = action.payload as string;
-      })
       // Approve check task
       .addCase(approveCheckTask.pending, (state) => {
         state.taskActionsLoading = true;
@@ -299,6 +204,18 @@ const checkerDashboardSlice = createSlice({
         state.taskActionsLoading = false;
         state.taskActionsError =
           action.payload || "Failed to reject check task";
+      })
+      .addCase(fetchAssignedTasks.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(fetchAssignedTasks.fulfilled, (state, action) => {
+        state.loading = false;
+        state.tasks = action.payload.result || [];
+      })
+      .addCase(fetchAssignedTasks.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload || "Failed to fetch assigned tasks";
       });
   },
 });

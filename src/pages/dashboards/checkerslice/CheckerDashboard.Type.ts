@@ -1,4 +1,22 @@
 // Checker Dashboard Types - Consolidated
+export interface AssignedTask {
+  tblId: string;
+  activityName: string;
+  actName: string;
+  departmentName: string;
+  siteName: string;
+  siteID: string;
+  dueDate: string;
+  taskCurrentStatus: string;
+  userStatus: string;
+  frequency: string;
+}
+
+export interface GetAssignedTasksResponse {
+  isSuccess: boolean;
+  message: string;
+  result: AssignedTask[];
+}
 
 // ===== Pending Check Tasks =====
 export interface PendingCheckTaskDetail {
@@ -110,6 +128,7 @@ export interface GetRejectedCheckTasksResponse {
 
 // ===== Redux State =====
 export interface CheckerDashboardState {
+  tasks: AssignedTask[];
   // Pending Check Tasks
   pendingCheckTasks: PendingCheckTask[];
   // Approved Check Tasks

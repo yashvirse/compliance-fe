@@ -3,16 +3,15 @@ import { apiService } from "../../../services/api";
 import type {
   AuditorDashboardState,
   GetTaskCountResponse,
-  GetPendingTasksResponse,
-  GetApprovedTasksResponse,
-  GetRejectedTasksResponse,
   ApproveTaskResponse,
   ApproveTaskRequest,
   RejectTaskResponse,
   RejectTaskRequest,
+  GetAssignedTasksResponse,
 } from "./AuditorDashboard.Type";
 
 const initialState: AuditorDashboardState = {
+  tasks: [],
   pendingTasks: [],
   approvedTasks: [],
   rejectedTasks: [],
@@ -47,66 +46,32 @@ export const fetchTaskCount = createAsyncThunk(
     }
   },
 );
-
-// Fetch pending tasks
-export const fetchPendingTasks = createAsyncThunk(
-  "auditorDashboard/fetchPendingTasks",
-  async (userID: string, { rejectWithValue }) => {
+export const fetchAssignedTasks = createAsyncThunk<
+  GetAssignedTasksResponse,
+  { userID: string; fromDate: string; userStatus: string },
+  { rejectValue: string }
+>(
+  "customerAdmin/fetchAssignedTasks",
+  async ({ userID, fromDate, userStatus }, { rejectWithValue }) => {
     try {
-      const response = await apiService.get<GetPendingTasksResponse>(
-        `Dashboard/getPendingTaskDtl?userID=${userID}`,
+      const response = await apiService.get<GetAssignedTasksResponse>(
+        `Dashboard/getAssignedTask?userID=${encodeURIComponent(
+          userID,
+        )}&fromDate=${encodeURIComponent(fromDate)}&userStatus=${encodeURIComponent(userStatus)}`,
       );
-      if (response.isSuccess) {
-        return response.result;
-      }
-      return rejectWithValue(
-        response.message || "Failed to fetch pending tasks",
-      );
-    } catch (error: any) {
-      return rejectWithValue(error?.message || "Failed to fetch pending tasks");
-    }
-  },
-);
 
-// Fetch approved tasks
-export const fetchApprovedTasks = createAsyncThunk(
-  "auditorDashboard/fetchApprovedTasks",
-  async (userID: string, { rejectWithValue }) => {
-    try {
-      const response = await apiService.get<GetApprovedTasksResponse>(
-        `Dashboard/getApprovedTaskDtl?userID=${userID}`,
-      );
-      if (response.isSuccess) {
-        return response.result;
+      if (!response.isSuccess) {
+        return rejectWithValue(
+          response.message || "Failed to fetch assigned tasks",
+        );
       }
-      return rejectWithValue(
-        response.message || "Failed to fetch approved tasks",
-      );
+
+      return response;
     } catch (error: any) {
       return rejectWithValue(
-        error?.message || "Failed to fetch approved tasks",
-      );
-    }
-  },
-);
-
-// Fetch rejected tasks
-export const fetchRejectedTasks = createAsyncThunk(
-  "auditorDashboard/fetchRejectedTasks",
-  async (userID: string, { rejectWithValue }) => {
-    try {
-      const response = await apiService.get<GetRejectedTasksResponse>(
-        `Dashboard/getRejectedTaskDtl?userID=${userID}`,
-      );
-      if (response.isSuccess) {
-        return response.result;
-      }
-      return rejectWithValue(
-        response.message || "Failed to fetch rejected tasks",
-      );
-    } catch (error: any) {
-      return rejectWithValue(
-        error?.message || "Failed to fetch rejected tasks",
+        error?.response?.data?.message ||
+          error?.message ||
+          "Failed to fetch assigned tasks",
       );
     }
   },
@@ -211,48 +176,6 @@ const auditorDashboardSlice = createSlice({
         state.loading = false;
         state.error = action.payload as string;
       })
-
-      // Pending Tasks
-      .addCase(fetchPendingTasks.pending, (state) => {
-        state.pendingTasksLoading = true;
-        state.pendingTasksError = null;
-      })
-      .addCase(fetchPendingTasks.fulfilled, (state, action) => {
-        state.pendingTasksLoading = false;
-        state.pendingTasks = action.payload;
-      })
-      .addCase(fetchPendingTasks.rejected, (state, action) => {
-        state.pendingTasksLoading = false;
-        state.pendingTasksError = action.payload as string;
-      })
-
-      // Approved Tasks
-      .addCase(fetchApprovedTasks.pending, (state) => {
-        state.approvedTasksLoading = true;
-        state.approvedTasksError = null;
-      })
-      .addCase(fetchApprovedTasks.fulfilled, (state, action) => {
-        state.approvedTasksLoading = false;
-        state.approvedTasks = action.payload;
-      })
-      .addCase(fetchApprovedTasks.rejected, (state, action) => {
-        state.approvedTasksLoading = false;
-        state.approvedTasksError = action.payload as string;
-      })
-
-      // Rejected Tasks
-      .addCase(fetchRejectedTasks.pending, (state) => {
-        state.rejectedTasksLoading = true;
-        state.rejectedTasksError = null;
-      })
-      .addCase(fetchRejectedTasks.fulfilled, (state, action) => {
-        state.rejectedTasksLoading = false;
-        state.rejectedTasks = action.payload;
-      })
-      .addCase(fetchRejectedTasks.rejected, (state, action) => {
-        state.rejectedTasksLoading = false;
-        state.rejectedTasksError = action.payload as string;
-      })
       // Reject check task
       .addCase(rejectCheckTask.pending, (state) => {
         state.taskActionsLoading = true;
@@ -266,6 +189,18 @@ const auditorDashboardSlice = createSlice({
         state.taskActionsLoading = false;
         state.taskActionsError =
           action.payload || "Failed to reject check task";
+      })
+      .addCase(fetchAssignedTasks.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(fetchAssignedTasks.fulfilled, (state, action) => {
+        state.loading = false;
+        state.tasks = action.payload.result || [];
+      })
+      .addCase(fetchAssignedTasks.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload || "Failed to fetch assigned tasks";
       });
   },
 });

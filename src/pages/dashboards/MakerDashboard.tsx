@@ -26,7 +26,7 @@ import {
   Select,
   MenuItem,
 } from "@mui/material";
-import type { GridColDef } from "@mui/x-data-grid";
+import type { GridColDef, GridRenderCellParams } from "@mui/x-data-grid";
 import {
   CheckCircle,
   Assignment,
@@ -37,27 +37,17 @@ import {
 } from "@mui/icons-material";
 import {
   fetchTaskCount,
-  fetchPendingTasks,
-  fetchApprovedTasks,
-  fetchRejectedTasks,
   approveTask,
   rejectTask,
   clearTaskActionError,
   clearError,
+  fetchAssignedTasks,
 } from "./makerslice/MakerDashboard.Slice";
 import {
   selectTaskCounts,
   selectTaskActionsLoading,
   selectTaskActionsError,
-  selectPendingTasks,
-  selectPendingTasksLoading,
-  selectPendingTasksError,
-  selectApprovedTasks,
-  selectApprovedTasksLoading,
-  selectApprovedTasksError,
-  selectRejectedTasks,
-  selectRejectedTasksLoading,
-  selectRejectedTasksError,
+  selectAssignedTasks,
 } from "./makerslice/MakerDashboard.Selector";
 import { selectUser } from "../login/slice/Login.selector";
 import TaskMovementDialog from "../../components/common/TaskMovementDialog";
@@ -79,16 +69,33 @@ const MakerDashboard: React.FC = () => {
   const [allTasks, setAllTasks] = useState<any[]>([]);
   const [allTasksLoading, setAllTasksLoading] = useState(false);
   const [allTasksError, setAllTasksError] = useState<string | null>(null);
-  const pendingTasks = useSelector(selectPendingTasks);
-  const pendingTasksLoading = useSelector(selectPendingTasksLoading);
-  const pendingTasksError = useSelector(selectPendingTasksError);
-  const approvedTasks = useSelector(selectApprovedTasks);
-  const approvedTasksLoading = useSelector(selectApprovedTasksLoading);
-  const approvedTasksError = useSelector(selectApprovedTasksError);
-  const rejectedTasks = useSelector(selectRejectedTasks);
-  const rejectedTasksLoading = useSelector(selectRejectedTasksLoading);
-  const rejectedTasksError = useSelector(selectRejectedTasksError);
-
+  const pendingTasks = useSelector(selectAssignedTasks);
+  const pendingTasksLoading = useSelector(selectTaskActionsLoading);
+  const pendingTasksError = useSelector(selectTaskActionsError);
+  const approvedTasks = useSelector(selectAssignedTasks);
+  const approvedTasksLoading = useSelector(selectTaskActionsLoading);
+  const approvedTasksError = useSelector(selectTaskActionsError);
+  const rejectedTasks = useSelector(selectAssignedTasks);
+  const rejectedTasksLoading = useSelector(selectTaskActionsLoading);
+  const rejectedTasksError = useSelector(selectTaskActionsError);
+  const getFrequencyColor = (frequency: string) => {
+    switch (frequency) {
+      case "Weekly":
+        return "primary";
+      case "Fortnightly":
+        return "secondary";
+      case "Monthly":
+        return "success";
+      case "Half Yearly":
+        return "warning";
+      case "Annually":
+        return "error";
+      case "As Needed":
+        return "default";
+      default:
+        return "default";
+    }
+  };
   // Column definitions for CommonDataTable
   const allTasksColumns: GridColDef[] = React.useMemo(
     () => [
@@ -111,10 +118,15 @@ const MakerDashboard: React.FC = () => {
       {
         field: "activityName",
         headerName: "Activity Name",
-        flex: 1.2,
-        minWidth: 400,
+        flex: 1,
+        minWidth: 600,
+        valueGetter: (_value, row) => {
+          if (!row.actName) return row.activityName;
+          return `${row.actName} - ${row.activityName}`;
+        },
+        sortable: true,
+        filterable: true,
       },
-      { field: "actName", headerName: "Act Name", flex: 1, minWidth: 180 },
       {
         field: "departmentName",
         headerName: "Department",
@@ -132,6 +144,19 @@ const MakerDashboard: React.FC = () => {
         ),
       },
       {
+        field: "frequency",
+        headerName: "Frequency",
+        flex: 1,
+        minWidth: 130,
+        renderCell: (params: GridRenderCellParams) => (
+          <Chip
+            label={params.value}
+            color={getFrequencyColor(params.value as string) as any}
+            size="small"
+          />
+        ),
+      },
+      {
         field: "dueDate",
         headerName: "Due Date",
         flex: 1,
@@ -140,7 +165,7 @@ const MakerDashboard: React.FC = () => {
           params.value ? new Date(params.value).toLocaleDateString() : "-",
       },
       {
-        field: "status",
+        field: "userStatus",
         headerName: "Status",
         flex: 0.8,
         minWidth: 120,
@@ -168,7 +193,7 @@ const MakerDashboard: React.FC = () => {
         filterable: false,
         disableColumnMenu: true,
         renderCell: (params) => {
-          const status = params.row.taskCurrentStatus;
+          const status = params.row.userStatus;
           const isPending = status === "Pending";
 
           return (
@@ -198,7 +223,7 @@ const MakerDashboard: React.FC = () => {
                     </IconButton>
                   </Tooltip>
 
-                  <Tooltip title="Reject Task" arrow>
+                  {/* <Tooltip title="Reject Task" arrow>
                     <IconButton
                       size="small"
                       onClick={() => handleRejectClick(params.row.tblId)}
@@ -211,13 +236,13 @@ const MakerDashboard: React.FC = () => {
                     >
                       <RejectIcon fontSize="small" />
                     </IconButton>
-                  </Tooltip>
+                  </Tooltip> */}
                 </>
               )}
               <Tooltip title="View Task" arrow>
                 <IconButton
                   size="small"
-                  onClick={() => handleViewTaskMovement(params.row)}
+                  onClick={() => handleViewTaskMovement(params.row.tblId)}
                   sx={{
                     color: theme.palette.primary.main,
                     "&:hover": {
@@ -257,10 +282,15 @@ const MakerDashboard: React.FC = () => {
       {
         field: "activityName",
         headerName: "Activity Name",
-        flex: 1.2,
-        minWidth: 400,
+        flex: 1,
+        minWidth: 600,
+        valueGetter: (_value, row) => {
+          if (!row.actName) return row.activityName;
+          return `${row.actName} - ${row.activityName}`;
+        },
+        sortable: true,
+        filterable: true,
       },
-      { field: "actName", headerName: "Act Name", flex: 1, minWidth: 180 },
       {
         field: "departmentName",
         headerName: "Department",
@@ -278,6 +308,19 @@ const MakerDashboard: React.FC = () => {
         ),
       },
       {
+        field: "frequency",
+        headerName: "Frequency",
+        flex: 1,
+        minWidth: 130,
+        renderCell: (params: GridRenderCellParams) => (
+          <Chip
+            label={params.value}
+            color={getFrequencyColor(params.value as string) as any}
+            size="small"
+          />
+        ),
+      },
+      {
         field: "dueDate",
         headerName: "Due Date",
         flex: 1,
@@ -286,15 +329,21 @@ const MakerDashboard: React.FC = () => {
           params.value ? new Date(params.value).toLocaleDateString() : "-",
       },
       {
-        field: "status",
+        field: "userStatus",
         headerName: "Status",
         flex: 0.8,
         minWidth: 120,
-        renderCell: () => (
+        renderCell: (params) => (
           <Chip
-            label="Pending"
+            label={params.value}
             size="small"
-            color="warning"
+            color={
+              params.value === "Approved"
+                ? "success"
+                : params.value === "Rejected"
+                  ? "error"
+                  : "warning"
+            }
             sx={{ fontWeight: 600 }}
           />
         ),
@@ -332,7 +381,7 @@ const MakerDashboard: React.FC = () => {
             </Tooltip>
 
             {/* Reject */}
-            <Tooltip title="Reject Task" arrow>
+            {/* <Tooltip title="Reject Task" arrow>
               <IconButton
                 size="small"
                 onClick={() => handleRejectClick(params.row.tblId)}
@@ -345,12 +394,12 @@ const MakerDashboard: React.FC = () => {
               >
                 <RejectIcon fontSize="small" />
               </IconButton>
-            </Tooltip>
+            </Tooltip> */}
 
             <Tooltip title="View Task" arrow>
               <IconButton
                 size="small"
-                onClick={() => handleViewTaskMovement(params.row)}
+                onClick={() => handleViewTaskMovement(params.row.tblId)}
                 sx={{
                   color: theme.palette.primary.main,
                   "&:hover": {
@@ -389,10 +438,15 @@ const MakerDashboard: React.FC = () => {
       {
         field: "activityName",
         headerName: "Activity Name",
-        flex: 1.2,
-        minWidth: 400,
+        flex: 1,
+        minWidth: 600,
+        valueGetter: (_value, row) => {
+          if (!row.actName) return row.activityName;
+          return `${row.actName} - ${row.activityName}`;
+        },
+        sortable: true,
+        filterable: true,
       },
-      { field: "actName", headerName: "Act Name", flex: 1, minWidth: 180 },
       {
         field: "departmentName",
         headerName: "Department",
@@ -410,6 +464,19 @@ const MakerDashboard: React.FC = () => {
         ),
       },
       {
+        field: "frequency",
+        headerName: "Frequency",
+        flex: 1,
+        minWidth: 130,
+        renderCell: (params: GridRenderCellParams) => (
+          <Chip
+            label={params.value}
+            color={getFrequencyColor(params.value as string) as any}
+            size="small"
+          />
+        ),
+      },
+      {
         field: "dueDate",
         headerName: "Due Date",
         flex: 1,
@@ -418,15 +485,21 @@ const MakerDashboard: React.FC = () => {
           params.value ? new Date(params.value).toLocaleDateString() : "-",
       },
       {
-        field: "status",
+        field: "userStatus",
         headerName: "Status",
         flex: 0.8,
         minWidth: 120,
-        renderCell: () => (
+        renderCell: (params) => (
           <Chip
-            label="Approved"
+            label={params.value}
             size="small"
-            color="success"
+            color={
+              params.value === "Approved"
+                ? "success"
+                : params.value === "Rejected"
+                  ? "error"
+                  : "warning"
+            }
             sx={{ fontWeight: 600 }}
           />
         ),
@@ -443,7 +516,7 @@ const MakerDashboard: React.FC = () => {
               size="small"
               variant="text"
               startIcon={<EyeIcon />}
-              onClick={() => handleViewTaskMovement(params.row)}
+              onClick={() => handleViewTaskMovement(params.row.tblId)}
               sx={{
                 color: theme.palette.primary.main,
                 textTransform: "none",
@@ -480,10 +553,15 @@ const MakerDashboard: React.FC = () => {
       {
         field: "activityName",
         headerName: "Activity Name",
-        flex: 1.2,
-        minWidth: 400,
+        flex: 1,
+        minWidth: 600,
+        valueGetter: (_value, row) => {
+          if (!row.actName) return row.activityName;
+          return `${row.actName} - ${row.activityName}`;
+        },
+        sortable: true,
+        filterable: true,
       },
-      { field: "actName", headerName: "Act Name", flex: 1, minWidth: 180 },
       {
         field: "departmentName",
         headerName: "Department",
@@ -501,6 +579,19 @@ const MakerDashboard: React.FC = () => {
         ),
       },
       {
+        field: "frequency",
+        headerName: "Frequency",
+        flex: 1,
+        minWidth: 130,
+        renderCell: (params: GridRenderCellParams) => (
+          <Chip
+            label={params.value}
+            color={getFrequencyColor(params.value as string) as any}
+            size="small"
+          />
+        ),
+      },
+      {
         field: "dueDate",
         headerName: "Due Date",
         flex: 1,
@@ -509,15 +600,21 @@ const MakerDashboard: React.FC = () => {
           params.value ? new Date(params.value).toLocaleDateString() : "-",
       },
       {
-        field: "status",
+        field: "userStatus",
         headerName: "Status",
         flex: 0.8,
         minWidth: 120,
-        renderCell: () => (
+        renderCell: (params) => (
           <Chip
-            label="Rejected"
+            label={params.value}
             size="small"
-            color="error"
+            color={
+              params.value === "Approved"
+                ? "success"
+                : params.value === "Rejected"
+                  ? "error"
+                  : "warning"
+            }
             sx={{ fontWeight: 600 }}
           />
         ),
@@ -534,7 +631,7 @@ const MakerDashboard: React.FC = () => {
               size="small"
               variant="text"
               startIcon={<EyeIcon />}
-              onClick={() => handleViewTaskMovement(params.row)}
+              onClick={() => handleViewTaskMovement(params.row.tblId)}
               sx={{
                 color: theme.palette.primary.main,
                 textTransform: "none",
@@ -561,59 +658,96 @@ const MakerDashboard: React.FC = () => {
   const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
   const [remark, setRemark] = useState("");
   const [file, setFile] = useState<File | null>(null);
+  const [currentMonth, setCurrentMonth] = useState(new Date());
+  const [statusFilter, setStatusFilter] = useState<string>("Pending");
 
-  // const handleTotalTasksClick = async () => {
-  //   if (user?.id) {
-  //     setTasksOpen(true);
-  //   }
-  // };
-  // Total Tasks क्लिक हैंडलर को अपडेट करें
+  const getFromDateISO = (date: Date) => {
+    const lastDayOfMonth = new Date(date.getFullYear(), date.getMonth() + 1, 0);
+    return lastDayOfMonth.toISOString();
+  };
+  useEffect(() => {
+    if (tasksOpen) {
+      handleTotalTasksClick();
+    }
+  }, [currentMonth, statusFilter]);
+
   const handleTotalTasksClick = async () => {
     if (!user?.id) return;
 
+    const fromDate = getFromDateISO(currentMonth);
+
     setAllTasksLoading(true);
     setAllTasksError(null);
-    setTasksOpen(true); // डायलॉग ओपन
+    setTasksOpen(true);
 
     try {
-      // तीनों API parallel में call करें
-      const [pendingRes, approvedRes, rejectedRes] = await Promise.all([
-        dispatch(fetchPendingTasks(user.id)).unwrap(),
-        dispatch(fetchApprovedTasks(user.id)).unwrap(),
-        dispatch(fetchRejectedTasks(user.id)).unwrap(),
-      ]);
+      const res = await dispatch(
+        fetchAssignedTasks({
+          userID: user.id,
+          fromDate,
+          userStatus: statusFilter, // Pending / Approved / Rejected / All
+        }),
+      ).unwrap();
 
-      // सभी टास्क्स को combine करें और status ऐड करें ताकि टेबल में दिखे
-      const combined = [
-        ...pendingRes.map((t: any) => ({ ...t, status: "Pending" })),
-        ...approvedRes.map((t: any) => ({ ...t, status: "Approved" })),
-        ...rejectedRes.map((t: any) => ({ ...t, status: "Approved" })),
-      ];
-
-      setAllTasks(combined);
+      setAllTasks(res.result || []);
     } catch (err: any) {
-      setAllTasksError(err.message || "Failed to load tasks");
+      setAllTasksError(err?.message || "Failed to load tasks");
     } finally {
       setAllTasksLoading(false);
     }
   };
+  useEffect(() => {
+    if (pendingTasksOpen) {
+      handlePendingTasksClick();
+    }
+  }, [currentMonth]);
+
   const handlePendingTasksClick = async () => {
+    const fromDate = getFromDateISO(currentMonth);
     if (user?.id) {
-      await dispatch(fetchPendingTasks(user.id));
+      await dispatch(
+        fetchAssignedTasks({
+          userID: user.id,
+          fromDate,
+          userStatus: "Pending",
+        }),
+      );
       setPendingTasksOpen(true);
     }
   };
-
+  useEffect(() => {
+    if (approvedTasksOpen) {
+      handleApprovedTasksClick();
+    }
+  }, [currentMonth]);
   const handleApprovedTasksClick = async () => {
+    const fromDate = getFromDateISO(currentMonth);
     if (user?.id) {
-      await dispatch(fetchApprovedTasks(user.id));
+      await dispatch(
+        fetchAssignedTasks({
+          userID: user.id,
+          fromDate,
+          userStatus: "Approved",
+        }),
+      );
       setApprovedTasksOpen(true);
     }
   };
-
+  useEffect(() => {
+    if (rejectedTasksOpen) {
+      handleRejectedTasksClick();
+    }
+  }, [currentMonth]);
   const handleRejectedTasksClick = async () => {
+    const fromDate = getFromDateISO(currentMonth);
     if (user?.id) {
-      await dispatch(fetchRejectedTasks(user.id));
+      await dispatch(
+        fetchAssignedTasks({
+          userID: user.id,
+          fromDate,
+          userStatus: "Rejected",
+        }),
+      );
       setRejectedTasksOpen(true);
     }
   };
@@ -654,15 +788,15 @@ const MakerDashboard: React.FC = () => {
     setApproveDialogOpen(true);
   };
 
-  const handleRejectClick = (taskId: string) => {
-    setSelectedTaskId(taskId);
-    setRemark("");
-    setFile(null);
-    setRejectDialogOpen(true);
-  };
+  // const handleRejectClick = (taskId: string) => {
+  //   setSelectedTaskId(taskId);
+  //   setRemark("");
+  //   setFile(null);
+  //   setRejectDialogOpen(true);
+  // };
 
-  const handleViewTaskMovement = (task: any) => {
-    setSelectedTask(task);
+  const handleViewTaskMovement = (tblId: string) => {
+    setSelectedTask(tblId);
     setTaskMovementDialogOpen(true);
   };
 
@@ -680,7 +814,15 @@ const MakerDashboard: React.FC = () => {
       setSelectedTaskId(null);
       // Refresh pending tasks grid after approval
       if (user?.id) {
-        dispatch(fetchPendingTasks(user.id));
+        const fromDate = getFromDateISO(currentMonth);
+
+        dispatch(
+          fetchAssignedTasks({
+            userID: user.id,
+            fromDate,
+            userStatus: "Pending",
+          }),
+        );
       }
     }
   };
@@ -694,7 +836,15 @@ const MakerDashboard: React.FC = () => {
       setSelectedTaskId(null);
       // Refresh pending tasks grid after rejection
       if (user?.id) {
-        dispatch(fetchPendingTasks(user.id));
+        const fromDate = getFromDateISO(currentMonth);
+
+        dispatch(
+          fetchAssignedTasks({
+            userID: user.id,
+            fromDate,
+            userStatus: "Pending",
+          }),
+        );
       }
     }
   };
@@ -891,33 +1041,29 @@ const MakerDashboard: React.FC = () => {
             </Box>
             <Box sx={{ display: "flex", gap: 1, alignItems: "center" }}>
               <LocalizationProvider dateAdapter={AdapterDayjs}>
+                {" "}
                 <DatePicker
                   views={["year", "month"]}
                   label="Select Month"
-                  value={dayjs()}
-                  // onChange={(newValue) => {
-                  //   if (newValue) {
-                  //     setCurrentMonth(newValue.toDate());
-                  //   }
-                  // }}
-                  slotProps={{
-                    textField: {
-                      size: "small",
-                    },
+                  value={dayjs(currentMonth)}
+                  onChange={(newValue) => {
+                    if (newValue) {
+                      setCurrentMonth(newValue.toDate());
+                    }
                   }}
-                />
+                  slotProps={{ textField: { size: "small" } }}
+                />{" "}
               </LocalizationProvider>
 
               <FormControl size="small" sx={{ minWidth: 140 }}>
                 <InputLabel>Status</InputLabel>
                 <Select
                   label="Status"
-                  value={"All"}
-                  // onChange={(e) => setStatusFilter(e.target.value)}
+                  value={statusFilter}
+                  onChange={(e) => setStatusFilter(e.target.value)}
                 >
-                  <MenuItem value="All">All</MenuItem>
                   <MenuItem value="Pending">Pending</MenuItem>
-                  <MenuItem value="Completed">Completed</MenuItem>
+                  <MenuItem value="Approved">Approved</MenuItem>
                   <MenuItem value="Rejected">Rejected</MenuItem>
                 </Select>
               </FormControl>
@@ -1011,36 +1157,19 @@ const MakerDashboard: React.FC = () => {
             </Box>
             <Box sx={{ display: "flex", gap: 1, alignItems: "center" }}>
               <LocalizationProvider dateAdapter={AdapterDayjs}>
+                {" "}
                 <DatePicker
                   views={["year", "month"]}
                   label="Select Month"
-                  value={dayjs()}
-                  // onChange={(newValue) => {
-                  //   if (newValue) {
-                  //     setCurrentMonth(newValue.toDate());
-                  //   }
-                  // }}
-                  slotProps={{
-                    textField: {
-                      size: "small",
-                    },
+                  value={dayjs(currentMonth)}
+                  onChange={(newValue) => {
+                    if (newValue) {
+                      setCurrentMonth(newValue.toDate());
+                    }
                   }}
-                />
+                  slotProps={{ textField: { size: "small" } }}
+                />{" "}
               </LocalizationProvider>
-
-              <FormControl size="small" sx={{ minWidth: 140 }}>
-                <InputLabel>Status</InputLabel>
-                <Select
-                  label="Status"
-                  value={"All"}
-                  // onChange={(e) => setStatusFilter(e.target.value)}
-                >
-                  <MenuItem value="All">All</MenuItem>
-                  <MenuItem value="Pending">Pending</MenuItem>
-                  <MenuItem value="Completed">Completed</MenuItem>
-                  <MenuItem value="Rejected">Rejected</MenuItem>
-                </Select>
-              </FormControl>
               <Button
                 variant="contained"
                 startIcon={<ArrowBackIcon />}
@@ -1134,36 +1263,19 @@ const MakerDashboard: React.FC = () => {
             </Box>
             <Box sx={{ display: "flex", gap: 1, alignItems: "center" }}>
               <LocalizationProvider dateAdapter={AdapterDayjs}>
+                {" "}
                 <DatePicker
                   views={["year", "month"]}
                   label="Select Month"
-                  value={dayjs()}
-                  // onChange={(newValue) => {
-                  //   if (newValue) {
-                  //     setCurrentMonth(newValue.toDate());
-                  //   }
-                  // }}
-                  slotProps={{
-                    textField: {
-                      size: "small",
-                    },
+                  value={dayjs(currentMonth)}
+                  onChange={(newValue) => {
+                    if (newValue) {
+                      setCurrentMonth(newValue.toDate());
+                    }
                   }}
-                />
+                  slotProps={{ textField: { size: "small" } }}
+                />{" "}
               </LocalizationProvider>
-
-              <FormControl size="small" sx={{ minWidth: 140 }}>
-                <InputLabel>Status</InputLabel>
-                <Select
-                  label="Status"
-                  value={"All"}
-                  // onChange={(e) => setStatusFilter(e.target.value)}
-                >
-                  <MenuItem value="All">All</MenuItem>
-                  <MenuItem value="Pending">Pending</MenuItem>
-                  <MenuItem value="Completed">Completed</MenuItem>
-                  <MenuItem value="Rejected">Rejected</MenuItem>
-                </Select>
-              </FormControl>
               <Button
                 variant="contained"
                 startIcon={<ArrowBackIcon />}
@@ -1257,36 +1369,19 @@ const MakerDashboard: React.FC = () => {
             </Box>
             <Box sx={{ display: "flex", gap: 1, alignItems: "center" }}>
               <LocalizationProvider dateAdapter={AdapterDayjs}>
+                {" "}
                 <DatePicker
                   views={["year", "month"]}
                   label="Select Month"
-                  value={dayjs()}
-                  // onChange={(newValue) => {
-                  //   if (newValue) {
-                  //     setCurrentMonth(newValue.toDate());
-                  //   }
-                  // }}
-                  slotProps={{
-                    textField: {
-                      size: "small",
-                    },
+                  value={dayjs(currentMonth)}
+                  onChange={(newValue) => {
+                    if (newValue) {
+                      setCurrentMonth(newValue.toDate());
+                    }
                   }}
-                />
+                  slotProps={{ textField: { size: "small" } }}
+                />{" "}
               </LocalizationProvider>
-
-              <FormControl size="small" sx={{ minWidth: 140 }}>
-                <InputLabel>Status</InputLabel>
-                <Select
-                  label="Status"
-                  value={"All"}
-                  // onChange={(e) => setStatusFilter(e.target.value)}
-                >
-                  <MenuItem value="All">All</MenuItem>
-                  <MenuItem value="Pending">Pending</MenuItem>
-                  <MenuItem value="Completed">Completed</MenuItem>
-                  <MenuItem value="Rejected">Rejected</MenuItem>
-                </Select>
-              </FormControl>
               <Button
                 variant="contained"
                 startIcon={<ArrowBackIcon />}
@@ -1501,7 +1596,7 @@ const MakerDashboard: React.FC = () => {
       <TaskMovementDialog
         open={taskMovementDialogOpen}
         onClose={handleCloseTaskMovementDialog}
-        task={selectedTask}
+        tblId={selectedTask}
       />
     </Box>
   );

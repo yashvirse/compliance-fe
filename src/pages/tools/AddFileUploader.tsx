@@ -93,8 +93,27 @@ const AddFileUploader: React.FC = () => {
   };
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    setFormErrors({});
+
+    const errors: Record<string, string> = {};
+
+    // Validation
+    if (!formData.fileName.trim()) {
+      errors.fileName = "Please enter File Name";
+    }
+    if (!formData.fileType) {
+      errors.fileType = "Please select File Type";
+    }
+    if (!formData.Month || !formData.Year) {
+      errors.Month = "Please select Month and Year";
+    }
     if (!formData.file) {
-      alert("Please select a file");
+      errors.file = "Please upload a file";
+    }
+
+    // If errors exist, set them and stop submission
+    if (Object.keys(errors).length > 0) {
+      setFormErrors(errors);
       return;
     }
     dispatch(
@@ -108,7 +127,7 @@ const AddFileUploader: React.FC = () => {
         UploadedOn: new Date().toISOString(),
         IsDeleted: false,
         Path: "",
-        selectFile: formData.file,
+        selectFile: formData.file as File,
       }),
     );
   };
@@ -160,7 +179,6 @@ const AddFileUploader: React.FC = () => {
                     onChange={handleChange}
                     error={!!formErrors.fileName}
                     helperText={formErrors.fileName}
-                    required
                     placeholder="Enter file name"
                   />
                 </Box>
@@ -183,7 +201,8 @@ const AddFileUploader: React.FC = () => {
                         value: "Salary Register",
                       },
                     ]}
-                    required
+                    error={!!formErrors.fileType}
+                    helperText={formErrors.fileType}
                   />
                 </Box>
               </Box>
@@ -211,10 +230,16 @@ const AddFileUploader: React.FC = () => {
                         textField: {
                           size: "medium",
                           fullWidth: true,
+                          error: !!formErrors.Month,
                         },
                       }}
                     />
                   </LocalizationProvider>
+                  {formErrors.Month && (
+                    <Typography variant="caption" color="error">
+                      {formErrors.Month}
+                    </Typography>
+                  )}
                 </Box>
 
                 <Box sx={{ flex: "1 1 calc(50% - 12px)", minWidth: 250 }}>
@@ -234,6 +259,11 @@ const AddFileUploader: React.FC = () => {
                     {formData.file ? formData.file.name : "Upload File"}
                     <input type="file" hidden onChange={handleFileChange} />
                   </Button>
+                  {formErrors.file && (
+                    <Typography variant="caption" color="error">
+                      {formErrors.file}
+                    </Typography>
+                  )}
                 </Box>
               </Box>
             </Box>

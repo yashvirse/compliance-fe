@@ -22,14 +22,14 @@ const initialState: TaskState = {
 
 export const fetchAssignedTasks = createAsyncThunk<
   TaskApiResponse,
-  { fromDate: string; status: string },
+  { fromDate: string; currentStatus: string },
   { rejectValue: string }
 >(
   "task/fetchAssignedTasks",
-  async ({ fromDate, status }, { rejectWithValue }) => {
+  async ({ fromDate, currentStatus }, { rejectWithValue }) => {
     try {
       const response = await apiService.get<TaskApiResponse>(
-        `Dashboard/getAssignedTask?fromDate=${encodeURIComponent(fromDate)}&status=${encodeURIComponent(status)}`,
+        `Dashboard/getAssignedTask?fromDate=${encodeURIComponent(fromDate)}&currentStatus=${encodeURIComponent(currentStatus)}`,
       );
 
       if (!response.isSuccess) {

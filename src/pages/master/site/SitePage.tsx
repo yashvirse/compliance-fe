@@ -41,16 +41,16 @@ const SitePage: React.FC = () => {
   const loading = useSelector(selectSiteLoading);
   const error = useSelector(selectSiteError);
 
-  useEffect(() => {
-    console.log("Sites from Redux:", sites);
-    console.log("Loading:", loading);
-    console.log("Error:", error);
-  }, [sites, loading, error]);
+  // useEffect(() => {
+  //   console.log("Sites from Redux:", sites);
+  //   console.log("Loading:", loading);
+  //   console.log("Error:", error);
+  // }, [sites, loading, error]);
 
   const [showSnackbar, setShowSnackbar] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState("");
   const [snackbarSeverity, setSnackbarSeverity] = useState<"success" | "error">(
-    "success"
+    "success",
   );
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [selectedSiteId, setSelectedSiteId] = useState<string>("");
@@ -115,7 +115,7 @@ const SitePage: React.FC = () => {
       sortable: false,
       renderCell: (params: GridRenderCellParams) => {
         const index = sites.findIndex(
-          (user) => user.siteId === params.row.siteId
+          (user) => user.siteId === params.row.siteId,
         );
         return index + 1;
       },

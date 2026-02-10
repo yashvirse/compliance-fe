@@ -166,6 +166,7 @@ export interface SiteWiseTask {
   siteID: string;
   siteName: string;
   companyDomain: string;
+  frequency: string;
 }
 export interface SiteWiseTaskResponse {
   isSuccess: boolean;

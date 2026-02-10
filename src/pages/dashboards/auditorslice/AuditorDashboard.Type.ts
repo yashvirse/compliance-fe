@@ -1,4 +1,22 @@
 // Auditor Dashboard Types
+export interface AssignedTask {
+  tblId: string;
+  activityName: string;
+  actName: string;
+  departmentName: string;
+  siteName: string;
+  siteID: string;
+  dueDate: string;
+  taskCurrentStatus: string;
+  userStatus: string;
+  frequency: string;
+}
+
+export interface GetAssignedTasksResponse {
+  isSuccess: boolean;
+  message: string;
+  result: AssignedTask[];
+}
 
 // ===== Task Counts (Dashboard Stats) =====
 export interface AuditorTaskCountResult {
@@ -107,6 +125,7 @@ export interface GetRejectedTasksResponse {
 
 // ===== Redux State =====
 export interface AuditorDashboardState {
+  tasks: AssignedTask[];
   // Tasks
   pendingTasks: PendingTask[];
   approvedTasks: ApprovedTask[];

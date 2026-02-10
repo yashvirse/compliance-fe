@@ -2,6 +2,7 @@
 
 // ===== Assigned Tasks =====
 export interface AssignedTask {
+  tblId: string;
   activityId: string;
   activityName: string;
   actName: string;
@@ -17,6 +18,11 @@ export interface AssignedTask {
   auditor: string;
   status?: string;
   assignedDate?: string;
+  siteName: string;
+  siteID: string;
+  dueDate: string;
+  taskCurrentStatus: string;
+  userStatus: string;
 }
 
 export interface GetAssignedTasksResponse {

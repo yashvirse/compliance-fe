@@ -11,6 +11,8 @@ import FolderOpenIcon from "@mui/icons-material/FolderOpen";
 import CloudUploadIcon from "@mui/icons-material/CloudUpload";
 import ArticleIcon from "@mui/icons-material/Article";
 import ApiIcon from "@mui/icons-material/Api";
+import BarChartIcon from "@mui/icons-material/BarChart";
+import ScoreCardIcon from "@mui/icons-material/Scoreboard";
 
 // User roles
 export const UserRole = {
@@ -236,6 +238,22 @@ export const menuConfig: MenuItem[] = [
       },
     ],
   },
+  {
+    id: "reports",
+    label: "Reports",
+    icon: <BarChartIcon />,
+    allowedRoles: [UserRole.CUSTOMER_ADMIN],
+    children: [
+      {
+        id: "score-card",
+        label: "Score Card",
+        path: "/dashboard/reports/score-card",
+        icon: <ScoreCardIcon />,
+        allowedRoles: [UserRole.CUSTOMER_ADMIN],
+      },
+    ],
+  },
+
   {
     id: "settings",
     label: "Settings",

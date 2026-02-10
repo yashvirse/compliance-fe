@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useMemo, useRef } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import {
   Box,
   Typography,
@@ -13,8 +13,9 @@ import {
   Button,
   LinearProgress,
   IconButton,
+  Popover,
 } from "@mui/material";
-import type { GridColDef } from "@mui/x-data-grid";
+import type { GridColDef, GridRenderCellParams } from "@mui/x-data-grid";
 import {
   Assignment,
   Business,
@@ -25,7 +26,6 @@ import {
   ListAlt,
   People,
   Visibility as EyeIcon,
-  FilterList as FilterListIcon,
 } from "@mui/icons-material";
 import {
   BarChart,
@@ -41,17 +41,12 @@ import type { AppDispatch } from "../../app/store";
 import { useDispatch, useSelector } from "react-redux";
 import {
   selectAssignedTasks,
-  selectCompletedTasks,
-  selectRejectedTasks,
-  selectPendingTasks,
   selectCustomerAdminDashboardData,
   selectCustomerAdminError,
+  selectSiteWiseTasks,
 } from "./customeradminslice/CustomerAdmin.selector"; // सिर्फ़ ये वाले selectors
 import {
   fetchAssignedTasks,
-  fetchCompletedTasks,
-  fetchRejectedTasks,
-  fetchPendingTasks,
   fetchCustomerAdminDashboard,
   fetchsiteWiseTasks,
 } from "./customeradminslice/CustomerAdmin.slice";
@@ -64,6 +59,7 @@ import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import dayjs from "dayjs";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
+import CalendarMonthIcon from "@mui/icons-material/CalendarMonth";
 
 const CustomerAdminDashboard: React.FC = () => {
   const theme = useTheme();
@@ -71,70 +67,24 @@ const CustomerAdminDashboard: React.FC = () => {
   const navigate = useNavigate();
   const error = useSelector(selectCustomerAdminError);
   const dashboardData = useSelector(selectCustomerAdminDashboardData);
-  const completedTasks = useSelector(selectCompletedTasks);
-  const rejectedTasks = useSelector(selectRejectedTasks);
-  const pendingTasks = useSelector(selectPendingTasks);
   const assignedTasks = useSelector(selectAssignedTasks);
+  const siteWiseTasks = useSelector(selectSiteWiseTasks);
   const isSameOrBefore = (d1: Date, d2: Date) => d1.getTime() <= d2.getTime();
   const assignedTasksResponse = useSelector(selectAssignedTasks);
-  
+
   // Prevent double API calls in StrictMode (React 18+ development)
-  const initializationRef = useRef(false);
-  
-  const [showCompletedTable, setShowCompletedTable] = useState(false);
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const [currentMonth, setCurrentMonth] = useState(new Date());
+  const open = Boolean(anchorEl);
+
   const [showSiteWiseTable, setShowSiteWiseTable] = useState(false);
-  const [showPendingTable, setShowPendingTable] = useState(false);
-  const [showRejectedTable, setShowRejectedTable] = useState(false);
   const [loading, setLoading] = useState(false);
   const [fetchError, setFetchError] = useState<string | null>(null);
   const [taskMovementDialogOpen, setTaskMovementDialogOpen] = useState(false);
   const [selectedTask, setSelectedTask] = useState<any | null>(null);
 
-  const handleCompletedTasksClick = async () => {
-    setLoading(true);
-    setFetchError(null);
-    setShowCompletedTable(true);
-
-    try {
-      await dispatch(fetchCompletedTasks()).unwrap();
-    } catch (err: any) {
-      setFetchError(err.message || "Failed to load completed tasks");
-    } finally {
-      setLoading(false);
-    }
-  };
-  const handlePendingTasksClick = async () => {
-    setLoading(true);
-    setFetchError(null);
-    setShowPendingTable(true);
-
-    try {
-      await dispatch(fetchPendingTasks()).unwrap();
-    } catch (err: any) {
-      setFetchError(err.message || "Failed to load pending tasks");
-    } finally {
-      setLoading(false);
-    }
-  };
-  // Pending tasks are now fetched from API and stored in selector
-  const handleRejectedTasksClick = async () => {
-    setLoading(true);
-    setFetchError(null);
-    setShowRejectedTable(true);
-
-    try {
-      await dispatch(fetchRejectedTasks()).unwrap();
-    } catch (err: any) {
-      setFetchError(err.message || "Failed to load rejected tasks");
-    } finally {
-      setLoading(false);
-    }
-  };
   // Rejected tasks are now fetched from API and stored in selector
   const handleBackToDashboard = () => {
-    setShowCompletedTable(false);
-    setShowPendingTable(false);
-    setShowRejectedTable(false);
     setShowSiteWiseTable(false);
     setLoading(false);
     setFetchError(null);
@@ -194,27 +144,113 @@ const CustomerAdminDashboard: React.FC = () => {
   // IMPORTANT: Actual tasks array nikaalo
   const tasks = assignedTasksResponse || [];
 
-  // Act-wise total count calculation (simple)
   const actChartData = React.useMemo(() => {
-    const map: Record<string, { actName: string; total: number }> = {};
+    const map: Record<
+      string,
+      {
+        actName: string;
+        total: number;
+        pending: number;
+        completed: number;
+        rejected: number;
+      }
+    > = {};
 
     tasks.forEach((task: any) => {
       const act = task.actName?.trim() || "Unknown Act";
+      const status = task.taskCurrentStatus;
 
       if (!map[act]) {
-        map[act] = { actName: act, total: 0 };
+        map[act] = {
+          actName: act,
+          total: 0,
+          pending: 0,
+          completed: 0,
+          rejected: 0,
+        };
       }
 
       map[act].total += 1;
+
+      if (status === "Pending") map[act].pending += 1;
+      else if (status === "Completed") map[act].completed += 1;
+      else if (status === "Rejected") map[act].rejected += 1;
     });
 
     return Object.values(map);
   }, [tasks]);
+  const ColorDot = ({ color }: { color: string }) => (
+    <Box
+      sx={{
+        width: 10,
+        height: 10,
+        backgroundColor: color,
+        display: "inline-block",
+        mr: 0.8,
+        borderRadius: "2px", // square look
+      }}
+    />
+  );
   // Max height ke liye sabse zyada tasks wale act ka count
+  const ActWiseTooltip = ({ active, payload }: any) => {
+    if (active && payload && payload.length) {
+      const data = payload[0].payload;
+
+      return (
+        <Box
+          sx={{
+            backgroundColor: "#fff",
+            p: 1.5,
+            borderRadius: 2,
+            boxShadow: 3,
+            border: "1px solid #e0e0e0",
+            minWidth: 200,
+          }}
+        >
+          <Typography fontWeight={700} fontSize={13}>
+            {data.actName}
+          </Typography>
+
+          <Typography fontSize={12} sx={{ mt: 0.5 }}>
+            Total Tasks: <b>{data.total}</b>
+          </Typography>
+
+          <Typography
+            fontSize={12}
+            color="warning.main"
+            sx={{ display: "flex", alignItems: "center" }}
+          >
+            <ColorDot color="#ff9800" />
+            Pending: {data.pending}
+          </Typography>
+
+          <Typography
+            fontSize={12}
+            color="success.main"
+            sx={{ display: "flex", alignItems: "center" }}
+          >
+            <ColorDot color="#4caf50" />
+            Completed: {data.completed}
+          </Typography>
+
+          <Typography
+            fontSize={12}
+            color="error.main"
+            sx={{ display: "flex", alignItems: "center" }}
+          >
+            <ColorDot color="#f44336" />
+            Rejected: {data.rejected}
+          </Typography>
+        </Box>
+      );
+    }
+
+    return null;
+  };
 
   // Task Movement Dialog
-  const handleViewTaskMovement = (task: any) => {
-    setSelectedTask(task);
+  const handleViewTaskMovement = (tblId: string) => {
+    setSelectedTask(tblId);
     setTaskMovementDialogOpen(true);
   };
 
@@ -222,9 +258,26 @@ const CustomerAdminDashboard: React.FC = () => {
     setTaskMovementDialogOpen(false);
     setSelectedTask(null);
   };
-
+  const getFrequencyColor = (frequency: string) => {
+    switch (frequency) {
+      case "Weekly":
+        return "primary";
+      case "Fortnightly":
+        return "secondary";
+      case "Monthly":
+        return "success";
+      case "Half Yearly":
+        return "warning";
+      case "Annually":
+        return "error";
+      case "As Needed":
+        return "default";
+      default:
+        return "default";
+    }
+  };
   // Column definitions for CommonDataTable
-  const completedTasksColumns: GridColDef[] = useMemo(
+  const siteWiseTasksColumns: GridColDef[] = useMemo(
     () => [
       {
         field: "sno",
@@ -245,99 +298,15 @@ const CustomerAdminDashboard: React.FC = () => {
       {
         field: "activityName",
         headerName: "Activity Name",
-        flex: 1.2,
-        minWidth: 400,
-      },
-      { field: "actName", headerName: "Act Name", flex: 1, minWidth: 180 },
-      {
-        field: "departmentName",
-        headerName: "Department",
         flex: 1,
-        minWidth: 150,
-        renderCell: (params) => (
-          <Chip
-            label={params.value}
-            size="small"
-            sx={{
-              bgcolor: alpha(theme.palette.info.main, 0.1),
-              color: theme.palette.info.main,
-            }}
-          />
-        ),
-      },
-      {
-        field: "dueDate",
-        headerName: "Due Date",
-        flex: 1,
-        minWidth: 100,
-        renderCell: (params) =>
-          params.value ? new Date(params.value).toLocaleDateString() : "-",
-      },
-      {
-        field: "status",
-        headerName: "Status",
-        flex: 0.8,
-        minWidth: 120,
-        renderCell: () => (
-          <Chip
-            label="Completed"
-            size="small"
-            color="success"
-            sx={{ fontWeight: 600 }}
-          />
-        ),
-      },
-      {
-        field: "actions",
-        headerName: "Actions",
-        flex: 0.8,
-        minWidth: 100,
-        sortable: false,
-        renderCell: (params) => (
-          <Button
-            size="small"
-            variant="text"
-            startIcon={<EyeIcon />}
-            onClick={() => handleViewTaskMovement(params.row)}
-            sx={{
-              color: theme.palette.primary.main,
-              textTransform: "none",
-              "&:hover": {
-                bgcolor: alpha(theme.palette.primary.main, 0.1),
-              },
-            }}
-          ></Button>
-        ),
-      },
-    ],
-    [theme],
-  );
-
-  const pendingTasksColumns: GridColDef[] = useMemo(
-    () => [
-      {
-        field: "sno",
-        headerName: "S.No.",
-        width: 70,
-        sortable: false,
-        renderCell: (params) => {
-          const page = params.api.state.pagination.paginationModel.page;
-          const pageSize = params.api.state.pagination.paginationModel.pageSize;
-          const rowIndex = params.api.getRowIndexRelativeToVisibleRows(
-            params.id,
-          );
-
-          return page * pageSize + rowIndex + 1;
+        minWidth: 600,
+        valueGetter: (_value, row) => {
+          if (!row.actName) return row.activityName;
+          return `${row.actName} - ${row.activityName}`;
         },
+        sortable: true,
+        filterable: true,
       },
-      { field: "siteName", headerName: "Site Name", flex: 1, minWidth: 160 },
-      {
-        field: "activityName",
-        headerName: "Activity Name",
-        flex: 1.2,
-        minWidth: 400,
-      },
-      { field: "actName", headerName: "Act Name", flex: 1, minWidth: 180 },
       {
         field: "departmentName",
         headerName: "Department",
@@ -355,6 +324,19 @@ const CustomerAdminDashboard: React.FC = () => {
         ),
       },
       {
+        field: "frequency",
+        headerName: "Frequency",
+        flex: 1,
+        minWidth: 130,
+        renderCell: (params: GridRenderCellParams) => (
+          <Chip
+            label={params.value}
+            color={getFrequencyColor(params.value as string) as any}
+            size="small"
+          />
+        ),
+      },
+      {
         field: "dueDate",
         headerName: "Due Date",
         flex: 1,
@@ -363,104 +345,20 @@ const CustomerAdminDashboard: React.FC = () => {
           params.value ? new Date(params.value).toLocaleDateString() : "-",
       },
       {
-        field: "status",
+        field: "taskCurrentStatus",
         headerName: "Status",
-        flex: 0.8,
-        minWidth: 120,
-        renderCell: () => (
-          <Chip
-            label="Pending"
-            size="small"
-            color="warning"
-            sx={{ fontWeight: 600 }}
-          />
-        ),
-      },
-      {
-        field: "actions",
-        headerName: "Actions",
-        flex: 0.8,
-        minWidth: 100,
-        sortable: false,
-        renderCell: (params) => (
-          <Button
-            size="small"
-            variant="text"
-            startIcon={<EyeIcon />}
-            onClick={() => handleViewTaskMovement(params.row)}
-            sx={{
-              color: theme.palette.primary.main,
-              textTransform: "none",
-              "&:hover": {
-                bgcolor: alpha(theme.palette.primary.main, 0.1),
-              },
-            }}
-          ></Button>
-        ),
-      },
-    ],
-    [theme],
-  );
-
-  const rejectedTasksColumns: GridColDef[] = useMemo(
-    () => [
-      {
-        field: "sno",
-        headerName: "S.No.",
-        width: 70,
-        sortable: false,
-        renderCell: (params) => {
-          const page = params.api.state.pagination.paginationModel.page;
-          const pageSize = params.api.state.pagination.paginationModel.pageSize;
-          const rowIndex = params.api.getRowIndexRelativeToVisibleRows(
-            params.id,
-          );
-
-          return page * pageSize + rowIndex + 1;
-        },
-      },
-      { field: "siteName", headerName: "Site Name", flex: 1, minWidth: 160 },
-      {
-        field: "activityName",
-        headerName: "Activity Name",
-        flex: 1.2,
-        minWidth: 400,
-      },
-      { field: "actName", headerName: "Act Name", flex: 1, minWidth: 180 },
-      {
-        field: "departmentName",
-        headerName: "Department",
-        flex: 1,
-        minWidth: 150,
-        renderCell: (params) => (
+        width: 120,
+        renderCell: (params: GridRenderCellParams) => (
           <Chip
             label={params.value}
             size="small"
-            sx={{
-              bgcolor: alpha(theme.palette.info.main, 0.1),
-              color: theme.palette.info.main,
-            }}
-          />
-        ),
-      },
-      {
-        field: "dueDate",
-        headerName: "Due Date",
-        flex: 1,
-        minWidth: 100,
-        renderCell: (params) =>
-          params.value ? new Date(params.value).toLocaleDateString() : "-",
-      },
-      {
-        field: "status",
-        headerName: "Status",
-        flex: 0.8,
-        minWidth: 120,
-        renderCell: () => (
-          <Chip
-            label="Rejected"
-            size="small"
-            color="error"
+            color={
+              params.value === "Completed"
+                ? "success"
+                : params.value === "Rejected"
+                  ? "error"
+                  : "warning"
+            }
             sx={{ fontWeight: 600 }}
           />
         ),
@@ -476,7 +374,7 @@ const CustomerAdminDashboard: React.FC = () => {
             size="small"
             variant="text"
             startIcon={<EyeIcon />}
-            onClick={() => handleViewTaskMovement(params.row)}
+            onClick={() => handleViewTaskMovement(params.row.tblId)}
             sx={{
               color: theme.palette.primary.main,
               textTransform: "none",
@@ -490,6 +388,9 @@ const CustomerAdminDashboard: React.FC = () => {
     ],
     [theme],
   );
+  useEffect(() => {
+    dispatch(fetchCustomerAdminDashboard());
+  }, [dispatch]);
 
   const stats = [
     {
@@ -525,48 +426,50 @@ const CustomerAdminDashboard: React.FC = () => {
       value: dashboardData?.totalTotalTask ?? 0,
       icon: <Assignment />,
       color: theme.palette.primary.main,
-      path: "/dashboard/master/task",
+      onClick: () =>
+        navigate("/dashboard/master/task", { state: { status: "Pending" } }),
     },
     {
       label: "Pending Tasks",
       value: dashboardData?.totalPendigTask ?? 0,
       icon: <HourglassTop />,
       color: theme.palette.warning.main,
-      onClick: handlePendingTasksClick,
+      onClick: () =>
+        navigate("/dashboard/master/task", { state: { status: "Pending" } }),
     },
     {
       label: "Completed Tasks",
       value: dashboardData?.totalCompletedTask ?? 0,
       icon: <CheckCircle />,
       color: theme.palette.success.main,
-      onClick: handleCompletedTasksClick,
+      onClick: () =>
+        navigate("/dashboard/master/task", { state: { status: "Completed" } }),
     },
     {
       label: "Rejected Tasks",
       value: dashboardData?.totalRejectedTask ?? 0,
       icon: <Cancel />,
       color: theme.palette.error.main,
-      onClick: handleRejectedTasksClick,
+      onClick: () =>
+        navigate("/dashboard/master/task", { state: { status: "Rejected" } }),
     },
   ];
+  const getMonthLastDateISO = (date: Date) => {
+    const lastDay = new Date(date.getFullYear(), date.getMonth() + 1, 0);
+    return lastDay.toISOString();
+  };
 
   useEffect(() => {
-    // Prevent double effect execution in StrictMode during development
-    if (initializationRef.current) {
-      return;
-    }
-    initializationRef.current = true;
-    
-    dispatch(fetchCustomerAdminDashboard());
-    dispatch(fetchAssignedTasks());
-  }, [dispatch]);
+    const fromDate = getMonthLastDateISO(currentMonth);
+
+    dispatch(
+      fetchAssignedTasks({
+        fromDate,
+      }),
+    );
+  }, [dispatch, currentMonth]);
   // Main Dashboard View
-  if (
-    !showCompletedTable &&
-    !showPendingTable &&
-    !showRejectedTable &&
-    !showSiteWiseTable
-  ) {
+  if (!showSiteWiseTable) {
     return (
       <Box>
         <Box sx={{ mb: 4 }}>
@@ -666,9 +569,54 @@ const CustomerAdminDashboard: React.FC = () => {
                     Compliance Status
                   </Typography>
 
-                  <IconButton size="small">
-                    <FilterListIcon fontSize="small" />
-                  </IconButton>
+                  <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                    <Typography variant="body2" fontWeight={600}>
+                      {dayjs(currentMonth).format("MMM YYYY")}
+                    </Typography>
+
+                    <IconButton
+                      size="small"
+                      onClick={(e) => setAnchorEl(e.currentTarget)}
+                    >
+                      <CalendarMonthIcon fontSize="small" />
+                    </IconButton>
+                  </Box>
+
+                  {/* Month Picker Popup */}
+                  <Popover
+                    open={open}
+                    anchorEl={anchorEl}
+                    onClose={() => setAnchorEl(null)}
+                    anchorOrigin={{
+                      vertical: "bottom",
+                      horizontal: "right",
+                    }}
+                    transformOrigin={{
+                      vertical: "top",
+                      horizontal: "right",
+                    }}
+                  >
+                    <Box sx={{ p: 2 }}>
+                      <LocalizationProvider dateAdapter={AdapterDayjs}>
+                        <DatePicker
+                          views={["year", "month"]}
+                          value={dayjs(currentMonth)}
+                          onChange={(newValue) => {
+                            if (newValue) {
+                              setCurrentMonth(newValue.toDate());
+                              setAnchorEl(null); // select ke baad close
+                            }
+                          }}
+                          slotProps={{
+                            textField: {
+                              size: "small",
+                              fullWidth: true,
+                            },
+                          }}
+                        />
+                      </LocalizationProvider>
+                    </Box>
+                  </Popover>
                 </Box>
                 {/* Compliance */}
                 <Typography variant="body2" fontWeight={600} gutterBottom>
@@ -810,9 +758,69 @@ const CustomerAdminDashboard: React.FC = () => {
               }}
             >
               <CardContent sx={{ p: 3 }}>
-                <Typography variant="h6" fontWeight={700} gutterBottom>
-                  Act Wise
-                </Typography>
+                <Box
+                  sx={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                    mb: 2,
+                  }}
+                >
+                  {/* LEFT CORNER */}
+                  <Typography variant="h6" fontWeight={700}>
+                    Act Wise
+                  </Typography>
+
+                  {/* RIGHT CORNER */}
+                  <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                    <Typography variant="body2" fontWeight={600}>
+                      {dayjs(currentMonth).format("MMM YYYY")}
+                    </Typography>
+
+                    <IconButton
+                      size="small"
+                      onClick={(e) => setAnchorEl(e.currentTarget)}
+                    >
+                      <CalendarMonthIcon fontSize="small" />
+                    </IconButton>
+                  </Box>
+                </Box>
+
+                {/* Month Picker Popup */}
+                <Popover
+                  open={open}
+                  anchorEl={anchorEl}
+                  onClose={() => setAnchorEl(null)}
+                  anchorOrigin={{
+                    vertical: "bottom",
+                    horizontal: "right",
+                  }}
+                  transformOrigin={{
+                    vertical: "top",
+                    horizontal: "right",
+                  }}
+                >
+                  <Box sx={{ p: 2 }}>
+                    <LocalizationProvider dateAdapter={AdapterDayjs}>
+                      <DatePicker
+                        views={["year", "month"]}
+                        value={dayjs(currentMonth)}
+                        onChange={(newValue) => {
+                          if (newValue) {
+                            setCurrentMonth(newValue.toDate());
+                            setAnchorEl(null);
+                          }
+                        }}
+                        slotProps={{
+                          textField: {
+                            size: "small",
+                            fullWidth: true,
+                          },
+                        }}
+                      />
+                    </LocalizationProvider>
+                  </Box>
+                </Popover>
 
                 {actChartData.length === 0 ? (
                   <Box
@@ -858,6 +866,7 @@ const CustomerAdminDashboard: React.FC = () => {
                         axisLine={{ stroke: theme.palette.divider }}
                       />
                       <Tooltip
+                        content={<ActWiseTooltip />}
                         contentStyle={{
                           backgroundColor: alpha(
                             theme.palette.background.paper,
@@ -876,21 +885,9 @@ const CustomerAdminDashboard: React.FC = () => {
                           props.payload.actName,
                         ]}
                       />
-                      <Bar
-                        dataKey="total"
-                        fill="#ff9800"
-                        radius={[12, 12, 0, 0]}
-                        isAnimationActive={true}
-                      >
-                        {/* <LabelList
-                          dataKey="actName"
-                          position="center"
-                          fill="#fff"
-                          fontSize={10}
-                          fontWeight={600}
-                          angle={-90}
-                          textAnchor="middle"
-                        /> */}
+                      <Bar dataKey="pending" stackId="a" fill="#ff9800" />
+                      <Bar dataKey="completed" stackId="a" fill="#4caf50" />
+                      <Bar dataKey="rejected" stackId="a" fill="#f44336">
                         <LabelList
                           dataKey="total"
                           position="top"
@@ -910,8 +907,7 @@ const CustomerAdminDashboard: React.FC = () => {
     );
   }
 
-  // COMPLETED TASKS TABLE VIEW
-  if (showCompletedTable) {
+  if (showSiteWiseTable) {
     return (
       <Box>
         <Box
@@ -924,10 +920,10 @@ const CustomerAdminDashboard: React.FC = () => {
         >
           <Box>
             <Typography variant="h4" fontWeight={700} gutterBottom>
-              Completed Tasks
+              Site Wise Tasks
             </Typography>
             <Typography variant="body1" color="text.secondary">
-              View all completed tasks
+              View all site wise tasks
             </Typography>
           </Box>
           <Box sx={{ display: "flex", gap: 1, alignItems: "center" }}>
@@ -978,22 +974,22 @@ const CustomerAdminDashboard: React.FC = () => {
             <Box sx={{ p: 4 }}>
               <Alert severity="error">{fetchError}</Alert>
             </Box>
-          ) : completedTasks.length === 0 ? (
+          ) : selectSiteWiseTasks.length === 0 ? (
             <Box sx={{ textAlign: "center", py: 12 }}>
               <CheckCircle
                 sx={{ fontSize: 80, color: "text.disabled", mb: 2 }}
               />
               <Typography variant="h6" color="text.secondary" gutterBottom>
-                No completed tasks
+                No site wise tasks
               </Typography>
               <Typography variant="body2" color="text.secondary">
-                There are no completed tasks available
+                There are no site wise tasks available
               </Typography>
             </Box>
           ) : (
             <CommonDataTable
-              rows={completedTasks}
-              columns={completedTasksColumns}
+              rows={siteWiseTasks}
+              columns={siteWiseTasksColumns}
               loading={loading}
               getRowId={(row) => row.tblId}
               autoHeight={true}
@@ -1004,212 +1000,11 @@ const CustomerAdminDashboard: React.FC = () => {
         <TaskMovementDialog
           open={taskMovementDialogOpen}
           onClose={handleCloseTaskMovementDialog}
-          task={selectedTask}
+          tblId={selectedTask}
         />
       </Box>
     );
   }
-
-  // PENDING TASKS TABLE VIEW
-  if (showPendingTable) {
-    return (
-      <Box>
-        <Box
-          sx={{
-            mb: 3,
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "flex-start",
-          }}
-        >
-          <Box>
-            <Typography variant="h4" fontWeight={700} gutterBottom>
-              Pending Tasks
-            </Typography>
-            <Typography variant="body1" color="text.secondary">
-              View all pending tasks
-            </Typography>
-          </Box>
-          <Box sx={{ display: "flex", gap: 1, alignItems: "center" }}>
-            <LocalizationProvider dateAdapter={AdapterDayjs}>
-              <DatePicker
-                views={["year", "month"]}
-                label="Select Month"
-                value={dayjs()}
-                // onChange={(newValue) => {
-                //   if (newValue) {
-                //     setCurrentMonth(newValue.toDate());
-                //   }
-                // }}
-                slotProps={{
-                  textField: {
-                    size: "small",
-                  },
-                }}
-              />
-            </LocalizationProvider>
-
-            <Button
-              variant="contained"
-              startIcon={<ArrowBackIcon />}
-              onClick={handleBackToDashboard}
-              sx={{
-                borderRadius: 2,
-                textTransform: "none",
-                px: 3,
-                boxShadow: `0 4px 15px ${alpha(theme.palette.primary.main, 0.3)}`,
-                "&:hover": {
-                  boxShadow: `0 6px 20px ${alpha(theme.palette.primary.main, 0.4)}`,
-                },
-              }}
-            >
-              Back
-            </Button>
-          </Box>
-        </Box>
-
-        <Paper
-          sx={{
-            borderRadius: 3,
-            boxShadow: `0 4px 20px ${alpha(theme.palette.common.black, 0.08)}`,
-            overflow: "hidden",
-          }}
-        >
-          {fetchError ? (
-            <Box sx={{ p: 4 }}>
-              <Alert severity="error">{fetchError}</Alert>
-            </Box>
-          ) : pendingTasks.length === 0 ? (
-            <Box sx={{ textAlign: "center", py: 12 }}>
-              <HourglassTop
-                sx={{ fontSize: 80, color: "text.disabled", mb: 2 }}
-              />
-              <Typography variant="h6" color="text.secondary" gutterBottom>
-                No pending tasks
-              </Typography>
-              <Typography variant="body2" color="text.secondary">
-                There are no pending tasks available
-              </Typography>
-            </Box>
-          ) : (
-            <CommonDataTable
-              rows={pendingTasks}
-              columns={pendingTasksColumns}
-              loading={loading}
-              getRowId={(row) => row.tblId}
-              autoHeight={true}
-            />
-          )}
-        </Paper>
-        {/* Task Movement Dialog */}
-        <TaskMovementDialog
-          open={taskMovementDialogOpen}
-          onClose={handleCloseTaskMovementDialog}
-          task={selectedTask}
-        />
-      </Box>
-    );
-  }
-
-  // REJECTED TASKS TABLE VIEW
-  if (showRejectedTable) {
-    return (
-      <Box>
-        <Box
-          sx={{
-            mb: 3,
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "flex-start",
-          }}
-        >
-          <Box>
-            <Typography variant="h4" fontWeight={700} gutterBottom>
-              Rejected Tasks
-            </Typography>
-            <Typography variant="body1" color="text.secondary">
-              View all rejected tasks
-            </Typography>
-          </Box>
-          <Box sx={{ display: "flex", gap: 1, alignItems: "center" }}>
-            <LocalizationProvider dateAdapter={AdapterDayjs}>
-              <DatePicker
-                views={["year", "month"]}
-                label="Select Month"
-                value={dayjs()}
-                // onChange={(newValue) => {
-                //   if (newValue) {
-                //     setCurrentMonth(newValue.toDate());
-                //   }
-                // }}
-                slotProps={{
-                  textField: {
-                    size: "small",
-                  },
-                }}
-              />
-            </LocalizationProvider>
-
-            <Button
-              variant="contained"
-              startIcon={<ArrowBackIcon />}
-              onClick={handleBackToDashboard}
-              sx={{
-                borderRadius: 2,
-                textTransform: "none",
-                px: 3,
-                boxShadow: `0 4px 15px ${alpha(theme.palette.primary.main, 0.3)}`,
-                "&:hover": {
-                  boxShadow: `0 6px 20px ${alpha(theme.palette.primary.main, 0.4)}`,
-                },
-              }}
-            >
-              Back
-            </Button>
-          </Box>
-        </Box>
-
-        <Paper
-          sx={{
-            borderRadius: 3,
-            boxShadow: `0 4px 20px ${alpha(theme.palette.common.black, 0.08)}`,
-            overflow: "hidden",
-          }}
-        >
-          {fetchError ? (
-            <Box sx={{ p: 4 }}>
-              <Alert severity="error">{fetchError}</Alert>
-            </Box>
-          ) : rejectedTasks.length === 0 ? (
-            <Box sx={{ textAlign: "center", py: 12 }}>
-              <Cancel sx={{ fontSize: 80, color: "text.disabled", mb: 2 }} />
-              <Typography variant="h6" color="text.secondary" gutterBottom>
-                No rejected tasks
-              </Typography>
-              <Typography variant="body2" color="text.secondary">
-                There are no rejected tasks available
-              </Typography>
-            </Box>
-          ) : (
-            <CommonDataTable
-              rows={rejectedTasks}
-              columns={rejectedTasksColumns}
-              loading={loading}
-              getRowId={(row) => row.tblId}
-              autoHeight={true}
-            />
-          )}
-        </Paper>
-        {/* Task Movement Dialog */}
-        <TaskMovementDialog
-          open={taskMovementDialogOpen}
-          onClose={handleCloseTaskMovementDialog}
-          task={selectedTask}
-        />
-      </Box>
-    );
-  }
-  return null;
 };
 
 export default CustomerAdminDashboard;

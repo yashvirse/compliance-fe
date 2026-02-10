@@ -3,13 +3,11 @@ import { apiService } from "../../../services/api";
 import type {
   MakerDashboardState,
   GetTaskCountResponse,
-  GetPendingTasksResponse,
-  GetApprovedTasksResponse,
-  GetRejectedTasksResponse,
   ApproveTaskRequest,
   ApproveTaskResponse,
   RejectTaskRequest,
   RejectTaskResponse,
+  GetAssignedTasksResponse,
 } from "./MakerDashboard.Type";
 
 // Initial state
@@ -42,44 +40,16 @@ export const fetchTaskCount = createAsyncThunk(
         `Dashboard/getTaskCount?userID=${userId}`,
       );
       if (response.isSuccess && response.result) {
-        console.log("✅ Task counts received:", response.result);
         return response.result;
       }
 
-      console.error("❌ API error:", response.message);
       return rejectWithValue(
         response.message || "Failed to fetch dashboard counts",
       );
     } catch (error: any) {
-      console.error("❌ Fetch error:", error);
       return rejectWithValue(
         error?.message || "Failed to fetch dashboard counts",
       );
-    }
-  },
-);
-
-// Fetch pending tasks
-export const fetchPendingTasks = createAsyncThunk(
-  "makerDashboard/fetchPendingTasks",
-  async (userID: string, { rejectWithValue }) => {
-    try {
-      const response = await apiService.get<GetPendingTasksResponse>(
-        `Dashboard/getPendingTaskDtl?userID=${userID}`,
-      );
-
-      if (response.isSuccess) {
-        console.log("✅ Pending tasks received:", response.result);
-        return response.result;
-      }
-
-      console.error("❌ API error:", response.message);
-      return rejectWithValue(
-        response.message || "Failed to fetch pending tasks",
-      );
-    } catch (error: any) {
-      console.error("❌ Fetch error:", error);
-      return rejectWithValue(error?.message || "Failed to fetch pending tasks");
     }
   },
 );
@@ -151,55 +121,32 @@ export const rejectTask = createAsyncThunk<
   }
 });
 
-// Fetch approved tasks
-export const fetchApprovedTasks = createAsyncThunk(
-  "makerDashboard/fetchApprovedTasks",
-  async (userID: string, { rejectWithValue }) => {
+export const fetchAssignedTasks = createAsyncThunk<
+  GetAssignedTasksResponse,
+  { userID: string; fromDate: string; userStatus: string },
+  { rejectValue: string }
+>(
+  "customerAdmin/fetchAssignedTasks",
+  async ({ userID, fromDate, userStatus }, { rejectWithValue }) => {
     try {
-      const response = await apiService.get<GetApprovedTasksResponse>(
-        `Dashboard/getApprovedTaskDtl?userID=${userID}`,
+      const response = await apiService.get<GetAssignedTasksResponse>(
+        `Dashboard/getAssignedTask?userID=${encodeURIComponent(
+          userID,
+        )}&fromDate=${encodeURIComponent(fromDate)}&userStatus=${encodeURIComponent(userStatus)}`,
       );
 
-      if (response.isSuccess) {
-        console.log("✅ Approved tasks received:", response.result);
-        return response.result;
+      if (!response.isSuccess) {
+        return rejectWithValue(
+          response.message || "Failed to fetch assigned tasks",
+        );
       }
 
-      console.error("❌ API error:", response.message);
-      return rejectWithValue(
-        response.message || "Failed to fetch approved tasks",
-      );
+      return response;
     } catch (error: any) {
-      console.error("❌ Fetch error:", error);
       return rejectWithValue(
-        error?.message || "Failed to fetch approved tasks",
-      );
-    }
-  },
-);
-
-// Fetch rejected tasks
-export const fetchRejectedTasks = createAsyncThunk(
-  "makerDashboard/fetchRejectedTasks",
-  async (userID: string, { rejectWithValue }) => {
-    try {
-      const response = await apiService.get<GetRejectedTasksResponse>(
-        `Dashboard/getRejectedTaskDtl?userID=${userID}`,
-      );
-
-      if (response.isSuccess) {
-        console.log("✅ Rejected tasks received:", response.result);
-        return response.result;
-      }
-
-      console.error("❌ API error:", response.message);
-      return rejectWithValue(
-        response.message || "Failed to fetch rejected tasks",
-      );
-    } catch (error: any) {
-      console.error("❌ Fetch error:", error);
-      return rejectWithValue(
-        error?.message || "Failed to fetch rejected tasks",
+        error?.response?.data?.message ||
+          error?.message ||
+          "Failed to fetch assigned tasks",
       );
     }
   },
@@ -234,46 +181,6 @@ const makerDashboardSlice = createSlice({
         state.loading = false;
         state.error = action.payload as string;
       })
-      // Fetch pending tasks
-      .addCase(fetchPendingTasks.pending, (state) => {
-        state.pendingTasksLoading = true;
-        state.pendingTasksError = null;
-      })
-      .addCase(fetchPendingTasks.fulfilled, (state, action) => {
-        state.pendingTasksLoading = false;
-        state.pendingTasks = action.payload;
-      })
-      .addCase(fetchPendingTasks.rejected, (state, action) => {
-        state.pendingTasksLoading = false;
-        state.pendingTasksError = action.payload as string;
-      })
-      // Fetch approved tasks
-      .addCase(fetchApprovedTasks.pending, (state) => {
-        state.approvedTasksLoading = true;
-        state.approvedTasksError = null;
-      })
-      .addCase(fetchApprovedTasks.fulfilled, (state, action) => {
-        state.approvedTasksLoading = false;
-        state.approvedTasks = action.payload;
-      })
-      .addCase(fetchApprovedTasks.rejected, (state, action) => {
-        state.approvedTasksLoading = false;
-        state.approvedTasksError = action.payload as string;
-      })
-      // Fetch rejected tasks
-      .addCase(fetchRejectedTasks.pending, (state) => {
-        state.rejectedTasksLoading = true;
-        state.rejectedTasksError = null;
-      })
-      .addCase(fetchRejectedTasks.fulfilled, (state, action) => {
-        state.rejectedTasksLoading = false;
-        state.rejectedTasks = action.payload;
-      })
-      .addCase(fetchRejectedTasks.rejected, (state, action) => {
-        state.rejectedTasksLoading = false;
-        state.rejectedTasksError = action.payload as string;
-      })
-      // Approve task
       .addCase(approveTask.pending, (state) => {
         state.taskActionsLoading = true;
         state.taskActionsError = null;
@@ -286,7 +193,6 @@ const makerDashboardSlice = createSlice({
         state.taskActionsLoading = false;
         state.taskActionsError = action.payload || "Failed to approve task";
       })
-      // Reject task
       .addCase(rejectTask.pending, (state) => {
         state.taskActionsLoading = true;
         state.taskActionsError = null;
@@ -298,6 +204,18 @@ const makerDashboardSlice = createSlice({
       .addCase(rejectTask.rejected, (state, action) => {
         state.taskActionsLoading = false;
         state.taskActionsError = action.payload || "Failed to reject task";
+      })
+      .addCase(fetchAssignedTasks.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(fetchAssignedTasks.fulfilled, (state, action) => {
+        state.loading = false;
+        state.tasks = action.payload.result || [];
+      })
+      .addCase(fetchAssignedTasks.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload || "Failed to fetch assigned tasks";
       });
   },
 });

@@ -26,7 +26,7 @@ import {
   Select,
   MenuItem,
 } from "@mui/material";
-import type { GridColDef } from "@mui/x-data-grid";
+import type { GridColDef, GridRenderCellParams } from "@mui/x-data-grid";
 import {
   CheckCircle,
   Assignment,
@@ -37,27 +37,23 @@ import {
 } from "@mui/icons-material";
 import {
   fetchCheckerTaskCount,
-  fetchPendingCheckTasks,
-  fetchApprovedCheckTasks,
-  fetchRejectedCheckTasks,
   approveCheckTask,
   rejectCheckTask,
   clearTaskActionError,
   clearError,
+  fetchAssignedTasks,
 } from "./checkerslice/CheckerDashboard.Slice";
 import {
   selectCheckerTaskCounts,
   selectCheckerTaskActionsLoading,
   selectCheckerTaskActionsError,
-  selectPendingCheckTasks,
   selectPendingCheckTasksLoading,
   selectPendingCheckTasksError,
-  selectApprovedCheckTasks,
   selectApprovedCheckTasksLoading,
   selectApprovedCheckTasksError,
-  selectRejectedCheckTasks,
   selectRejectedCheckTasksLoading,
   selectRejectedCheckTasksError,
+  selectAssignedTasks,
 } from "./checkerslice/CheckerDashboard.Selector";
 import { selectUser } from "../login/slice/Login.selector";
 import TaskMovementDialog from "../../components/common/TaskMovementDialog";
@@ -75,15 +71,15 @@ const CheckerDashboard: React.FC = () => {
   const counts = useSelector(selectCheckerTaskCounts);
   const taskActionsLoading = useSelector(selectCheckerTaskActionsLoading);
   const taskActionsError = useSelector(selectCheckerTaskActionsError);
-  const pendingCheckTasks = useSelector(selectPendingCheckTasks);
+  const pendingCheckTasks = useSelector(selectAssignedTasks);
   const pendingCheckTasksLoading = useSelector(selectPendingCheckTasksLoading);
   const pendingCheckTasksError = useSelector(selectPendingCheckTasksError);
-  const approvedCheckTasks = useSelector(selectApprovedCheckTasks);
+  const approvedCheckTasks = useSelector(selectAssignedTasks);
   const approvedCheckTasksLoading = useSelector(
     selectApprovedCheckTasksLoading,
   );
   const approvedCheckTasksError = useSelector(selectApprovedCheckTasksError);
-  const rejectedCheckTasks = useSelector(selectRejectedCheckTasks);
+  const rejectedCheckTasks = useSelector(selectAssignedTasks);
   const rejectedCheckTasksLoading = useSelector(
     selectRejectedCheckTasksLoading,
   );
@@ -102,27 +98,78 @@ const CheckerDashboard: React.FC = () => {
   const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
   const [remark, setRemark] = useState("");
   const [file, setFile] = useState<File | null>(null);
+  const [currentMonth, setCurrentMonth] = useState(new Date());
+  const [statusFilter, setStatusFilter] = useState<string>("Pending");
+
+  const getFromDateISO = (date: Date) => {
+    const lastDayOfMonth = new Date(date.getFullYear(), date.getMonth() + 1, 0);
+    return lastDayOfMonth.toISOString();
+  };
+  const fromDate = getFromDateISO(currentMonth);
+
+  useEffect(() => {
+    if (pendingCheckTasksOpen) {
+      handlePendingCheckTasksClick();
+    }
+  }, [currentMonth]);
 
   const handlePendingCheckTasksClick = async () => {
     if (user?.id) {
-      await dispatch(fetchPendingCheckTasks(user.id));
+      await dispatch(
+        fetchAssignedTasks({
+          userID: user.id,
+          fromDate,
+          userStatus: "Pending",
+        }),
+      );
       setPendingCheckTasksOpen(true);
     }
   };
 
+  useEffect(() => {
+    if (approvedCheckTasksOpen) {
+      handleApprovedCheckTasksClick();
+    }
+  }, [currentMonth]);
+
   const handleApprovedCheckTasksClick = async () => {
     if (user?.id) {
-      await dispatch(fetchApprovedCheckTasks(user.id));
+      await dispatch(
+        fetchAssignedTasks({
+          userID: user.id,
+          fromDate,
+          userStatus: "Approved",
+        }),
+      );
       setApprovedCheckTasksOpen(true);
     }
   };
 
+  useEffect(() => {
+    if (rejectedCheckTasksOpen) {
+      handleRejectedCheckTasksClick();
+    }
+  }, [currentMonth]);
+
   const handleRejectedCheckTasksClick = async () => {
     if (user?.id) {
-      await dispatch(fetchRejectedCheckTasks(user.id));
+      await dispatch(
+        fetchAssignedTasks({
+          userID: user.id,
+          fromDate,
+          userStatus: "Rejected",
+        }),
+      );
       setRejectedCheckTasksOpen(true);
     }
   };
+
+  useEffect(() => {
+    if (tasksOpen) {
+      handleTotalTasksClick();
+    }
+  }, [currentMonth, statusFilter]);
+
   const handleTotalTasksClick = async () => {
     if (!user?.id) return;
 
@@ -131,19 +178,15 @@ const CheckerDashboard: React.FC = () => {
     setTasksOpen(true); // डायलॉग ओपन
 
     try {
-      // तीनों API parallel में call करें
-      const [pendingRes, approvedRes, rejectedRes] = await Promise.all([
-        dispatch(fetchPendingCheckTasks(user.id)).unwrap(),
-        dispatch(fetchApprovedCheckTasks(user.id)).unwrap(),
-        dispatch(fetchRejectedCheckTasks(user.id)).unwrap(),
-      ]);
-      const combined = [
-        ...pendingRes.map((t: any) => ({ ...t, status: "Pending" })),
-        ...approvedRes.map((t: any) => ({ ...t, status: "Approved" })),
-        ...rejectedRes.map((t: any) => ({ ...t, status: "Rejected" })),
-      ];
+      const res = await dispatch(
+        fetchAssignedTasks({
+          userID: user.id,
+          fromDate,
+          userStatus: statusFilter, // Pending / Approved / Rejected / All
+        }),
+      ).unwrap();
 
-      setAllTasks(combined);
+      setAllTasks(res.result || []);
     } catch (err: any) {
       setAllTasksError(err.message || "Failed to load tasks");
     } finally {
@@ -185,8 +228,8 @@ const CheckerDashboard: React.FC = () => {
     setRejectDialogOpen(true);
   };
 
-  const handleViewTaskMovement = (task: any) => {
-    setSelectedTask(task);
+  const handleViewTaskMovement = (tblId: string) => {
+    setSelectedTask(tblId);
     setTaskMovementDialogOpen(true);
   };
 
@@ -206,7 +249,15 @@ const CheckerDashboard: React.FC = () => {
       setSelectedTaskId(null);
       // Refresh pending tasks grid after approval
       if (user?.id) {
-        dispatch(fetchPendingCheckTasks(user.id));
+        const fromDate = getFromDateISO(currentMonth);
+
+        dispatch(
+          fetchAssignedTasks({
+            userID: user.id,
+            fromDate,
+            userStatus: "Pending",
+          }),
+        );
       }
     }
   };
@@ -220,7 +271,15 @@ const CheckerDashboard: React.FC = () => {
       setSelectedTaskId(null);
       // Refresh pending tasks grid after rejection
       if (user?.id) {
-        dispatch(fetchPendingCheckTasks(user.id));
+        const fromDate = getFromDateISO(currentMonth);
+
+        dispatch(
+          fetchAssignedTasks({
+            userID: user.id,
+            fromDate,
+            userStatus: "Pending",
+          }),
+        );
       }
     }
   };
@@ -288,6 +347,24 @@ const CheckerDashboard: React.FC = () => {
       onClick: handleRejectedCheckTasksClick,
     },
   ];
+  const getFrequencyColor = (frequency: string) => {
+    switch (frequency) {
+      case "Weekly":
+        return "primary";
+      case "Fortnightly":
+        return "secondary";
+      case "Monthly":
+        return "success";
+      case "Half Yearly":
+        return "warning";
+      case "Annually":
+        return "error";
+      case "As Needed":
+        return "default";
+      default:
+        return "default";
+    }
+  };
   // Column definitions for CommonDataTable
   const allTasksColumns: GridColDef[] = React.useMemo(
     () => [
@@ -310,10 +387,15 @@ const CheckerDashboard: React.FC = () => {
       {
         field: "activityName",
         headerName: "Activity Name",
-        flex: 1.2,
-        minWidth: 400,
+        flex: 1,
+        minWidth: 600,
+        valueGetter: (_value, row) => {
+          if (!row.actName) return row.activityName;
+          return `${row.actName} - ${row.activityName}`;
+        },
+        sortable: true,
+        filterable: true,
       },
-      { field: "actName", headerName: "Act Name", flex: 1, minWidth: 180 },
       {
         field: "departmentName",
         headerName: "Department",
@@ -331,6 +413,19 @@ const CheckerDashboard: React.FC = () => {
         ),
       },
       {
+        field: "frequency",
+        headerName: "Frequency",
+        flex: 1,
+        minWidth: 130,
+        renderCell: (params: GridRenderCellParams) => (
+          <Chip
+            label={params.value}
+            color={getFrequencyColor(params.value as string) as any}
+            size="small"
+          />
+        ),
+      },
+      {
         field: "dueDate",
         headerName: "Due Date",
         flex: 1,
@@ -339,7 +434,7 @@ const CheckerDashboard: React.FC = () => {
           params.value ? new Date(params.value).toLocaleDateString() : "-",
       },
       {
-        field: "status",
+        field: "userStatus",
         headerName: "Status",
         flex: 0.8,
         minWidth: 120,
@@ -367,7 +462,7 @@ const CheckerDashboard: React.FC = () => {
         filterable: false,
         disableColumnMenu: true,
         renderCell: (params) => {
-          const status = params.row.taskCurrentStatus;
+          const status = params.row.userStatus;
           const isPending = status === "Pending";
 
           return (
@@ -416,7 +511,7 @@ const CheckerDashboard: React.FC = () => {
               <Tooltip title="View Task" arrow>
                 <IconButton
                   size="small"
-                  onClick={() => handleViewTaskMovement(params.row)}
+                  onClick={() => handleViewTaskMovement(params.row.tblId)}
                   sx={{
                     color: theme.palette.primary.main,
                     "&:hover": {
@@ -456,10 +551,15 @@ const CheckerDashboard: React.FC = () => {
       {
         field: "activityName",
         headerName: "Activity Name",
-        flex: 1.2,
-        minWidth: 400,
+        flex: 1,
+        minWidth: 600,
+        valueGetter: (_value, row) => {
+          if (!row.actName) return row.activityName;
+          return `${row.actName} - ${row.activityName}`;
+        },
+        sortable: true,
+        filterable: true,
       },
-      { field: "actName", headerName: "Act Name", flex: 1, minWidth: 180 },
       {
         field: "departmentName",
         headerName: "Department",
@@ -477,6 +577,19 @@ const CheckerDashboard: React.FC = () => {
         ),
       },
       {
+        field: "frequency",
+        headerName: "Frequency",
+        flex: 1,
+        minWidth: 130,
+        renderCell: (params: GridRenderCellParams) => (
+          <Chip
+            label={params.value}
+            color={getFrequencyColor(params.value as string) as any}
+            size="small"
+          />
+        ),
+      },
+      {
         field: "dueDate",
         headerName: "Due Date",
         flex: 1,
@@ -485,15 +598,21 @@ const CheckerDashboard: React.FC = () => {
           params.value ? new Date(params.value).toLocaleDateString() : "-",
       },
       {
-        field: "status",
+        field: "userStatus",
         headerName: "Status",
         flex: 0.8,
         minWidth: 120,
-        renderCell: () => (
+        renderCell: (params) => (
           <Chip
-            label="Pending"
+            label={params.value}
             size="small"
-            color="warning"
+            color={
+              params.value === "Approved"
+                ? "success"
+                : params.value === "Rejected"
+                  ? "error"
+                  : "warning"
+            }
             sx={{ fontWeight: 600 }}
           />
         ),
@@ -550,7 +669,7 @@ const CheckerDashboard: React.FC = () => {
             <Tooltip title="View Task" arrow>
               <IconButton
                 size="small"
-                onClick={() => handleViewTaskMovement(params.row)}
+                onClick={() => handleViewTaskMovement(params.row.tblId)}
                 sx={{
                   color: theme.palette.primary.main,
                   "&:hover": {
@@ -589,10 +708,15 @@ const CheckerDashboard: React.FC = () => {
       {
         field: "activityName",
         headerName: "Activity Name",
-        flex: 1.2,
-        minWidth: 400,
+        flex: 1,
+        minWidth: 600,
+        valueGetter: (_value, row) => {
+          if (!row.actName) return row.activityName;
+          return `${row.actName} - ${row.activityName}`;
+        },
+        sortable: true,
+        filterable: true,
       },
-      { field: "actName", headerName: "Act Name", flex: 1, minWidth: 180 },
       {
         field: "departmentName",
         headerName: "Department",
@@ -610,6 +734,19 @@ const CheckerDashboard: React.FC = () => {
         ),
       },
       {
+        field: "frequency",
+        headerName: "Frequency",
+        flex: 1,
+        minWidth: 130,
+        renderCell: (params: GridRenderCellParams) => (
+          <Chip
+            label={params.value}
+            color={getFrequencyColor(params.value as string) as any}
+            size="small"
+          />
+        ),
+      },
+      {
         field: "dueDate",
         headerName: "Due Date",
         flex: 1,
@@ -618,15 +755,21 @@ const CheckerDashboard: React.FC = () => {
           params.value ? new Date(params.value).toLocaleDateString() : "-",
       },
       {
-        field: "status",
+        field: "userStatus",
         headerName: "Status",
         flex: 0.8,
         minWidth: 120,
-        renderCell: () => (
+        renderCell: (params) => (
           <Chip
-            label="Approved"
+            label={params.value}
             size="small"
-            color="success"
+            color={
+              params.value === "Approved"
+                ? "success"
+                : params.value === "Rejected"
+                  ? "error"
+                  : "warning"
+            }
             sx={{ fontWeight: 600 }}
           />
         ),
@@ -643,7 +786,7 @@ const CheckerDashboard: React.FC = () => {
               size="small"
               variant="text"
               startIcon={<EyeIcon />}
-              onClick={() => handleViewTaskMovement(params.row)}
+              onClick={() => handleViewTaskMovement(params.row.tblId)}
               sx={{
                 color: theme.palette.primary.main,
                 textTransform: "none",
@@ -680,10 +823,15 @@ const CheckerDashboard: React.FC = () => {
       {
         field: "activityName",
         headerName: "Activity Name",
-        flex: 1.2,
-        minWidth: 400,
+        flex: 1,
+        minWidth: 600,
+        valueGetter: (_value, row) => {
+          if (!row.actName) return row.activityName;
+          return `${row.actName} - ${row.activityName}`;
+        },
+        sortable: true,
+        filterable: true,
       },
-      { field: "actName", headerName: "Act Name", flex: 1, minWidth: 180 },
       {
         field: "departmentName",
         headerName: "Department",
@@ -701,6 +849,19 @@ const CheckerDashboard: React.FC = () => {
         ),
       },
       {
+        field: "frequency",
+        headerName: "Frequency",
+        flex: 1,
+        minWidth: 130,
+        renderCell: (params: GridRenderCellParams) => (
+          <Chip
+            label={params.value}
+            color={getFrequencyColor(params.value as string) as any}
+            size="small"
+          />
+        ),
+      },
+      {
         field: "dueDate",
         headerName: "Due Date",
         flex: 1,
@@ -709,15 +870,21 @@ const CheckerDashboard: React.FC = () => {
           params.value ? new Date(params.value).toLocaleDateString() : "-",
       },
       {
-        field: "status",
+        field: "userStatus",
         headerName: "Status",
         flex: 0.8,
         minWidth: 120,
-        renderCell: () => (
+        renderCell: (params) => (
           <Chip
-            label="Rejected"
+            label={params.value}
             size="small"
-            color="error"
+            color={
+              params.value === "Approved"
+                ? "success"
+                : params.value === "Rejected"
+                  ? "error"
+                  : "warning"
+            }
             sx={{ fontWeight: 600 }}
           />
         ),
@@ -734,7 +901,7 @@ const CheckerDashboard: React.FC = () => {
               size="small"
               variant="text"
               startIcon={<EyeIcon />}
-              onClick={() => handleViewTaskMovement(params.row)}
+              onClick={() => handleViewTaskMovement(params.row.tblId)}
               sx={{
                 color: theme.palette.primary.main,
                 textTransform: "none",
@@ -863,33 +1030,29 @@ const CheckerDashboard: React.FC = () => {
             </Box>
             <Box sx={{ display: "flex", gap: 1, alignItems: "center" }}>
               <LocalizationProvider dateAdapter={AdapterDayjs}>
+                {" "}
                 <DatePicker
                   views={["year", "month"]}
                   label="Select Month"
-                  value={dayjs()}
-                  // onChange={(newValue) => {
-                  //   if (newValue) {
-                  //     setCurrentMonth(newValue.toDate());
-                  //   }
-                  // }}
-                  slotProps={{
-                    textField: {
-                      size: "small",
-                    },
+                  value={dayjs(currentMonth)}
+                  onChange={(newValue) => {
+                    if (newValue) {
+                      setCurrentMonth(newValue.toDate());
+                    }
                   }}
-                />
+                  slotProps={{ textField: { size: "small" } }}
+                />{" "}
               </LocalizationProvider>
 
               <FormControl size="small" sx={{ minWidth: 140 }}>
                 <InputLabel>Status</InputLabel>
                 <Select
                   label="Status"
-                  value={"All"}
-                  // onChange={(e) => setStatusFilter(e.target.value)}
+                  value={statusFilter}
+                  onChange={(e) => setStatusFilter(e.target.value)}
                 >
-                  <MenuItem value="All">All</MenuItem>
                   <MenuItem value="Pending">Pending</MenuItem>
-                  <MenuItem value="Completed">Completed</MenuItem>
+                  <MenuItem value="Approved">Approved</MenuItem>
                   <MenuItem value="Rejected">Rejected</MenuItem>
                 </Select>
               </FormControl>
@@ -983,36 +1146,19 @@ const CheckerDashboard: React.FC = () => {
             </Box>
             <Box sx={{ display: "flex", gap: 1, alignItems: "center" }}>
               <LocalizationProvider dateAdapter={AdapterDayjs}>
+                {" "}
                 <DatePicker
                   views={["year", "month"]}
                   label="Select Month"
-                  value={dayjs()}
-                  // onChange={(newValue) => {
-                  //   if (newValue) {
-                  //     setCurrentMonth(newValue.toDate());
-                  //   }
-                  // }}
-                  slotProps={{
-                    textField: {
-                      size: "small",
-                    },
+                  value={dayjs(currentMonth)}
+                  onChange={(newValue) => {
+                    if (newValue) {
+                      setCurrentMonth(newValue.toDate());
+                    }
                   }}
-                />
+                  slotProps={{ textField: { size: "small" } }}
+                />{" "}
               </LocalizationProvider>
-
-              <FormControl size="small" sx={{ minWidth: 140 }}>
-                <InputLabel>Status</InputLabel>
-                <Select
-                  label="Status"
-                  value={"All"}
-                  // onChange={(e) => setStatusFilter(e.target.value)}
-                >
-                  <MenuItem value="All">All</MenuItem>
-                  <MenuItem value="Pending">Pending</MenuItem>
-                  <MenuItem value="Completed">Completed</MenuItem>
-                  <MenuItem value="Rejected">Rejected</MenuItem>
-                </Select>
-              </FormControl>
               <Button
                 variant="contained"
                 startIcon={<ArrowBackIcon />}
@@ -1106,36 +1252,19 @@ const CheckerDashboard: React.FC = () => {
             </Box>
             <Box sx={{ display: "flex", gap: 1, alignItems: "center" }}>
               <LocalizationProvider dateAdapter={AdapterDayjs}>
+                {" "}
                 <DatePicker
                   views={["year", "month"]}
                   label="Select Month"
-                  value={dayjs()}
-                  // onChange={(newValue) => {
-                  //   if (newValue) {
-                  //     setCurrentMonth(newValue.toDate());
-                  //   }
-                  // }}
-                  slotProps={{
-                    textField: {
-                      size: "small",
-                    },
+                  value={dayjs(currentMonth)}
+                  onChange={(newValue) => {
+                    if (newValue) {
+                      setCurrentMonth(newValue.toDate());
+                    }
                   }}
-                />
+                  slotProps={{ textField: { size: "small" } }}
+                />{" "}
               </LocalizationProvider>
-
-              <FormControl size="small" sx={{ minWidth: 140 }}>
-                <InputLabel>Status</InputLabel>
-                <Select
-                  label="Status"
-                  value={"All"}
-                  // onChange={(e) => setStatusFilter(e.target.value)}
-                >
-                  <MenuItem value="All">All</MenuItem>
-                  <MenuItem value="Pending">Pending</MenuItem>
-                  <MenuItem value="Completed">Completed</MenuItem>
-                  <MenuItem value="Rejected">Rejected</MenuItem>
-                </Select>
-              </FormControl>
               <Button
                 variant="contained"
                 startIcon={<ArrowBackIcon />}
@@ -1229,36 +1358,19 @@ const CheckerDashboard: React.FC = () => {
             </Box>
             <Box sx={{ display: "flex", gap: 1, alignItems: "center" }}>
               <LocalizationProvider dateAdapter={AdapterDayjs}>
+                {" "}
                 <DatePicker
                   views={["year", "month"]}
                   label="Select Month"
-                  value={dayjs()}
-                  // onChange={(newValue) => {
-                  //   if (newValue) {
-                  //     setCurrentMonth(newValue.toDate());
-                  //   }
-                  // }}
-                  slotProps={{
-                    textField: {
-                      size: "small",
-                    },
+                  value={dayjs(currentMonth)}
+                  onChange={(newValue) => {
+                    if (newValue) {
+                      setCurrentMonth(newValue.toDate());
+                    }
                   }}
-                />
+                  slotProps={{ textField: { size: "small" } }}
+                />{" "}
               </LocalizationProvider>
-
-              <FormControl size="small" sx={{ minWidth: 140 }}>
-                <InputLabel>Status</InputLabel>
-                <Select
-                  label="Status"
-                  value={"All"}
-                  // onChange={(e) => setStatusFilter(e.target.value)}
-                >
-                  <MenuItem value="All">All</MenuItem>
-                  <MenuItem value="Pending">Pending</MenuItem>
-                  <MenuItem value="Completed">Completed</MenuItem>
-                  <MenuItem value="Rejected">Rejected</MenuItem>
-                </Select>
-              </FormControl>
               <Button
                 variant="contained"
                 startIcon={<ArrowBackIcon />}
@@ -1473,7 +1585,7 @@ const CheckerDashboard: React.FC = () => {
       <TaskMovementDialog
         open={taskMovementDialogOpen}
         onClose={handleCloseTaskMovementDialog}
-        task={selectedTask}
+        tblId={selectedTask}
       />
     </Box>
   );

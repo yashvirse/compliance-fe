@@ -30,6 +30,7 @@ import dayjs from "dayjs";
 import TaskMovementDialog from "../../../components/common/TaskMovementDialog";
 import CommonDataTable from "../../../components/common/CommonDataTable";
 import type { GridColDef, GridRenderCellParams } from "@mui/x-data-grid";
+import { useLocation } from "react-router-dom";
 
 const Task: React.FC = () => {
   const theme = useTheme();
@@ -41,8 +42,11 @@ const Task: React.FC = () => {
   const error = useSelector(selectTaskError);
   const [showSnackbar, setShowSnackbar] = useState(false);
   const [currentMonth, setCurrentMonth] = useState(new Date());
-  const [statusFilter, setStatusFilter] = useState<string>("Pending");
-
+  const location = useLocation();
+  const dashboardStatus = location.state?.status;
+  const [statusFilter, setStatusFilter] = useState<string>(
+    dashboardStatus || "Pending",
+  );
   const getFromDateISO = (date: Date) => {
     const lastDayOfMonth = new Date(date.getFullYear(), date.getMonth() + 1, 0);
     return lastDayOfMonth.toISOString();
@@ -53,7 +57,7 @@ const Task: React.FC = () => {
     dispatch(
       fetchAssignedTasks({
         fromDate,
-        status: statusFilter,
+        currentStatus: statusFilter,
       }),
     );
   }, [dispatch, currentMonth, statusFilter]);
@@ -68,14 +72,32 @@ const Task: React.FC = () => {
     setShowSnackbar(false);
   };
   // Task movement Deatils
-  const handleViewTaskMovement = (task: any) => {
-    setSelectedTask(task);
+  const handleViewTaskMovement = (tblId: string) => {
+    setSelectedTask(tblId);
     setTaskMovementDialogOpen(true);
   };
 
   const handleCloseTaskMovementDialog = () => {
     setTaskMovementDialogOpen(false);
     setSelectedTask(null);
+  };
+  const getFrequencyColor = (frequency: string) => {
+    switch (frequency) {
+      case "Weekly":
+        return "primary";
+      case "Fortnightly":
+        return "secondary";
+      case "Monthly":
+        return "success";
+      case "Half Yearly":
+        return "warning";
+      case "Annually":
+        return "error";
+      case "As Needed":
+        return "default";
+      default:
+        return "default";
+    }
   };
   const columns: GridColDef[] = [
     {
@@ -99,13 +121,13 @@ const Task: React.FC = () => {
       field: "activityName",
       headerName: "Activity Name",
       flex: 1,
-      minWidth: 400,
-    },
-    {
-      field: "actName",
-      headerName: "Act Name",
-      flex: 1,
-      minWidth: 180,
+      minWidth: 600,
+      valueGetter: (_value, row) => {
+        if (!row.actName) return row.activityName;
+        return `${row.actName} - ${row.activityName}`;
+      },
+      sortable: true,
+      filterable: true,
     },
     {
       field: "departmentName",
@@ -120,6 +142,19 @@ const Task: React.FC = () => {
             bgcolor: alpha(theme.palette.success.main, 0.1),
             color: theme.palette.success.main,
           }}
+        />
+      ),
+    },
+    {
+      field: "frequency",
+      headerName: "Frequency",
+      flex: 1,
+      minWidth: 130,
+      renderCell: (params: GridRenderCellParams) => (
+        <Chip
+          label={params.value}
+          color={getFrequencyColor(params.value as string) as any}
+          size="small"
         />
       ),
     },
@@ -171,7 +206,7 @@ const Task: React.FC = () => {
               size="small"
               variant="text"
               startIcon={<EyeIcon />}
-              onClick={() => handleViewTaskMovement(task)}
+              onClick={() => handleViewTaskMovement(task.tblId)}
               sx={{
                 color: theme.palette.primary.main,
                 textTransform: "none",
@@ -259,7 +294,7 @@ const Task: React.FC = () => {
       <TaskMovementDialog
         open={taskMovementDialogOpen}
         onClose={handleCloseTaskMovementDialog}
-        task={selectedTask}
+        tblId={selectedTask}
       />
     </Box>
   );

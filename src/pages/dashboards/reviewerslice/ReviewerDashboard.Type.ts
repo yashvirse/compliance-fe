@@ -1,4 +1,22 @@
 // Reviewer Dashboard Types - Consolidated
+export interface AssignedTask {
+  tblId: string;
+  activityName: string;
+  actName: string;
+  departmentName: string;
+  siteName: string;
+  siteID: string;
+  dueDate: string;
+  taskCurrentStatus: string;
+  userStatus: string;
+  frequency: string;
+}
+
+export interface GetAssignedTasksResponse {
+  isSuccess: boolean;
+  message: string;
+  result: AssignedTask[];
+}
 
 // ===== Pending Review Tasks =====
 export interface PendingReviewTaskDetail {
@@ -110,6 +128,7 @@ export interface GetRejectedReviewTasksResponse {
 
 // ===== Redux State =====
 export interface ReviewerDashboardState {
+  tasks: AssignedTask[];
   // Pending Review Tasks
   pendingReviewTasks: PendingReviewTask[];
   // Approved Review Tasks

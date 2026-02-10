@@ -3,17 +3,16 @@ import { apiService } from "../../../services/api";
 import type {
   ReviewerDashboardState,
   GetReviewerTaskCountResponse,
-  GetPendingReviewTasksResponse,
-  GetApprovedReviewTasksResponse,
-  GetRejectedReviewTasksResponse,
   ApproveReviewTaskRequest,
   ApproveReviewTaskResponse,
   RejectReviewTaskRequest,
   RejectReviewTaskResponse,
+  GetAssignedTasksResponse,
 } from "./ReviewerDashboard.Type";
 
 // Initial state
 const initialState: ReviewerDashboardState = {
+  tasks: [],
   pendingReviewTasks: [],
   approvedReviewTasks: [],
   rejectedReviewTasks: [],
@@ -42,11 +41,9 @@ export const fetchReviewerTaskCount = createAsyncThunk(
       );
 
       if (response.isSuccess && response.result) {
-        console.log("✅ Task counts received:", response.result);
         return response.result;
       }
 
-      console.error("❌ API error:", response.message);
       return rejectWithValue(
         response.message || "Failed to fetch dashboard counts",
       );
@@ -58,88 +55,36 @@ export const fetchReviewerTaskCount = createAsyncThunk(
     }
   },
 );
-
-// Fetch pending review tasks
-export const fetchPendingReviewTasks = createAsyncThunk(
-  "reviewerDashboard/fetchPendingReviewTasks",
-  async (userID: string, { rejectWithValue }) => {
+export const fetchAssignedTasks = createAsyncThunk<
+  GetAssignedTasksResponse,
+  { userID: string; fromDate: string; userStatus: string },
+  { rejectValue: string }
+>(
+  "customerAdmin/fetchAssignedTasks",
+  async ({ userID, fromDate, userStatus }, { rejectWithValue }) => {
     try {
-      const response = await apiService.get<GetPendingReviewTasksResponse>(
-        `Dashboard/getPendingTaskDtl?userID=${userID}`,
+      const response = await apiService.get<GetAssignedTasksResponse>(
+        `Dashboard/getAssignedTask?userID=${encodeURIComponent(
+          userID,
+        )}&fromDate=${encodeURIComponent(fromDate)}&userStatus=${encodeURIComponent(userStatus)}`,
       );
 
-      if (response.isSuccess) {
-        console.log("✅ Pending review tasks received:", response.result);
-        return response.result;
+      if (!response.isSuccess) {
+        return rejectWithValue(
+          response.message || "Failed to fetch assigned tasks",
+        );
       }
 
-      console.error("❌ API error:", response.message);
-      return rejectWithValue(
-        response.message || "Failed to fetch pending review tasks",
-      );
+      return response;
     } catch (error: any) {
-      console.error("❌ Fetch error:", error);
       return rejectWithValue(
-        error?.message || "Failed to fetch pending review tasks",
+        error?.response?.data?.message ||
+          error?.message ||
+          "Failed to fetch assigned tasks",
       );
     }
   },
 );
-
-// Fetch approved review tasks
-export const fetchApprovedReviewTasks = createAsyncThunk(
-  "reviewerDashboard/fetchApprovedReviewTasks",
-  async (userID: string, { rejectWithValue }) => {
-    try {
-      const response = await apiService.get<GetApprovedReviewTasksResponse>(
-        `Dashboard/getApprovedTaskDtl?userID=${userID}`,
-      );
-
-      if (response.isSuccess) {
-        console.log("✅ Approved review tasks received:", response.result);
-        return response.result;
-      }
-
-      console.error("❌ API error:", response.message);
-      return rejectWithValue(
-        response.message || "Failed to fetch approved review tasks",
-      );
-    } catch (error: any) {
-      console.error("❌ Fetch error:", error);
-      return rejectWithValue(
-        error?.message || "Failed to fetch approved review tasks",
-      );
-    }
-  },
-);
-
-// Fetch rejected review tasks
-export const fetchRejectedReviewTasks = createAsyncThunk(
-  "reviewerDashboard/fetchRejectedTasks",
-  async (userID: string, { rejectWithValue }) => {
-    try {
-      const response = await apiService.get<GetRejectedReviewTasksResponse>(
-        `Dashboard/getRejectedTaskDtl?userID=${userID}`,
-      );
-
-      if (response.isSuccess) {
-        console.log("✅ Rejected review tasks received:", response.result);
-        return response.result;
-      }
-
-      console.error("❌ API error:", response.message);
-      return rejectWithValue(
-        response.message || "Failed to fetch rejected review tasks",
-      );
-    } catch (error: any) {
-      console.error("❌ Fetch error:", error);
-      return rejectWithValue(
-        error?.message || "Failed to fetch rejected review tasks",
-      );
-    }
-  },
-);
-
 // Approve review task
 export const approveReviewTask = createAsyncThunk<
   ApproveReviewTaskResponse,
@@ -169,7 +114,6 @@ export const approveReviewTask = createAsyncThunk<
       }
       return response;
     } catch (error: any) {
-      console.error("❌ Approve review task error:", error);
       return rejectWithValue(
         error?.response?.data?.message || "Error approving review task",
       );
@@ -238,45 +182,6 @@ const reviewerDashboardSlice = createSlice({
         state.loading = false;
         state.error = action.payload as string;
       })
-      // Fetch pending review tasks
-      .addCase(fetchPendingReviewTasks.pending, (state) => {
-        state.pendingReviewTasksLoading = true;
-        state.pendingReviewTasksError = null;
-      })
-      .addCase(fetchPendingReviewTasks.fulfilled, (state, action) => {
-        state.pendingReviewTasksLoading = false;
-        state.pendingReviewTasks = action.payload;
-      })
-      .addCase(fetchPendingReviewTasks.rejected, (state, action) => {
-        state.pendingReviewTasksLoading = false;
-        state.pendingReviewTasksError = action.payload as string;
-      })
-      // Fetch approved review tasks
-      .addCase(fetchApprovedReviewTasks.pending, (state) => {
-        state.approvedReviewTasksLoading = true;
-        state.approvedReviewTasksError = null;
-      })
-      .addCase(fetchApprovedReviewTasks.fulfilled, (state, action) => {
-        state.approvedReviewTasksLoading = false;
-        state.approvedReviewTasks = action.payload;
-      })
-      .addCase(fetchApprovedReviewTasks.rejected, (state, action) => {
-        state.approvedReviewTasksLoading = false;
-        state.approvedReviewTasksError = action.payload as string;
-      })
-      // Fetch rejected review tasks
-      .addCase(fetchRejectedReviewTasks.pending, (state) => {
-        state.rejectedReviewTasksLoading = true;
-        state.rejectedReviewTasksError = null;
-      })
-      .addCase(fetchRejectedReviewTasks.fulfilled, (state, action) => {
-        state.rejectedReviewTasksLoading = false;
-        state.rejectedReviewTasks = action.payload;
-      })
-      .addCase(fetchRejectedReviewTasks.rejected, (state, action) => {
-        state.rejectedReviewTasksLoading = false;
-        state.rejectedReviewTasksError = action.payload as string;
-      })
       // Approve review task
       .addCase(approveReviewTask.pending, (state) => {
         state.taskActionsLoading = true;
@@ -304,6 +209,18 @@ const reviewerDashboardSlice = createSlice({
         state.taskActionsLoading = false;
         state.taskActionsError =
           action.payload || "Failed to reject review task";
+      })
+      .addCase(fetchAssignedTasks.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(fetchAssignedTasks.fulfilled, (state, action) => {
+        state.loading = false;
+        state.tasks = action.payload.result || [];
+      })
+      .addCase(fetchAssignedTasks.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload || "Failed to fetch assigned tasks";
       });
   },
 });

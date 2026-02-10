@@ -27,3 +27,5 @@ export const selectRejectedTasksLoading = (state: RootState) =>
   state.auditorDashboard.rejectedTasksLoading;
 export const selectRejectedTasksError = (state: RootState) =>
   state.auditorDashboard.rejectedTasksError;
+export const selectAssignedTasks = (state: RootState) =>
+  state.auditorDashboard.tasks;

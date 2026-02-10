@@ -24,7 +24,7 @@ import {
   Select,
   MenuItem,
 } from "@mui/material";
-import type { GridColDef } from "@mui/x-data-grid";
+import type { GridColDef, GridRenderCellParams } from "@mui/x-data-grid";
 import {
   HourglassEmpty,
   CheckCircle,
@@ -39,24 +39,20 @@ import type { AppDispatch } from "../../app/store";
 import { selectUser } from "../login/slice/Login.selector";
 import {
   fetchReviewerTaskCount,
-  fetchPendingReviewTasks,
-  fetchApprovedReviewTasks,
-  fetchRejectedReviewTasks,
   approveReviewTask,
   rejectReviewTask,
   clearError,
+  fetchAssignedTasks,
 } from "./reviewerslice/ReviewerDashboard.Slice";
 import {
   selectReviewerPendingCount,
   selectReviewerApprovedCount,
   selectReviewerRejectedCount,
-  selectPendingReviewTasks,
-  selectApprovedReviewTasks,
-  selectRejectedReviewTasks,
   selectPendingReviewTasksLoading,
   selectApprovedReviewTasksLoading,
   selectRejectedReviewTasksLoading,
   selectReviewerTaskActionsLoading,
+  selectAssignedTasks,
 } from "./reviewerslice/ReviewerDashboard.Selector";
 import TaskMovementDialog from "../../components/common/TaskMovementDialog";
 import CommonDataTable from "../../components/common/CommonDataTable";
@@ -88,9 +84,9 @@ const ReviewerDashboard: React.FC = () => {
   const pendingCount = useSelector(selectReviewerPendingCount);
   const approvedCount = useSelector(selectReviewerApprovedCount);
   const rejectedCount = useSelector(selectReviewerRejectedCount);
-  const pendingReviewTasks = useSelector(selectPendingReviewTasks);
-  const approvedReviewTasks = useSelector(selectApprovedReviewTasks);
-  const rejectedReviewTasks = useSelector(selectRejectedReviewTasks);
+  const pendingReviewTasks = useSelector(selectAssignedTasks);
+  const approvedReviewTasks = useSelector(selectAssignedTasks);
+  const rejectedReviewTasks = useSelector(selectAssignedTasks);
   const pendingReviewTasksLoading = useSelector(
     selectPendingReviewTasksLoading,
   );
@@ -101,6 +97,21 @@ const ReviewerDashboard: React.FC = () => {
     selectRejectedReviewTasksLoading,
   );
   const taskActionsLoading = useSelector(selectReviewerTaskActionsLoading);
+  const [currentMonth, setCurrentMonth] = useState(new Date());
+  const [statusFilter, setStatusFilter] = useState<string>("Pending");
+
+  const getFromDateISO = (date: Date) => {
+    const lastDayOfMonth = new Date(date.getFullYear(), date.getMonth() + 1, 0);
+    return lastDayOfMonth.toISOString();
+  };
+  const fromDate = getFromDateISO(currentMonth);
+
+  useEffect(() => {
+    if (tasksOpen) {
+      handleTotalTasksClick();
+    }
+  }, [currentMonth, statusFilter]);
+
   const handleTotalTasksClick = async () => {
     if (!user?.id) return;
 
@@ -109,21 +120,15 @@ const ReviewerDashboard: React.FC = () => {
     setTasksOpen(true); // डायलॉग ओपन
 
     try {
-      // तीनों API parallel में call करें
-      const [pendingRes, approvedRes, rejectedRes] = await Promise.all([
-        dispatch(fetchPendingReviewTasks(user.id)).unwrap(),
-        dispatch(fetchApprovedReviewTasks(user.id)).unwrap(),
-        dispatch(fetchRejectedReviewTasks(user.id)).unwrap(),
-      ]);
+      const res = await dispatch(
+        fetchAssignedTasks({
+          userID: user.id,
+          fromDate,
+          userStatus: statusFilter, // Pending / Approved / Rejected / All
+        }),
+      ).unwrap();
 
-      // सभी टास्क्स को combine करें और status ऐड करें ताकि टेबल में दिखे
-      const combined = [
-        ...pendingRes.map((t: any) => ({ ...t, status: "Pending" })),
-        ...approvedRes.map((t: any) => ({ ...t, status: "Approved" })),
-        ...rejectedRes.map((t: any) => ({ ...t, status: "Approved" })),
-      ];
-
-      setAllTasks(combined);
+      setAllTasks(res.result || []);
     } catch (err: any) {
       setAllTasksError(err.message || "Failed to load tasks");
     } finally {
@@ -137,26 +142,62 @@ const ReviewerDashboard: React.FC = () => {
     }
   }, [dispatch, user?.id]);
 
+  useEffect(() => {
+    if (pendingReviewTasksOpen) {
+      handlePendingReviewTasksClick();
+    }
+  }, [currentMonth]);
+
   // Handle pending review tasks click
   const handlePendingReviewTasksClick = async () => {
     if (user?.id) {
-      await dispatch(fetchPendingReviewTasks(user.id));
+      await dispatch(
+        fetchAssignedTasks({
+          userID: user.id,
+          fromDate,
+          userStatus: "Pending",
+        }),
+      );
       setPendingReviewTasksOpen(true);
     }
   };
 
+  useEffect(() => {
+    if (approvedReviewTasksOpen) {
+      handleApprovedReviewTasksClick();
+    }
+  }, [currentMonth]);
+
   // Handle approved review tasks click
   const handleApprovedReviewTasksClick = async () => {
     if (user?.id) {
-      await dispatch(fetchApprovedReviewTasks(user.id));
+      await dispatch(
+        fetchAssignedTasks({
+          userID: user.id,
+          fromDate,
+          userStatus: "Approved",
+        }),
+      );
       setApprovedReviewTasksOpen(true);
     }
   };
 
+  useEffect(() => {
+    if (rejectedReviewTasksOpen) {
+      handleRejectedReviewTasksClick();
+    }
+  }, [currentMonth]);
+
   // Handle rejected review tasks click
   const handleRejectedReviewTasksClick = async () => {
     if (user?.id) {
-      await dispatch(fetchRejectedReviewTasks(user.id));
+      await dispatch(
+        fetchAssignedTasks({
+          userID: user.id,
+          fromDate,
+          userStatus: "Rejected",
+        }),
+      );
       setRejectedReviewTasksOpen(true);
     }
   };
@@ -199,8 +240,8 @@ const ReviewerDashboard: React.FC = () => {
   };
 
   // Handle view task movement
-  const handleViewTaskMovement = (task: any) => {
-    setSelectedTask(task);
+  const handleViewTaskMovement = (tblId: string) => {
+    setSelectedTask(tblId);
     setTaskMovementDialogOpen(true);
   };
 
@@ -222,8 +263,15 @@ const ReviewerDashboard: React.FC = () => {
       setSelectedTaskId(null);
       // Refresh pending tasks
       if (user?.id) {
-        await dispatch(fetchPendingReviewTasks(user.id));
-        await dispatch(fetchReviewerTaskCount(user.id));
+        const fromDate = getFromDateISO(currentMonth);
+
+        dispatch(
+          fetchAssignedTasks({
+            userID: user.id,
+            fromDate,
+            userStatus: "Pending",
+          }),
+        );
       }
     }
   };
@@ -240,8 +288,15 @@ const ReviewerDashboard: React.FC = () => {
       setSelectedTaskId(null);
       // Refresh pending tasks
       if (user?.id) {
-        await dispatch(fetchPendingReviewTasks(user.id));
-        await dispatch(fetchReviewerTaskCount(user.id));
+        const fromDate = getFromDateISO(currentMonth);
+
+        dispatch(
+          fetchAssignedTasks({
+            userID: user.id,
+            fromDate,
+            userStatus: "Pending",
+          }),
+        );
       }
     }
   };
@@ -283,7 +338,24 @@ const ReviewerDashboard: React.FC = () => {
       onClick: handleRejectedReviewTasksClick,
     },
   ];
-
+  const getFrequencyColor = (frequency: string) => {
+    switch (frequency) {
+      case "Weekly":
+        return "primary";
+      case "Fortnightly":
+        return "secondary";
+      case "Monthly":
+        return "success";
+      case "Half Yearly":
+        return "warning";
+      case "Annually":
+        return "error";
+      case "As Needed":
+        return "default";
+      default:
+        return "default";
+    }
+  };
   // Column definitions for CommonDataTable
   const allTasksColumns: GridColDef[] = React.useMemo(
     () => [
@@ -306,10 +378,15 @@ const ReviewerDashboard: React.FC = () => {
       {
         field: "activityName",
         headerName: "Activity Name",
-        flex: 1.2,
-        minWidth: 400,
+        flex: 1,
+        minWidth: 600,
+        valueGetter: (_value, row) => {
+          if (!row.actName) return row.activityName;
+          return `${row.actName} - ${row.activityName}`;
+        },
+        sortable: true,
+        filterable: true,
       },
-      { field: "actName", headerName: "Act Name", flex: 1, minWidth: 180 },
       {
         field: "departmentName",
         headerName: "Department",
@@ -327,6 +404,19 @@ const ReviewerDashboard: React.FC = () => {
         ),
       },
       {
+        field: "frequency",
+        headerName: "Frequency",
+        flex: 1,
+        minWidth: 130,
+        renderCell: (params: GridRenderCellParams) => (
+          <Chip
+            label={params.value}
+            color={getFrequencyColor(params.value as string) as any}
+            size="small"
+          />
+        ),
+      },
+      {
         field: "dueDate",
         headerName: "Due Date",
         flex: 1,
@@ -335,7 +425,7 @@ const ReviewerDashboard: React.FC = () => {
           params.value ? new Date(params.value).toLocaleDateString() : "-",
       },
       {
-        field: "status",
+        field: "userStatus",
         headerName: "Status",
         flex: 0.8,
         minWidth: 120,
@@ -363,7 +453,7 @@ const ReviewerDashboard: React.FC = () => {
         filterable: false,
         disableColumnMenu: true,
         renderCell: (params) => {
-          const status = params.row.taskCurrentStatus;
+          const status = params.row.userStatus;
           const isPending = status === "Pending";
 
           return (
@@ -412,7 +502,7 @@ const ReviewerDashboard: React.FC = () => {
               <Tooltip title="View Task" arrow>
                 <IconButton
                   size="small"
-                  onClick={() => handleViewTaskMovement(params.row)}
+                  onClick={() => handleViewTaskMovement(params.row.tblId)}
                   sx={{
                     color: theme.palette.primary.main,
                     "&:hover": {
@@ -451,10 +541,15 @@ const ReviewerDashboard: React.FC = () => {
       {
         field: "activityName",
         headerName: "Activity Name",
-        flex: 1.2,
-        minWidth: 400,
+        flex: 1,
+        minWidth: 600,
+        valueGetter: (_value, row) => {
+          if (!row.actName) return row.activityName;
+          return `${row.actName} - ${row.activityName}`;
+        },
+        sortable: true,
+        filterable: true,
       },
-      { field: "actName", headerName: "Act Name", flex: 1, minWidth: 180 },
       {
         field: "departmentName",
         headerName: "Department",
@@ -472,6 +567,19 @@ const ReviewerDashboard: React.FC = () => {
         ),
       },
       {
+        field: "frequency",
+        headerName: "Frequency",
+        flex: 1,
+        minWidth: 130,
+        renderCell: (params: GridRenderCellParams) => (
+          <Chip
+            label={params.value}
+            color={getFrequencyColor(params.value as string) as any}
+            size="small"
+          />
+        ),
+      },
+      {
         field: "dueDate",
         headerName: "Due Date",
         flex: 0.8,
@@ -480,15 +588,21 @@ const ReviewerDashboard: React.FC = () => {
           params.value ? new Date(params.value).toLocaleDateString() : "-",
       },
       {
-        field: "status",
+        field: "userStatus",
         headerName: "Status",
         flex: 0.8,
         minWidth: 120,
-        renderCell: () => (
+        renderCell: (params) => (
           <Chip
-            label="Pending"
+            label={params.value}
             size="small"
-            color="warning"
+            color={
+              params.value === "Approved"
+                ? "success"
+                : params.value === "Rejected"
+                  ? "error"
+                  : "warning"
+            }
             sx={{ fontWeight: 600 }}
           />
         ),
@@ -545,7 +659,7 @@ const ReviewerDashboard: React.FC = () => {
             <Tooltip title="View Task" arrow>
               <IconButton
                 size="small"
-                onClick={() => handleViewTaskMovement(params.row)}
+                onClick={() => handleViewTaskMovement(params.row.tblId)}
                 sx={{
                   color: theme.palette.primary.main,
                   "&:hover": {
@@ -584,10 +698,15 @@ const ReviewerDashboard: React.FC = () => {
       {
         field: "activityName",
         headerName: "Activity Name",
-        flex: 1.2,
-        minWidth: 400,
+        flex: 1,
+        minWidth: 600,
+        valueGetter: (_value, row) => {
+          if (!row.actName) return row.activityName;
+          return `${row.actName} - ${row.activityName}`;
+        },
+        sortable: true,
+        filterable: true,
       },
-      { field: "actName", headerName: "Act Name", flex: 1, minWidth: 180 },
       {
         field: "departmentName",
         headerName: "Department",
@@ -605,6 +724,19 @@ const ReviewerDashboard: React.FC = () => {
         ),
       },
       {
+        field: "frequency",
+        headerName: "Frequency",
+        flex: 1,
+        minWidth: 130,
+        renderCell: (params: GridRenderCellParams) => (
+          <Chip
+            label={params.value}
+            color={getFrequencyColor(params.value as string) as any}
+            size="small"
+          />
+        ),
+      },
+      {
         field: "dueDate",
         headerName: "Due Date",
         flex: 0.8,
@@ -613,15 +745,21 @@ const ReviewerDashboard: React.FC = () => {
           params.value ? new Date(params.value).toLocaleDateString() : "-",
       },
       {
-        field: "status",
+        field: "userStatus",
         headerName: "Status",
         flex: 0.8,
         minWidth: 120,
-        renderCell: () => (
+        renderCell: (params) => (
           <Chip
-            label="Approved"
+            label={params.value}
             size="small"
-            color="success"
+            color={
+              params.value === "Approved"
+                ? "success"
+                : params.value === "Rejected"
+                  ? "error"
+                  : "warning"
+            }
             sx={{ fontWeight: 600 }}
           />
         ),
@@ -638,7 +776,7 @@ const ReviewerDashboard: React.FC = () => {
               size="small"
               variant="text"
               startIcon={<EyeIcon />}
-              onClick={() => handleViewTaskMovement(params.row)}
+              onClick={() => handleViewTaskMovement(params.row.tblId)}
               sx={{
                 color: theme.palette.primary.main,
                 textTransform: "none",
@@ -675,10 +813,15 @@ const ReviewerDashboard: React.FC = () => {
       {
         field: "activityName",
         headerName: "Activity Name",
-        flex: 1.2,
-        minWidth: 400,
+        flex: 1,
+        minWidth: 600,
+        valueGetter: (_value, row) => {
+          if (!row.actName) return row.activityName;
+          return `${row.actName} - ${row.activityName}`;
+        },
+        sortable: true,
+        filterable: true,
       },
-      { field: "actName", headerName: "Act Name", flex: 1, minWidth: 180 },
       {
         field: "departmentName",
         headerName: "Department",
@@ -696,6 +839,19 @@ const ReviewerDashboard: React.FC = () => {
         ),
       },
       {
+        field: "frequency",
+        headerName: "Frequency",
+        flex: 1,
+        minWidth: 130,
+        renderCell: (params: GridRenderCellParams) => (
+          <Chip
+            label={params.value}
+            color={getFrequencyColor(params.value as string) as any}
+            size="small"
+          />
+        ),
+      },
+      {
         field: "dueDate",
         headerName: "Due Date",
         flex: 0.8,
@@ -704,15 +860,21 @@ const ReviewerDashboard: React.FC = () => {
           params.value ? new Date(params.value).toLocaleDateString() : "-",
       },
       {
-        field: "status",
+        field: "userStatus",
         headerName: "Status",
         flex: 0.8,
         minWidth: 120,
-        renderCell: () => (
+        renderCell: (params) => (
           <Chip
-            label="Rejected"
+            label={params.value}
             size="small"
-            color="error"
+            color={
+              params.value === "Approved"
+                ? "success"
+                : params.value === "Rejected"
+                  ? "error"
+                  : "warning"
+            }
             sx={{ fontWeight: 600 }}
           />
         ),
@@ -729,7 +891,7 @@ const ReviewerDashboard: React.FC = () => {
               size="small"
               variant="text"
               startIcon={<EyeIcon />}
-              onClick={() => handleViewTaskMovement(params.row)}
+              onClick={() => handleViewTaskMovement(params.row.tblId)}
               sx={{
                 color: theme.palette.primary.main,
                 textTransform: "none",
@@ -864,33 +1026,29 @@ const ReviewerDashboard: React.FC = () => {
             </Box>
             <Box sx={{ display: "flex", gap: 1, alignItems: "center" }}>
               <LocalizationProvider dateAdapter={AdapterDayjs}>
+                {" "}
                 <DatePicker
                   views={["year", "month"]}
                   label="Select Month"
-                  value={dayjs()}
-                  // onChange={(newValue) => {
-                  //   if (newValue) {
-                  //     setCurrentMonth(newValue.toDate());
-                  //   }
-                  // }}
-                  slotProps={{
-                    textField: {
-                      size: "small",
-                    },
+                  value={dayjs(currentMonth)}
+                  onChange={(newValue) => {
+                    if (newValue) {
+                      setCurrentMonth(newValue.toDate());
+                    }
                   }}
-                />
+                  slotProps={{ textField: { size: "small" } }}
+                />{" "}
               </LocalizationProvider>
 
               <FormControl size="small" sx={{ minWidth: 140 }}>
                 <InputLabel>Status</InputLabel>
                 <Select
                   label="Status"
-                  value={"All"}
-                  // onChange={(e) => setStatusFilter(e.target.value)}
+                  value={statusFilter}
+                  onChange={(e) => setStatusFilter(e.target.value)}
                 >
-                  <MenuItem value="All">All</MenuItem>
                   <MenuItem value="Pending">Pending</MenuItem>
-                  <MenuItem value="Completed">Completed</MenuItem>
+                  <MenuItem value="Approved">Approved</MenuItem>
                   <MenuItem value="Rejected">Rejected</MenuItem>
                 </Select>
               </FormControl>
@@ -987,36 +1145,19 @@ const ReviewerDashboard: React.FC = () => {
 
             <Box sx={{ display: "flex", gap: 1, alignItems: "center" }}>
               <LocalizationProvider dateAdapter={AdapterDayjs}>
+                {" "}
                 <DatePicker
                   views={["year", "month"]}
                   label="Select Month"
-                  value={dayjs()}
-                  // onChange={(newValue) => {
-                  //   if (newValue) {
-                  //     setCurrentMonth(newValue.toDate());
-                  //   }
-                  // }}
-                  slotProps={{
-                    textField: {
-                      size: "small",
-                    },
+                  value={dayjs(currentMonth)}
+                  onChange={(newValue) => {
+                    if (newValue) {
+                      setCurrentMonth(newValue.toDate());
+                    }
                   }}
-                />
+                  slotProps={{ textField: { size: "small" } }}
+                />{" "}
               </LocalizationProvider>
-
-              <FormControl size="small" sx={{ minWidth: 140 }}>
-                <InputLabel>Status</InputLabel>
-                <Select
-                  label="Status"
-                  value={"All"}
-                  // onChange={(e) => setStatusFilter(e.target.value)}
-                >
-                  <MenuItem value="All">All</MenuItem>
-                  <MenuItem value="Pending">Pending</MenuItem>
-                  <MenuItem value="Completed">Completed</MenuItem>
-                  <MenuItem value="Rejected">Rejected</MenuItem>
-                </Select>
-              </FormControl>
               <Button
                 variant="contained"
                 startIcon={<ArrowBackIcon />}
@@ -1110,36 +1251,19 @@ const ReviewerDashboard: React.FC = () => {
 
             <Box sx={{ display: "flex", gap: 1, alignItems: "center" }}>
               <LocalizationProvider dateAdapter={AdapterDayjs}>
+                {" "}
                 <DatePicker
                   views={["year", "month"]}
                   label="Select Month"
-                  value={dayjs()}
-                  // onChange={(newValue) => {
-                  //   if (newValue) {
-                  //     setCurrentMonth(newValue.toDate());
-                  //   }
-                  // }}
-                  slotProps={{
-                    textField: {
-                      size: "small",
-                    },
+                  value={dayjs(currentMonth)}
+                  onChange={(newValue) => {
+                    if (newValue) {
+                      setCurrentMonth(newValue.toDate());
+                    }
                   }}
-                />
+                  slotProps={{ textField: { size: "small" } }}
+                />{" "}
               </LocalizationProvider>
-
-              <FormControl size="small" sx={{ minWidth: 140 }}>
-                <InputLabel>Status</InputLabel>
-                <Select
-                  label="Status"
-                  value={"All"}
-                  // onChange={(e) => setStatusFilter(e.target.value)}
-                >
-                  <MenuItem value="All">All</MenuItem>
-                  <MenuItem value="Pending">Pending</MenuItem>
-                  <MenuItem value="Completed">Completed</MenuItem>
-                  <MenuItem value="Rejected">Rejected</MenuItem>
-                </Select>
-              </FormControl>
               <Button
                 variant="contained"
                 startIcon={<ArrowBackIcon />}
@@ -1233,36 +1357,19 @@ const ReviewerDashboard: React.FC = () => {
 
             <Box sx={{ display: "flex", gap: 1, alignItems: "center" }}>
               <LocalizationProvider dateAdapter={AdapterDayjs}>
+                {" "}
                 <DatePicker
                   views={["year", "month"]}
                   label="Select Month"
-                  value={dayjs()}
-                  // onChange={(newValue) => {
-                  //   if (newValue) {
-                  //     setCurrentMonth(newValue.toDate());
-                  //   }
-                  // }}
-                  slotProps={{
-                    textField: {
-                      size: "small",
-                    },
+                  value={dayjs(currentMonth)}
+                  onChange={(newValue) => {
+                    if (newValue) {
+                      setCurrentMonth(newValue.toDate());
+                    }
                   }}
-                />
+                  slotProps={{ textField: { size: "small" } }}
+                />{" "}
               </LocalizationProvider>
-
-              <FormControl size="small" sx={{ minWidth: 140 }}>
-                <InputLabel>Status</InputLabel>
-                <Select
-                  label="Status"
-                  value={"All"}
-                  // onChange={(e) => setStatusFilter(e.target.value)}
-                >
-                  <MenuItem value="All">All</MenuItem>
-                  <MenuItem value="Pending">Pending</MenuItem>
-                  <MenuItem value="Completed">Completed</MenuItem>
-                  <MenuItem value="Rejected">Rejected</MenuItem>
-                </Select>
-              </FormControl>
               <Button
                 variant="contained"
                 startIcon={<ArrowBackIcon />}
@@ -1425,7 +1532,7 @@ const ReviewerDashboard: React.FC = () => {
       <TaskMovementDialog
         open={taskMovementDialogOpen}
         onClose={handleCloseTaskMovementDialog}
-        task={selectedTask}
+        tblId={selectedTask}
       />
     </Box>
   );
