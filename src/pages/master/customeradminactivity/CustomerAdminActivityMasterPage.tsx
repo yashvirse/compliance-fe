@@ -74,7 +74,7 @@ const CustomerAdminActivityMasterPage: React.FC = () => {
   const [showSnackbar, setShowSnackbar] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState("");
   const [snackbarSeverity, setSnackbarSeverity] = useState<"success" | "error">(
-    "success"
+    "success",
   );
   const [, setBulkFile] = useState<File | null>(null);
 
@@ -133,7 +133,7 @@ const CustomerAdminActivityMasterPage: React.FC = () => {
     try {
       await apiService.download(
         "CompanyActivityMaster/activitySampleDataExcel",
-        "ActivityMasterTemplate.csv"
+        "ActivityMasterTemplate.csv",
       );
       setSnackbarMessage("Activity template downloaded successful");
       setShowSnackbar(true);
@@ -145,7 +145,7 @@ const CustomerAdminActivityMasterPage: React.FC = () => {
     }
   };
   const handleBulkFileChange = async (
-    e: React.ChangeEvent<HTMLInputElement>
+    e: React.ChangeEvent<HTMLInputElement>,
   ) => {
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];
@@ -159,7 +159,7 @@ const CustomerAdminActivityMasterPage: React.FC = () => {
         // reset
         setBulkFile(null);
         const fileInput = document.getElementById(
-          "bulk-site-upload"
+          "bulk-site-upload",
         ) as HTMLInputElement;
         if (fileInput) fileInput.value = "";
         dispatch(fetchCompanyActivityList());
@@ -294,7 +294,7 @@ const CustomerAdminActivityMasterPage: React.FC = () => {
           companyId: selectedActivity.companyId,
           companyDomain: selectedActivity.companyDomain,
           sites: sitesData as Array<{ siteId: string; siteName: string }>,
-        })
+        }),
       ).unwrap();
 
       setSnackbarMessage("Activity updated successfully");
@@ -375,9 +375,6 @@ const CustomerAdminActivityMasterPage: React.FC = () => {
         <Box>
           <Typography variant="h4" fontWeight={700} gutterBottom>
             Activity Master
-          </Typography>
-          <Typography variant="body1" color="text.secondary">
-            View and manage activities grouped by Act and Department
           </Typography>
         </Box>
 
@@ -545,7 +542,7 @@ const CustomerAdminActivityMasterPage: React.FC = () => {
                                 borderRadius: 2,
                                 border: `1px solid ${alpha(
                                   theme.palette.divider,
-                                  0.1
+                                  0.1,
                                 )}`,
                                 overflow: "hidden",
                               }}
@@ -574,7 +571,7 @@ const CustomerAdminActivityMasterPage: React.FC = () => {
                                     sx={{
                                       bgcolor: alpha(
                                         theme.palette.grey[500],
-                                        0.02
+                                        0.02,
                                       ),
                                     }}
                                   >
@@ -692,7 +689,7 @@ const CustomerAdminActivityMasterPage: React.FC = () => {
                                                 "&:hover": {
                                                   bgcolor: alpha(
                                                     theme.palette.primary.main,
-                                                    0.1
+                                                    0.1,
                                                   ),
                                                 },
                                               }}
@@ -706,7 +703,7 @@ const CustomerAdminActivityMasterPage: React.FC = () => {
                                               onClick={(e) => {
                                                 e.stopPropagation();
                                                 handleDelete(
-                                                  activity.activityId
+                                                  activity.activityId,
                                                 );
                                               }}
                                               sx={{
@@ -714,7 +711,7 @@ const CustomerAdminActivityMasterPage: React.FC = () => {
                                                 "&:hover": {
                                                   bgcolor: alpha(
                                                     theme.palette.error.main,
-                                                    0.1
+                                                    0.1,
                                                   ),
                                                 },
                                               }}

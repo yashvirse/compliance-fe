@@ -142,7 +142,7 @@ const ActivityMasterPage: React.FC = () => {
       minWidth: 80,
       renderCell: (params: GridRenderCellParams) => {
         const index = activityMasters.findIndex(
-          (row) => row.activityId === params.row.activityId
+          (row) => row.activityId === params.row.activityId,
         );
         return index + 1;
       },
@@ -284,9 +284,6 @@ const ActivityMasterPage: React.FC = () => {
         <Box>
           <Typography variant="h4" fontWeight={700} gutterBottom>
             Activity Master
-          </Typography>
-          <Typography variant="body1" color="text.secondary">
-            Manage compliance activities and their schedules
           </Typography>
         </Box>
         <Button

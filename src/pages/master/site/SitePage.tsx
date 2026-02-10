@@ -202,9 +202,6 @@ const SitePage: React.FC = () => {
           <Typography variant="h4" fontWeight={700} gutterBottom>
             Site Master
           </Typography>
-          <Typography variant="body2" color="text.secondary">
-            Manage company sites and locations
-          </Typography>
         </Box>
         <Button
           variant="contained"

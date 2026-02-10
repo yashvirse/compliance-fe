@@ -125,7 +125,7 @@ const ActMasterPage: React.FC = () => {
       minWidth: 80,
       renderCell: (params: GridRenderCellParams) => {
         const index = actMasters.findIndex(
-          (row) => row.actId === params.row.actId
+          (row) => row.actId === params.row.actId,
         );
         return index + 1;
       },
@@ -214,9 +214,6 @@ const ActMasterPage: React.FC = () => {
         <Box>
           <Typography variant="h4" fontWeight={700} gutterBottom>
             Act Master
-          </Typography>
-          <Typography variant="body1" color="text.secondary">
-            Manage act master data
           </Typography>
         </Box>
         <Button

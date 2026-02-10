@@ -168,40 +168,6 @@ export const menuConfig: MenuItem[] = [
       },
     ],
   },
-  // {
-  //   id: "reports",
-  //   label: "Reports",
-  //   allowedRoles: [
-  //     UserRole.SUPER_ADMIN,
-  //     UserRole.CUSTOMER_ADMIN,
-  //     UserRole.REVIEWER,
-  //     UserRole.AUDITOR,
-  //   ],
-  //   children: [
-  //     {
-  //       id: "all-reports",
-  //       label: "All Reports",
-  //       path: "/dashboard/reports/all",
-  //       allowedRoles: [UserRole.SUPER_ADMIN, UserRole.CUSTOMER_ADMIN],
-  //     },
-  //     {
-  //       id: "view-reports",
-  //       label: "View Reports",
-  //       path: "/dashboard/reports/view",
-  //       allowedRoles: [UserRole.REVIEWER, UserRole.AUDITOR],
-  //     },
-  //     {
-  //       id: "export-reports",
-  //       label: "Export Reports",
-  //       path: "/dashboard/reports/export",
-  //       allowedRoles: [
-  //         UserRole.SUPER_ADMIN,
-  //         UserRole.CUSTOMER_ADMIN,
-  //         UserRole.REVIEWER,
-  //       ],
-  //     },
-  //   ],
-  // },
   {
     id: "tools",
     label: "Tools",

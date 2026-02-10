@@ -35,6 +35,8 @@ import {
 import JoditEditor from "jodit-react";
 import type { StateItem } from "./TemplateFormaterSlice/TemplateFormater.type";
 import { useParams } from "react-router-dom";
+import Checkbox from "@mui/material/Checkbox";
+import ListItemText from "@mui/material/ListItemText";
 
 const AddTemplateFormater: React.FC = () => {
   const theme = useTheme();
@@ -274,11 +276,21 @@ const AddTemplateFormater: React.FC = () => {
                     onChange={handleChange}
                     error={!!formErrors.stateId}
                     helperText={formErrors.stateId}
-                    SelectProps={{ multiple: true }}
+                    SelectProps={{
+                      multiple: true,
+                      renderValue: (selected: any) =>
+                        states
+                          ?.filter((s: { stateId: any }) =>
+                            selected.includes(s.stateId),
+                          )
+                          .map((s: { stateName: any }) => s.stateName)
+                          .join(", "),
+                    }}
                   >
                     {states?.map((state: StateItem) => (
                       <MenuItem key={state.stateId} value={state.stateId}>
-                        {state.stateName}
+                        <Checkbox checked={stateId.includes(state.stateId)} />
+                        <ListItemText primary={state.stateName} />
                       </MenuItem>
                     ))}
                   </CustomTextField>

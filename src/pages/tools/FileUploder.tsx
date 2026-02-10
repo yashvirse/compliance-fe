@@ -279,9 +279,6 @@ const FileUploader: React.FC = () => {
           <Typography variant="h4" fontWeight={700}>
             File Uploader
           </Typography>
-          <Typography variant="body2" color="text.secondary">
-            Upload & manage files
-          </Typography>
         </Box>
 
         {/* Right side (Month picker + Add button) */}

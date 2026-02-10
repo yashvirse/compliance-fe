@@ -35,7 +35,7 @@ const CountryPage: React.FC = () => {
       minWidth: 80,
       renderCell: (params: GridRenderCellParams) => {
         const index = countries.findIndex(
-          (row) => row.countryId === params.row.id
+          (row) => row.countryId === params.row.id,
         );
         return index + 1;
       },
@@ -57,9 +57,6 @@ const CountryPage: React.FC = () => {
         <Box>
           <Typography variant="h4" fontWeight={700} gutterBottom>
             Country Management
-          </Typography>
-          <Typography variant="body1" color="text.secondary">
-            Manage all countries in the system
           </Typography>
         </Box>
       </Box>

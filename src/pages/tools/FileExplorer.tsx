@@ -81,7 +81,7 @@ const FileExplorer: React.FC = () => {
   const visibleFiles = files.filter(
     (f) =>
       f.parent === currentFolder &&
-      f.name.toLowerCase().includes(search.toLowerCase())
+      f.name.toLowerCase().includes(search.toLowerCase()),
   );
 
   const renderTree = (parent: number | "root", level = 0) =>
@@ -110,7 +110,7 @@ const FileExplorer: React.FC = () => {
 
   const toggleSelect = (id: number) => {
     setSelected((prev) =>
-      prev.includes(id) ? prev.filter((i) => i !== id) : [...prev, id]
+      prev.includes(id) ? prev.filter((i) => i !== id) : [...prev, id],
     );
   };
 
@@ -164,7 +164,7 @@ const FileExplorer: React.FC = () => {
 
   const saveRename = () => {
     setFiles((prev) =>
-      prev.map((f) => (f.id === renameId ? { ...f, name: renameValue } : f))
+      prev.map((f) => (f.id === renameId ? { ...f, name: renameValue } : f)),
     );
     setRenameId(null);
   };
@@ -191,9 +191,6 @@ const FileExplorer: React.FC = () => {
         <Box>
           <Typography variant="h4" fontWeight={700}>
             Data Repository
-          </Typography>
-          <Typography variant="body2" color="text.secondary">
-            Upload & manage files and folders
           </Typography>
         </Box>
       </Box>

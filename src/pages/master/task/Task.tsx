@@ -237,9 +237,6 @@ const Task: React.FC = () => {
           <Typography variant="h4" fontWeight={700} gutterBottom>
             Task List
           </Typography>
-          <Typography variant="body1" color="text.secondary">
-            Assigned tasks overview
-          </Typography>
         </Box>
         <Box sx={{ display: "flex", gap: 1, alignItems: "center" }}>
           <LocalizationProvider dateAdapter={AdapterDayjs}>

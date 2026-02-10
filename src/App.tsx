@@ -63,6 +63,7 @@ import AddFileUploader from "./pages/tools/AddFileUploader.tsx";
 import TemplateFormatter from "./pages/tools/TemplateFormatter.tsx";
 import AddTemplateFormater from "./pages/tools/AddTemplateFormater.tsx";
 import ScoreCard from "./pages/reports/ScoreCard/ScoreCard.tsx";
+import ApiIntegration from "./pages/tools/ApiIntegration/apiIntegration.tsx";
 
 const theme = createTheme({
   palette: {
@@ -450,6 +451,14 @@ function App() {
                 element={
                   <RoleBasedRoute allowedRoles={[UserRole.CUSTOMER_ADMIN]}>
                     <AddTemplateFormater />
+                  </RoleBasedRoute>
+                }
+              />
+              <Route
+                path="tools/api-integration"
+                element={
+                  <RoleBasedRoute allowedRoles={[UserRole.CUSTOMER_ADMIN]}>
+                    <ApiIntegration />
                   </RoleBasedRoute>
                 }
               />

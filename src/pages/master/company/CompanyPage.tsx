@@ -256,9 +256,6 @@ const CompanyPage: React.FC = () => {
           <Typography variant="h4" fontWeight={700} gutterBottom>
             Company Management
           </Typography>
-          <Typography variant="body1" color="text.secondary">
-            Manage all companies in the system
-          </Typography>
         </Box>
         <Button
           variant="contained"

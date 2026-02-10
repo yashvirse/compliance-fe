@@ -123,7 +123,7 @@ const DepartmentMasterPage: React.FC = () => {
       minWidth: 80,
       renderCell: (params: GridRenderCellParams) => {
         const index = departmentMasters.findIndex(
-          (row) => row.deptId === params.row.deptId
+          (row) => row.deptId === params.row.deptId,
         );
         return index + 1;
       },
@@ -202,9 +202,6 @@ const DepartmentMasterPage: React.FC = () => {
         <Box>
           <Typography variant="h4" fontWeight={700} gutterBottom>
             Department Master
-          </Typography>
-          <Typography variant="body1" color="text.secondary">
-            Manage department master data
           </Typography>
         </Box>
         <Button

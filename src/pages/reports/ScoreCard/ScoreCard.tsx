@@ -30,6 +30,8 @@ import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import dayjs from "dayjs";
+import Checkbox from "@mui/material/Checkbox";
+import ListItemText from "@mui/material/ListItemText";
 
 const ScoreCard: React.FC = () => {
   const dispatch = useDispatch();
@@ -161,6 +163,37 @@ const ScoreCard: React.FC = () => {
       });
     });
     const worksheet = XLSX.utils.aoa_to_sheet(rows);
+    /* 🔹 FIXED MERGES */
+    const merges: any[] = [];
+    // Company row → text column A me hai
+    merges.push({
+      s: { r: 1, c: 0 },
+      e: { r: 1, c: 8 },
+    });
+    let rowIndex = 2;
+    report.sites.forEach((site: any) => {
+      // Site row → text column B me hai
+      merges.push({
+        s: { r: rowIndex, c: 1 },
+        e: { r: rowIndex, c: 8 },
+      });
+      rowIndex++;
+      site.acts?.forEach((act: any) => {
+        // Act row → text column C me hai
+        merges.push({
+          s: { r: rowIndex, c: 2 },
+          e: { r: rowIndex, c: 8 },
+        });
+        rowIndex++;
+        // skip activity rows
+        rowIndex += act.activities?.length || 0;
+      });
+    });
+
+    worksheet["!merges"] = merges;
+
+    /* existing filter */
+    worksheet["!autofilter"] = { ref: "D1:I1" };
     const workbook = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(workbook, worksheet, "Score Card");
     XLSX.writeFile(workbook, "Score_Card_Report.xlsx");
@@ -168,32 +201,29 @@ const ScoreCard: React.FC = () => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-
     setErrors({ sites: "", departments: "", monthYear: "" });
-
     // Validation
     let hasError = false;
 
     if (!formData.sites.length) {
-      setErrors((prev) => ({ ...prev, sites: "Please select Site" }));
-      hasError = true;
-    }
-
-    if (!formData.departments.length) {
       setErrors((prev) => ({
         ...prev,
-        departments: "Please select Department",
+        sites: "At least one site is required",
       }));
       hasError = true;
     }
-
+    if (!formData.departments.length) {
+      setErrors((prev) => ({
+        ...prev,
+        departments: "At least one department is required",
+      }));
+      hasError = true;
+    }
     if (!currentMonth) {
       setErrors((prev) => ({ ...prev, monthYear: "Please select Month" }));
       hasError = true;
     }
-
     if (hasError) return;
-
     // Dispatch the API if validation passes
     dispatch(
       fetchScoreCardReport({
@@ -226,26 +256,28 @@ const ScoreCard: React.FC = () => {
         <Typography variant="h4" fontWeight={700}>
           Score Card
         </Typography>
-        <Typography variant="body2" color="text.secondary">
-          View and manage score cards
-        </Typography>
       </Box>
 
       {/* FILTER */}
       <Paper sx={{ p: 4, borderRadius: 2 }}>
-        <Typography variant="h6" fontWeight={600} mb={3}>
-          Filter Criteria
-        </Typography>
-
         <form onSubmit={handleSubmit}>
           <Grid container spacing={3}>
-            <Grid size={{ xs: 12, md: 4 }}>
+            <Grid size={{ xs: 12, md: 3 }}>
               <Box sx={{ display: "flex", gap: 1 }}>
                 <TextField
                   fullWidth
                   label="Site"
                   select
-                  SelectProps={{ multiple: true }}
+                  SelectProps={{
+                    multiple: true,
+                    renderValue: (selected) =>
+                      sites
+                        .filter((s) =>
+                          (selected as string[]).includes(s.siteId),
+                        )
+                        .map((s) => s.siteName)
+                        .join(", "),
+                  }}
                   name="sites"
                   value={formData.sites}
                   onChange={(e) =>
@@ -258,22 +290,13 @@ const ScoreCard: React.FC = () => {
                 >
                   {sites.map((site) => (
                     <MenuItem key={site.siteId} value={site.siteId}>
-                      {site.siteName}
+                      <Checkbox
+                        checked={formData.sites.includes(site.siteId)}
+                      />
+                      <ListItemText primary={site.siteName} />
                     </MenuItem>
                   ))}
                 </TextField>
-
-                <Button
-                  variant="contained"
-                  onClick={() =>
-                    setFormData((prev) => ({
-                      ...prev,
-                      sites: sites.map((s) => s.siteId), // 👈 select ALL sites
-                    }))
-                  }
-                >
-                  All
-                </Button>
               </Box>
               {errors.sites && (
                 <Typography variant="caption" color="error">
@@ -282,13 +305,17 @@ const ScoreCard: React.FC = () => {
               )}
             </Grid>
 
-            <Grid size={{ xs: 12, md: 4 }}>
+            <Grid size={{ xs: 12, md: 3 }}>
               <Box sx={{ display: "flex", gap: 1 }}>
                 <TextField
                   fullWidth
                   select
                   label="Department"
-                  SelectProps={{ multiple: true }}
+                  SelectProps={{
+                    multiple: true,
+                    renderValue: (selected) =>
+                      (selected as string[]).join(", "),
+                  }}
                   name="departments"
                   value={formData.departments}
                   onChange={(e) =>
@@ -301,22 +328,15 @@ const ScoreCard: React.FC = () => {
                 >
                   {departments.map((dept) => (
                     <MenuItem key={dept.deptId} value={dept.departmentName}>
-                      {dept.departmentName}
+                      <Checkbox
+                        checked={formData.departments.includes(
+                          dept.departmentName,
+                        )}
+                      />
+                      <ListItemText primary={dept.departmentName} />
                     </MenuItem>
                   ))}
                 </TextField>
-
-                <Button
-                  variant="contained"
-                  onClick={() =>
-                    setFormData((prev) => ({
-                      ...prev,
-                      departments: departments.map((d) => d.departmentName), // 👈 select ALL
-                    }))
-                  }
-                >
-                  All
-                </Button>
               </Box>
               {errors.departments && (
                 <Typography variant="caption" color="error">
@@ -325,7 +345,7 @@ const ScoreCard: React.FC = () => {
               )}
             </Grid>
 
-            <Grid size={{ xs: 12, md: 4 }}>
+            <Grid size={{ xs: 12, md: 3 }}>
               <LocalizationProvider dateAdapter={AdapterDayjs}>
                 <DatePicker
                   views={["year", "month"]}
@@ -346,7 +366,10 @@ const ScoreCard: React.FC = () => {
               </LocalizationProvider>
             </Grid>
 
-            <Grid size={{ xs: 12 }}>
+            <Grid
+              sx={{ display: "flex", alignItems: "center" }}
+              size={{ xs: 12, md: 3 }}
+            >
               <Button type="submit" variant="contained">
                 Apply Filter
               </Button>
@@ -360,7 +383,7 @@ const ScoreCard: React.FC = () => {
         <>
           {/* LOADING STATE */}
           {loading && (
-            <Paper sx={{ mt: 4, p: 4, textAlign: "center" }}>
+            <Paper sx={{ mt: 2, p: 4, textAlign: "center" }}>
               <CircularProgress />
               <Typography mt={2}>Loading score card...</Typography>
             </Paper>
@@ -368,7 +391,7 @@ const ScoreCard: React.FC = () => {
 
           {/* ERROR STATE */}
           {!loading && error && (
-            <Paper sx={{ mt: 4, p: 2 }}>
+            <Paper sx={{ mt: 2, p: 2 }}>
               <Alert severity="error">
                 {typeof error === "string"
                   ? error
@@ -379,7 +402,7 @@ const ScoreCard: React.FC = () => {
 
           {/* SUCCESS STATE */}
           {!loading && !error && report && (
-            <Paper sx={{ mt: 4, p: 2 }}>
+            <Paper sx={{ mt: 2, p: 2 }}>
               {/* TABLE HEADER */}
               <Box
                 sx={{
@@ -422,7 +445,7 @@ const ScoreCard: React.FC = () => {
               </Box>
 
               {/* COMPANY */}
-              <Box sx={{ background: "#ececec", p: 1, fontWeight: 700 }}>
+              <Box sx={{ background: "#ececec", p: 1, fontWeight: 500 }}>
                 {report.companyName} : (Average : {report.average.toFixed(2)}%)
               </Box>
 
@@ -443,7 +466,7 @@ const ScoreCard: React.FC = () => {
                       sx={{
                         background: "#f5f5f5",
                         p: 1,
-                        fontWeight: 600,
+                        fontWeight: 400,
                         cursor: "pointer",
                         userSelect: "none",
                         "&:hover": { background: "#e8e8e8" },
@@ -466,7 +489,7 @@ const ScoreCard: React.FC = () => {
                               sx={{
                                 background: "#fafafa",
                                 p: 1,
-                                fontWeight: 600,
+                                fontWeight: 400,
                                 cursor: "pointer",
                                 userSelect: "none",
                                 "&:hover": { background: "#f0f0f0" },

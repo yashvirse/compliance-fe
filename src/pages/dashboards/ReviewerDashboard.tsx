@@ -919,9 +919,6 @@ const ReviewerDashboard: React.FC = () => {
               <Typography variant="h4" fontWeight={700} gutterBottom>
                 Reviewer Dashboard
               </Typography>
-              <Typography variant="body1" color="text.secondary">
-                Final review and approval workflow
-              </Typography>
             </Box>
 
             {/* Stat Cards */}
@@ -1019,9 +1016,6 @@ const ReviewerDashboard: React.FC = () => {
             <Box>
               <Typography variant="h4" fontWeight={700} gutterBottom>
                 All Tasks ({totalCount})
-              </Typography>
-              <Typography variant="body1" color="text.secondary">
-                View all your pending, approved, and rejected tasks
               </Typography>
             </Box>
             <Box sx={{ display: "flex", gap: 1, alignItems: "center" }}>
@@ -1138,9 +1132,6 @@ const ReviewerDashboard: React.FC = () => {
               <Typography variant="h4" fontWeight={700} gutterBottom>
                 Pending Tasks
               </Typography>
-              <Typography variant="body1" color="text.secondary">
-                approve/reject pending tasks
-              </Typography>
             </Box>
 
             <Box sx={{ display: "flex", gap: 1, alignItems: "center" }}>
@@ -1244,9 +1235,6 @@ const ReviewerDashboard: React.FC = () => {
               <Typography variant="h4" fontWeight={700} gutterBottom>
                 Approved Tasks
               </Typography>
-              <Typography variant="body1" color="text.secondary">
-                Tasks that have been approved
-              </Typography>
             </Box>
 
             <Box sx={{ display: "flex", gap: 1, alignItems: "center" }}>
@@ -1349,9 +1337,6 @@ const ReviewerDashboard: React.FC = () => {
             <Box>
               <Typography variant="h4" fontWeight={700} gutterBottom>
                 Rejected Tasks
-              </Typography>
-              <Typography variant="body1" color="text.secondary">
-                Tasks that have been rejected
               </Typography>
             </Box>
 
@@ -1461,7 +1446,7 @@ const ReviewerDashboard: React.FC = () => {
           <TextField
             fullWidth
             type="file"
-            label="Attachment"
+            label="Attachment (Optional)"
             InputLabelProps={{ shrink: true }}
             sx={{ mt: 2 }}
             onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
@@ -1505,7 +1490,7 @@ const ReviewerDashboard: React.FC = () => {
           <TextField
             fullWidth
             type="file"
-            label="Attachment"
+            label="Attachment (Optional)"
             InputLabelProps={{ shrink: true }}
             sx={{ mt: 2 }}
             onChange={(e: React.ChangeEvent<HTMLInputElement>) => {

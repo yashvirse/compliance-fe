@@ -60,9 +60,6 @@ const UserPage: React.FC = () => {
           <Typography variant="h4" fontWeight={700} gutterBottom>
             User Management
           </Typography>
-          <Typography variant="body1" color="text.secondary">
-            Manage all users in the system
-          </Typography>
         </Box>
       </Box>
 

@@ -192,9 +192,14 @@ const DashboardLayout: React.FC = () => {
             variant="h6"
             noWrap
             component="div"
-            sx={{ flexGrow: 1, fontWeight: 600 }}
+            sx={{
+              flexGrow: 1,
+              fontWeight: 600,
+              alignItems: "center",
+              display: "flex",
+            }}
           >
-            Dashboard
+            <Breadcrumb />
           </Typography>
 
           <IconButton color="inherit" sx={{ mr: 1 }}>
@@ -302,7 +307,7 @@ const DashboardLayout: React.FC = () => {
         }}
       >
         <Toolbar />
-        <Breadcrumb />
+        {/* <Breadcrumb /> */}
         <Outlet />
       </Box>
     </Box>

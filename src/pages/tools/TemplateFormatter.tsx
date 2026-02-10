@@ -51,7 +51,7 @@ const TemplateFormatter: React.FC = () => {
       minWidth: 80,
       renderCell: (params: GridRenderCellParams) => {
         const index = templates.findIndex(
-          (row) => row.slipID === params.row.slipID
+          (row) => row.slipID === params.row.slipID,
         );
         return index + 1;
       },
@@ -131,9 +131,6 @@ const TemplateFormatter: React.FC = () => {
         <Box>
           <Typography variant="h4" fontWeight={700} gutterBottom>
             Template Formatter
-          </Typography>
-          <Typography variant="body1" color="text.secondary">
-            Manage salary register and muster roll slip templates
           </Typography>
         </Box>
 

@@ -929,9 +929,6 @@ const CheckerDashboard: React.FC = () => {
             <Typography variant="h4" fontWeight={700} gutterBottom>
               Checker Dashboard
             </Typography>
-            <Typography variant="body1" color="text.secondary">
-              Verify and validate data entries
-            </Typography>
           </Box>
 
           <Grid container spacing={3}>
@@ -1023,9 +1020,6 @@ const CheckerDashboard: React.FC = () => {
             <Box>
               <Typography variant="h4" fontWeight={700} gutterBottom>
                 All Tasks ({totalCount})
-              </Typography>
-              <Typography variant="body1" color="text.secondary">
-                View all your pending, approved, and rejected tasks
               </Typography>
             </Box>
             <Box sx={{ display: "flex", gap: 1, alignItems: "center" }}>
@@ -1140,9 +1134,6 @@ const CheckerDashboard: React.FC = () => {
               <Typography variant="h4" fontWeight={700} gutterBottom>
                 Pending Tasks
               </Typography>
-              <Typography variant="body1" color="text.secondary">
-                Review and verify pending tasks
-              </Typography>
             </Box>
             <Box sx={{ display: "flex", gap: 1, alignItems: "center" }}>
               <LocalizationProvider dateAdapter={AdapterDayjs}>
@@ -1246,9 +1237,6 @@ const CheckerDashboard: React.FC = () => {
               <Typography variant="h4" fontWeight={700} gutterBottom>
                 Approved Tasks
               </Typography>
-              <Typography variant="body1" color="text.secondary">
-                View your approved tasks
-              </Typography>
             </Box>
             <Box sx={{ display: "flex", gap: 1, alignItems: "center" }}>
               <LocalizationProvider dateAdapter={AdapterDayjs}>
@@ -1351,9 +1339,6 @@ const CheckerDashboard: React.FC = () => {
             <Box>
               <Typography variant="h4" fontWeight={700} gutterBottom>
                 Rejected Tasks
-              </Typography>
-              <Typography variant="body1" color="text.secondary">
-                View your rejected check tasks
               </Typography>
             </Box>
             <Box sx={{ display: "flex", gap: 1, alignItems: "center" }}>
@@ -1478,7 +1463,7 @@ const CheckerDashboard: React.FC = () => {
           <TextField
             fullWidth
             type="file"
-            label="Attachment"
+            label="Attachment (Optional)"
             InputLabelProps={{ shrink: true }}
             sx={{ mt: 2 }}
             onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
@@ -1546,7 +1531,7 @@ const CheckerDashboard: React.FC = () => {
           <TextField
             fullWidth
             type="file"
-            label="Attachment"
+            label="Attachment (Optional)"
             InputLabelProps={{ shrink: true }}
             sx={{ mt: 2 }}
             onChange={(e: React.ChangeEvent<HTMLInputElement>) => {

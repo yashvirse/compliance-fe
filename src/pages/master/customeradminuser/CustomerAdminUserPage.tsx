@@ -49,7 +49,7 @@ const CustomerAdminUserPage: React.FC = () => {
   const [showSnackbar, setShowSnackbar] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState("");
   const [snackbarSeverity, setSnackbarSeverity] = useState<"success" | "error">(
-    "success"
+    "success",
   );
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [selectedUserId, setSelectedUserId] = useState<string>("");
@@ -113,7 +113,7 @@ const CustomerAdminUserPage: React.FC = () => {
       sortable: false,
       renderCell: (params: GridRenderCellParams) => {
         const index = users.findIndex(
-          (user) => user.userID === params.row.userID
+          (user) => user.userID === params.row.userID,
         );
         return index + 1;
       },
@@ -219,9 +219,6 @@ const CustomerAdminUserPage: React.FC = () => {
         <Box>
           <Typography variant="h4" fontWeight={700} gutterBottom>
             User Management
-          </Typography>
-          <Typography variant="body1" color="text.secondary">
-            Manage all users in the system
           </Typography>
         </Box>
         <Button

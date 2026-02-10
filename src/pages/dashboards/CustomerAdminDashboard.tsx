@@ -476,9 +476,6 @@ const CustomerAdminDashboard: React.FC = () => {
           <Typography variant="h4" fontWeight={700} gutterBottom>
             Customer Admin Dashboard
           </Typography>
-          <Typography variant="body1" color="text.secondary">
-            Manage your organization and users
-          </Typography>
         </Box>
 
         {error && (
@@ -921,9 +918,6 @@ const CustomerAdminDashboard: React.FC = () => {
           <Box>
             <Typography variant="h4" fontWeight={700} gutterBottom>
               Site Wise Tasks
-            </Typography>
-            <Typography variant="body1" color="text.secondary">
-              View all site wise tasks
             </Typography>
           </Box>
           <Box sx={{ display: "flex", gap: 1, alignItems: "center" }}>
