@@ -105,22 +105,22 @@ const TaskMovementDialog: React.FC<TaskMovementDialogProps> = ({
   }, [open, tblId]);
 
   const downloadFileDirect = (filePath: string) => {
-    const baseUrl = "https://api.ocmspro.com/Remark file/";
+    const baseUrl = "https://api.ocmspro.com/RemarkFiles/";
 
-    const finalPath = filePath.startsWith("~")
+    // "~" remove karo agar start me ho
+    const cleanedPath = filePath.startsWith("~")
       ? filePath.replace("~", "")
       : filePath;
 
-    const fileUrl = `${baseUrl}${finalPath}`;
+    const fileUrl = `${baseUrl}${cleanedPath}`;
 
+    // direct browser download
     const link = document.createElement("a");
     link.href = fileUrl;
-    link.setAttribute("download", finalPath.split("/").pop() || "file");
-    link.target = "_blank";
-
+    link.download = cleanedPath.split("/").pop() || "file";
     document.body.appendChild(link);
     link.click();
-    link.remove();
+    document.body.removeChild(link);
   };
 
   return (

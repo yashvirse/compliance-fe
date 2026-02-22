@@ -195,8 +195,8 @@ const DashboardLayout: React.FC = () => {
             sx={{
               flexGrow: 1,
               fontWeight: 600,
-              alignItems: "center",
               display: "flex",
+              alignItems: "center",
             }}
           >
             <Breadcrumb />

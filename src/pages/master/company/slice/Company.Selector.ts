@@ -1,40 +1,59 @@
-import type { RootState } from '../../../../app/store';
+import type { RootState } from "../../../../app/store";
 
 // Selector to get loading state
-export const selectCompanyLoading = (state: RootState) => state.company?.loading || false;
+export const selectCompanyLoading = (state: RootState) =>
+  state.company?.loading || false;
 
 // Selector to get error state
-export const selectCompanyError = (state: RootState) => state.company?.error || null;
+export const selectCompanyError = (state: RootState) =>
+  state.company?.error || null;
 
 // Selector to get success state
-export const selectCompanySuccess = (state: RootState) => state.company?.success || false;
+export const selectCompanySuccess = (state: RootState) =>
+  state.company?.success || false;
 
 // Selector to get all companies
-export const selectCompanies = (state: RootState) => state.company?.companies || [];
+export const selectCompanies = (state: RootState) =>
+  state.company?.companies || [];
 
 // Selector to get fetch loading state
-export const selectCompanyFetchLoading = (state: RootState) => state.company?.fetchLoading || false;
+export const selectCompanyFetchLoading = (state: RootState) =>
+  state.company?.fetchLoading || false;
 
 // Selector to get fetch error state
-export const selectCompanyFetchError = (state: RootState) => state.company?.fetchError || null;
+export const selectCompanyFetchError = (state: RootState) =>
+  state.company?.fetchError || null;
 
 // Selector to get delete loading state
-export const selectCompanyDeleteLoading = (state: RootState) => state.company?.deleteLoading || false;
+export const selectCompanyDeleteLoading = (state: RootState) =>
+  state.company?.deleteLoading || false;
 
 // Selector to get delete error state
-export const selectCompanyDeleteError = (state: RootState) => state.company?.deleteError || null;
+export const selectCompanyDeleteError = (state: RootState) =>
+  state.company?.deleteError || null;
 
 // Selector to get delete success state
-export const selectCompanyDeleteSuccess = (state: RootState) => state.company?.deleteSuccess || false;
+export const selectCompanyDeleteSuccess = (state: RootState) =>
+  state.company?.deleteSuccess || false;
 
 // Selector to get current company (for editing)
-export const selectCurrentCompany = (state: RootState) => state.company?.currentCompany || null;
+export const selectCurrentCompany = (state: RootState) =>
+  state.company?.currentCompany || null;
 
 // Selector to get fetch by ID loading state
-export const selectFetchByIdLoading = (state: RootState) => state.company?.fetchByIdLoading || false;
+export const selectFetchByIdLoading = (state: RootState) =>
+  state.company?.fetchByIdLoading || false;
 
 // Selector to get fetch by ID error state
-export const selectFetchByIdError = (state: RootState) => state.company?.fetchByIdError || null;
+export const selectFetchByIdError = (state: RootState) =>
+  state.company?.fetchByIdError || null;
 
 // Selector to get entire company state
 export const selectCompanyState = (state: RootState) => state.company;
+export const selectGenerateApiLoading = (state: RootState) =>
+  state.company.loading;
+
+export const selectGenerateApiError = (state: RootState) => state.company.error;
+
+export const selectGenerateApiSuccess = (state: RootState) =>
+  state.company.GenerateKey;

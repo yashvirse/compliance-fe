@@ -24,8 +24,8 @@ import {
   Add as AddIcon,
   Edit as EditIcon,
   Delete as DeleteIcon,
-  // Visibility as ViewIcon,
   Warning as WarningIcon,
+  Api as ApiIcon,
 } from "@mui/icons-material";
 import { DataGrid } from "@mui/x-data-grid";
 import type { GridColDef, GridRenderCellParams } from "@mui/x-data-grid";
@@ -33,6 +33,7 @@ import {
   fetchCompanyList,
   deleteCompany,
   clearSuccess,
+  generateCompanyApiKey,
 } from "./slice/Company.Slice";
 import {
   selectCompanies,
@@ -41,6 +42,8 @@ import {
   selectCompanyDeleteLoading,
   selectCompanyDeleteSuccess,
   selectCompanyDeleteError,
+  selectGenerateApiSuccess,
+  selectGenerateApiError,
 } from "./slice/Company.Selector";
 
 const CompanyPage: React.FC = () => {
@@ -55,7 +58,8 @@ const CompanyPage: React.FC = () => {
   const deleteLoading = useSelector(selectCompanyDeleteLoading);
   const deleteSuccess = useSelector(selectCompanyDeleteSuccess);
   const deleteError = useSelector(selectCompanyDeleteError);
-
+  const generateError = useSelector(selectGenerateApiError);
+  const generateSuccess = useSelector(selectGenerateApiSuccess);
   // Local state for delete confirmation dialog
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [companyToDelete, setCompanyToDelete] = useState<{
@@ -80,7 +84,15 @@ const CompanyPage: React.FC = () => {
       }, 3000);
     }
   }, [deleteSuccess, dispatch]);
+  useEffect(() => {
+    if (generateSuccess) {
+      setShowSnackbar(true);
 
+      setTimeout(() => {
+        dispatch(clearSuccess());
+      }, 3000);
+    }
+  }, [generateSuccess, dispatch]);
   useEffect(() => {
     if (deleteError) {
       setShowSnackbar(true);
@@ -111,9 +123,20 @@ const CompanyPage: React.FC = () => {
     setCompanyToDelete(null);
   };
 
-  // const handleView = (id: string) => {
-  //   console.log("View Company:", id);
-  // };
+  const handleGenerateApi = (cid: string, domain: string) => {
+    const encryptedKey = domain;
+    dispatch(
+      generateCompanyApiKey({
+        id: "",
+        companyId: cid.toString(),
+        companyDomain: domain,
+        encryptedApiKey: encryptedKey,
+        isActive: true,
+        createdOn: new Date().toISOString(),
+        updatedOn: new Date().toISOString(),
+      }),
+    );
+  };
 
   const handleSnackbarClose = () => {
     setShowSnackbar(false);
@@ -202,19 +225,20 @@ const CompanyPage: React.FC = () => {
             justifyContent: "flex-start",
             height: "100%", // 🔑 IMPORTANT
             width: "100%",
-            gap: 1,
           }}
         >
-          {/* <IconButton
+          <IconButton
             size="small"
-            onClick={() => handleView(params.row.cid)}
+            onClick={() =>
+              handleGenerateApi(params.row.cid, params.row.companyDomain)
+            }
             sx={{
-              color: theme.palette.info.main,
-              "&:hover": { bgcolor: alpha(theme.palette.info.main, 0.1) },
+              color: theme.palette.success.main,
+              "&:hover": { bgcolor: alpha(theme.palette.success.main, 0.1) },
             }}
           >
-            <ViewIcon fontSize="small" />
-          </IconButton> */}
+            <ApiIcon fontSize="small" />
+          </IconButton>
           <IconButton
             size="small"
             onClick={() => handleEdit(params.row.cid)}
@@ -402,10 +426,14 @@ const CompanyPage: React.FC = () => {
       >
         <Alert
           onClose={handleSnackbarClose}
-          severity={deleteError ? "error" : "success"}
+          severity={deleteError || generateError ? "error" : "success"}
           sx={{ width: "100%" }}
         >
-          {deleteError || "Company deleted successfully!"}
+          {deleteError ||
+            generateError ||
+            (generateSuccess
+              ? "API key generated successfully!"
+              : "Company deleted successfully!")}
         </Alert>
       </Snackbar>
     </Box>

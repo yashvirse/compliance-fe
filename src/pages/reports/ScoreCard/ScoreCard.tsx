@@ -82,7 +82,7 @@ const ScoreCard: React.FC = () => {
     },
   ];
   const formattedDate = currentMonth
-    ? currentMonth.startOf("month").format("YYYY-MM-DDTHH:mm:ss")
+    ? currentMonth.startOf("month").format("YYYY-MM-DD")
     : "";
 
   useEffect(() => {

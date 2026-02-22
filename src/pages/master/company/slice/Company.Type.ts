@@ -126,6 +126,7 @@ export interface CompanyState {
   currentCompany: Company | null;
   fetchByIdLoading: boolean;
   fetchByIdError: string | null;
+  GenerateKey: ApiGenerateKey | null;
 }
 // Country-State API response ke liye
 export interface State {
@@ -144,4 +145,18 @@ export interface GetCountryStateResponse {
   isSuccess: boolean;
   message: string;
   result: CountryState[];
+}
+export interface ApiGenerateKey {
+  id: string;
+  companyId: string;
+  companyDomain: string;
+  encryptedApiKey: string;
+  isActive: boolean;
+  createdOn: string;
+  updatedOn: string;
+}
+export interface GenerateApiKeyResponse {
+  isSuccess: boolean;
+  message: string;
+  result: ApiGenerateKey;
 }

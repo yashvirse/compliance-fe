@@ -175,10 +175,10 @@ export const menuConfig: MenuItem[] = [
     allowedRoles: [UserRole.CUSTOMER_ADMIN],
     children: [
       {
-        id: "file-explorer",
-        label: "Data Repository",
-        path: "/dashboard/tools/file-explorer",
-        icon: <FolderOpenIcon />,
+        id: "template_formatter",
+        label: "Template Formatter",
+        path: "/dashboard/tools/template-formatter",
+        icon: <ArticleIcon />,
         allowedRoles: [UserRole.CUSTOMER_ADMIN],
       },
       {
@@ -189,17 +189,17 @@ export const menuConfig: MenuItem[] = [
         allowedRoles: [UserRole.CUSTOMER_ADMIN],
       },
       {
-        id: "template_formatter",
-        label: "Template Formatter",
-        path: "/dashboard/tools/template-formatter",
-        icon: <ArticleIcon />,
-        allowedRoles: [UserRole.CUSTOMER_ADMIN],
-      },
-      {
         id: "api-integration",
         label: "API Integration",
         path: "/dashboard/tools/api-integration",
         icon: <ApiIcon />,
+        allowedRoles: [UserRole.CUSTOMER_ADMIN],
+      },
+      {
+        id: "file-explorer",
+        label: "Data Repository",
+        path: "/dashboard/tools/file-explorer",
+        icon: <FolderOpenIcon />,
         allowedRoles: [UserRole.CUSTOMER_ADMIN],
       },
     ],

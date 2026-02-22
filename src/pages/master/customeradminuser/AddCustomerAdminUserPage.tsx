@@ -221,7 +221,8 @@ const AddCustomerAdminUserPage: React.FC = () => {
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
-
+  const isCustomerAdminEdit =
+    isEditMode && originalUserData?.userRole === "CustomerAdmin";
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -505,6 +506,7 @@ const AddCustomerAdminUserPage: React.FC = () => {
                 value={formData.userRole}
                 onChange={handleChange("userRole") as any}
                 label="User Role"
+                disabled={isCustomerAdminEdit}
               >
                 <MenuItem value="Maker">Maker</MenuItem>
                 <MenuItem value="Checker">Checker</MenuItem>

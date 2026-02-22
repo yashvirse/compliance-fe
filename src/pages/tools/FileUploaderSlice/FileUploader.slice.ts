@@ -93,7 +93,6 @@ export const deleteFile = createAsyncThunk<
   }
 });
 
-
 export const processSalaryMusterRoll = createAsyncThunk<
   { fileUrl: string; fileName: string },
   string,
@@ -175,8 +174,6 @@ export const processSalaryMusterRoll = createAsyncThunk<
     }
   },
 );
-
-
 
 const initialState: FileUploaderState = {
   loading: false,

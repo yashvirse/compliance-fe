@@ -10,6 +10,8 @@ import type {
   UpdateCompanyRequest,
   UpdateCompanyResponse,
   GetCountryStateResponse,
+  GenerateApiKeyResponse,
+  ApiGenerateKey,
 } from "./Company.Type";
 
 // Initial state
@@ -26,6 +28,7 @@ const initialState: CompanyState = {
   currentCompany: null,
   fetchByIdLoading: false,
   fetchByIdError: null,
+  GenerateKey: null,
 };
 
 // Async thunk for adding company
@@ -68,41 +71,41 @@ export const addCompany = createAsyncThunk<
       // Company Address
       formData.append(
         "CompanyAddress.CompanyState",
-        companyData.CompanyAddress.CompanyState
+        companyData.CompanyAddress.CompanyState,
       );
       formData.append(
         "CompanyAddress.CompanyCountry",
-        companyData.CompanyAddress.CompanyCountry
+        companyData.CompanyAddress.CompanyCountry,
       );
       formData.append(
         "CompanyAddress.CompanyCity",
-        companyData.CompanyAddress.CompanyCity
+        companyData.CompanyAddress.CompanyCity,
       );
       formData.append(
         "CompanyAddress.CompanyZIP",
-        companyData.CompanyAddress.CompanyZIP
+        companyData.CompanyAddress.CompanyZIP,
       );
       formData.append(
         "CompanyAddress.detailAdddress",
-        companyData.CompanyAddress.detailAdddress
+        companyData.CompanyAddress.detailAdddress,
       );
 
       if (companyData.CompanyAddress.buildingNumber) {
         formData.append(
           "CompanyAddress.buildingNumber",
-          companyData.CompanyAddress.buildingNumber
+          companyData.CompanyAddress.buildingNumber,
         );
       }
       if (companyData.CompanyAddress.latitude) {
         formData.append(
           "CompanyAddress.latitude",
-          companyData.CompanyAddress.latitude
+          companyData.CompanyAddress.latitude,
         );
       }
       if (companyData.CompanyAddress.longitude) {
         formData.append(
           "CompanyAddress.longitude",
-          companyData.CompanyAddress.longitude
+          companyData.CompanyAddress.longitude,
         );
       }
 
@@ -158,7 +161,7 @@ export const addCompany = createAsyncThunk<
       // Make API call
       const response = await apiService.upload<AddCompanyResponse>(
         "CompanyMaster/addComp",
-        formData
+        formData,
       );
 
       // Check if company addition was successful
@@ -174,7 +177,7 @@ export const addCompany = createAsyncThunk<
         "Failed to add company. Please try again.";
       return rejectWithValue(errorMessage);
     }
-  }
+  },
 );
 
 // Async thunk for fetching company list
@@ -185,7 +188,7 @@ export const fetchCompanyList = createAsyncThunk<
 >("company/fetchCompanyList", async (_, { rejectWithValue }) => {
   try {
     const response = await apiService.get<GetCompanyListResponse>(
-      "CompanyMaster/getCompList"
+      "CompanyMaster/getCompList",
     );
 
     // Check if fetch was successful
@@ -211,7 +214,7 @@ export const deleteCompany = createAsyncThunk<
 >("company/deleteCompany", async (companyId: string, { rejectWithValue }) => {
   try {
     const response = await apiService.delete<DeleteCompanyResponse>(
-      `CompanyMaster/deleteComp/${companyId}`
+      `CompanyMaster/deleteComp/${companyId}`,
     );
 
     // Check if delete was successful
@@ -239,13 +242,13 @@ export const fetchCompanyById = createAsyncThunk<
   async (companyId: string, { rejectWithValue }) => {
     try {
       const response = await apiService.get<GetCompanyByIdResponse>(
-        `CompanyMaster/getCompByID/${companyId}`
+        `CompanyMaster/getCompByID/${companyId}`,
       );
 
       // Check if fetch was successful
       if (!response.isSuccess) {
         return rejectWithValue(
-          response.message || "Failed to fetch company details"
+          response.message || "Failed to fetch company details",
         );
       }
 
@@ -257,7 +260,7 @@ export const fetchCompanyById = createAsyncThunk<
         "Failed to fetch company details. Please try again.";
       return rejectWithValue(errorMessage);
     }
-  }
+  },
 );
 
 // Async thunk for updating company
@@ -301,29 +304,29 @@ export const updateCompany = createAsyncThunk<
       // Company Address
       formData.append(
         "CompanyAddress.CompanyState",
-        companyData.CompanyAddress.CompanyState
+        companyData.CompanyAddress.CompanyState,
       );
       formData.append(
         "CompanyAddress.CompanyCountry",
-        companyData.CompanyAddress.CompanyCountry
+        companyData.CompanyAddress.CompanyCountry,
       );
       formData.append(
         "CompanyAddress.CompanyCity",
-        companyData.CompanyAddress.CompanyCity
+        companyData.CompanyAddress.CompanyCity,
       );
       formData.append(
         "CompanyAddress.CompanyZIP",
-        companyData.CompanyAddress.CompanyZIP
+        companyData.CompanyAddress.CompanyZIP,
       );
       formData.append(
         "CompanyAddress.detailAdddress",
-        companyData.CompanyAddress.detailAdddress
+        companyData.CompanyAddress.detailAdddress,
       );
 
       if (companyData.CompanyAddress.buildingNumber) {
         formData.append(
           "CompanyAddress.buildingNumber",
-          companyData.CompanyAddress.buildingNumber
+          companyData.CompanyAddress.buildingNumber,
         );
       }
 
@@ -370,7 +373,7 @@ export const updateCompany = createAsyncThunk<
       // Make API call
       const response = await apiService.putFormData<UpdateCompanyResponse>(
         "CompanyMaster/editComp",
-        formData
+        formData,
       );
       // Check if company update was successful
       if (!response.isSuccess) {
@@ -385,7 +388,7 @@ export const updateCompany = createAsyncThunk<
         "Failed to update company. Please try again.";
       return rejectWithValue(errorMessage);
     }
-  }
+  },
 );
 // Async thunk for fetching countries and states
 export const fetchCountriesAndStates = createAsyncThunk<
@@ -395,12 +398,12 @@ export const fetchCountriesAndStates = createAsyncThunk<
 >("company/fetchCountriesAndStates", async (_, { rejectWithValue }) => {
   try {
     const response = await apiService.get<GetCountryStateResponse>(
-      "Master/getCountryState"
+      "Master/getCountryState",
     );
 
     if (!response.isSuccess) {
       return rejectWithValue(
-        response.message || "Failed to fetch countries and states"
+        response.message || "Failed to fetch countries and states",
       );
     }
 
@@ -411,6 +414,20 @@ export const fetchCountriesAndStates = createAsyncThunk<
       error?.message ||
       "Failed to fetch countries and states. Please try again.";
     return rejectWithValue(errorMessage);
+  }
+});
+
+export const generateCompanyApiKey = createAsyncThunk<
+  GenerateApiKeyResponse,
+  ApiGenerateKey,
+  { rejectValue: string }
+>("company/generateCompanyApiKey", async (payload, { rejectWithValue }) => {
+  try {
+    const response = await apiService.post("CompanyMaster/secretKey", payload);
+
+    return response;
+  } catch (error: any) {
+    return rejectWithValue(error?.message);
   }
 });
 // Company slice
@@ -500,7 +517,7 @@ const companySlice = createSlice({
         state.deleteSuccess = true;
         // Remove deleted company from the list
         state.companies = state.companies.filter(
-          (company) => company.cid !== action.meta.arg
+          (company) => company.cid !== action.meta.arg,
         );
       })
       // Delete Company rejected
@@ -542,7 +559,7 @@ const companySlice = createSlice({
         state.success = true;
         // Update the company in the list if it exists
         const updatedCompanyIndex = state.companies.findIndex(
-          (company) => company.cid === action.meta.arg.CID
+          (company) => company.cid === action.meta.arg.CID,
         );
         if (updatedCompanyIndex !== -1 && action.payload.result) {
           state.companies[updatedCompanyIndex] = action.payload.result;
@@ -554,6 +571,25 @@ const companySlice = createSlice({
         state.error =
           action.payload || "An error occurred while updating company";
         state.success = false;
+      })
+      // Generate API Key pending
+      .addCase(generateCompanyApiKey.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+
+      // Generate API Key fulfilled
+      .addCase(generateCompanyApiKey.fulfilled, (state, action) => {
+        state.loading = false;
+        state.error = null;
+        state.GenerateKey = action.payload.result;
+      })
+
+      // Generate API Key rejected
+      .addCase(generateCompanyApiKey.rejected, (state, action) => {
+        state.loading = false;
+        state.error =
+          action.payload || "An error occurred while generating API key";
       });
   },
 });

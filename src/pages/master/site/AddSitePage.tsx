@@ -89,7 +89,7 @@ const AddSitePage: React.FC = () => {
   const [showSnackbar, setShowSnackbar] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState("");
   const [snackbarSeverity, setSnackbarSeverity] = useState<"success" | "error">(
-    "success"
+    "success",
   );
   const [formErrors, setFormErrors] = useState<Record<string, string>>({});
 
@@ -100,9 +100,8 @@ const AddSitePage: React.FC = () => {
     const fetchUsers = async () => {
       try {
         setUserListLoading(true);
-        const response = await apiClient.get<GetUserListResponse>(
-          "User/getUserList"
-        );
+        const response =
+          await apiClient.get<GetUserListResponse>("User/getUserList");
         // API returns data wrapped in result array
         if (
           response.data &&
@@ -165,7 +164,7 @@ const AddSitePage: React.FC = () => {
       const matched = countries.find(
         (c) =>
           c.countryName.toLowerCase() === formData.country.toLowerCase() ||
-          c.countryId === formData.country
+          c.countryId === formData.country,
       );
       if (matched) {
         setSelectedCountryId(matched.countryId);
@@ -240,7 +239,7 @@ const AddSitePage: React.FC = () => {
   };
 
   const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
   ) => {
     const { name, value } = e.target;
     setFormData((prev) => ({
@@ -268,10 +267,10 @@ const AddSitePage: React.FC = () => {
         [fieldName === "defaultMaker"
           ? "defaultMakerId"
           : fieldName === "defaultChecker"
-          ? "defaultCheckerId"
-          : fieldName === "defaultReviewer"
-          ? "defaultReviewerId"
-          : "defaultAuditerId"]: selectedUserId,
+            ? "defaultCheckerId"
+            : fieldName === "defaultReviewer"
+              ? "defaultReviewerId"
+              : "defaultAuditerId"]: selectedUserId,
       },
     }));
 
@@ -294,7 +293,7 @@ const AddSitePage: React.FC = () => {
       let result;
       if (isEditMode && id) {
         result = await dispatch(
-          updateSite({ ...formData, siteId: id })
+          updateSite({ ...formData, siteId: id }),
         ).unwrap();
         setSnackbarMessage(result?.message || "Site updated successfully");
       } else {
@@ -323,8 +322,8 @@ const AddSitePage: React.FC = () => {
   const handleDownloadTemplate = async () => {
     try {
       await apiService.download(
-        "Master/siteMasterCsvTemplate",
-        "SiteMasterTemplate.csv"
+        "Master/siteMasterExcelTemplate",
+        "SiteMasterTemplate.csv",
       );
     } catch (err) {
       console.error("Template download error:", err);
@@ -363,7 +362,7 @@ const AddSitePage: React.FC = () => {
       setBulkFile(null);
       // Reset the file input
       const fileInput = document.getElementById(
-        "bulk-site-upload"
+        "bulk-site-upload",
       ) as HTMLInputElement;
       if (fileInput) fileInput.value = "";
       setTimeout(() => {
@@ -727,8 +726,8 @@ const AddSitePage: React.FC = () => {
                     ? "Updating..."
                     : "Saving..."
                   : isEditMode
-                  ? "Update Site"
-                  : "Save Site"}
+                    ? "Update Site"
+                    : "Save Site"}
               </Button>
               <Button
                 variant="outlined"

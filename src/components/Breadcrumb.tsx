@@ -45,7 +45,7 @@ const Breadcrumb: React.FC = () => {
 
     // Ab breadcrumb mein last item manually add karenge
     return (
-      <Box sx={{ mb: 3 }}>
+      <Box>
         <Breadcrumbs
           separator={<NavigateNext fontSize="small" />}
           aria-label="breadcrumb"
@@ -132,7 +132,7 @@ const Breadcrumb: React.FC = () => {
 
   // Normal case (non-edit paths)
   return (
-    <Box sx={{ mb: 3 }}>
+    <Box>
       <Breadcrumbs
         separator={<NavigateNext fontSize="small" />}
         aria-label="breadcrumb"
