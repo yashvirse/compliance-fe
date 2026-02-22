@@ -20,6 +20,7 @@ import fileUploaderReducer from "../pages/tools/FileUploaderSlice/FileUploader.s
 import fileExplorerReducer from "../pages/tools/FileExplorerSlice/FileExplorer.slice";
 import templateFormaterReducer from "../pages/tools/TemplateFormaterSlice/TemplateFormater.slice";
 import scoreCardReducer from "../pages/reports/ScoreCard/ScroreCard.slice";
+import apiIntegrationReducer from "../pages/tools/ApiIntegration/apiIntegration.slice";
 export const store = configureStore({
   reducer: {
     login: loginReducer,
@@ -43,6 +44,7 @@ export const store = configureStore({
     fileExplorer: fileExplorerReducer,
     templateFormater: templateFormaterReducer,
     scoreCard: scoreCardReducer,
+    apiIntegration: apiIntegrationReducer,
   },
 });
 
