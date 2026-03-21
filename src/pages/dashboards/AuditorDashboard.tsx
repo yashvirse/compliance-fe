@@ -245,11 +245,11 @@ const AuditorDashboard: React.FC = () => {
   };
 
   const handleConfirmApprove = async () => {
-    if (selectedTaskId && remark.trim() && file) {
+    if (selectedTaskId && remark.trim()) {
       const payload = {
         taskID: selectedTaskId,
         remark,
-        file,
+        file: file || undefined,
       };
       try {
         await dispatch(approveCheckTask(payload) as any).unwrap();
@@ -275,11 +275,11 @@ const AuditorDashboard: React.FC = () => {
   };
 
   const handleConfirmReject = async () => {
-    if (selectedTaskId && remark.trim() && file) {
+    if (selectedTaskId && remark.trim()) {
       const payload = {
         taskID: selectedTaskId,
         remark,
-        file,
+        file: file || undefined,
       };
       try {
         await dispatch(rejectCheckTask(payload) as any).unwrap();

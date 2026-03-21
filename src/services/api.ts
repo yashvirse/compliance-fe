@@ -39,7 +39,7 @@ apiClient.interceptors.request.use(
   },
   (error) => {
     return Promise.reject(error);
-  }
+  },
 );
 
 // Response interceptor - Handle common errors
@@ -47,24 +47,26 @@ apiClient.interceptors.response.use(
   (response) => {
     // Debug logging
     console.log(
-      `📥 ${response.config.method?.toUpperCase()} ${response.config.url} - ${response.status
+      `📥 ${response.config.method?.toUpperCase()} ${response.config.url} - ${
+        response.status
       }`,
       {
         setCookie: response.headers["set-cookie"],
         data: response.data,
-      }
+      },
     );
     return response;
   },
   (error) => {
     if (error.response) {
       console.error(
-        `❌ ${error.config?.method?.toUpperCase()} ${error.config?.url} - ${error.response.status
+        `❌ ${error.config?.method?.toUpperCase()} ${error.config?.url} - ${
+          error.response.status
         }`,
         {
           data: error.response.data,
           headers: error.response.headers,
-        }
+        },
       );
 
       // Handle specific error codes
@@ -93,7 +95,7 @@ apiClient.interceptors.response.use(
       console.error("Error setting up request:", error.message);
     }
     return Promise.reject(error);
-  }
+  },
 );
 
 // API Service class with all HTTP methods
@@ -119,7 +121,7 @@ class ApiService {
   async post<T = any>(
     url: string,
     data?: any,
-    config?: AxiosRequestConfig
+    config?: AxiosRequestConfig,
   ): Promise<T> {
     const response: AxiosResponse<T> = await apiClient.post(url, data, config);
     return response.data;
@@ -135,7 +137,7 @@ class ApiService {
   async put<T = any>(
     url: string,
     data?: any,
-    config?: AxiosRequestConfig
+    config?: AxiosRequestConfig,
   ): Promise<T> {
     const response: AxiosResponse<T> = await apiClient.put(url, data, config);
     return response.data;
@@ -151,7 +153,7 @@ class ApiService {
   async patch<T = any>(
     url: string,
     data?: any,
-    config?: AxiosRequestConfig
+    config?: AxiosRequestConfig,
   ): Promise<T> {
     const response: AxiosResponse<T> = await apiClient.patch(url, data, config);
     return response.data;
@@ -180,7 +182,7 @@ class ApiService {
     url: string,
     files: File | File[] | FormData,
     onUploadProgress?: (progressEvent: any) => void,
-    config?: AxiosRequestConfig
+    config?: AxiosRequestConfig,
   ): Promise<T> {
     const formData = files instanceof FormData ? files : new FormData();
 
@@ -217,7 +219,7 @@ class ApiService {
   async putFormData<T = any>(
     url: string,
     formData: FormData,
-    config?: AxiosRequestConfig
+    config?: AxiosRequestConfig,
   ): Promise<T> {
     const response: AxiosResponse<T> = await apiClient.put(url, formData, {
       ...config,
@@ -241,7 +243,7 @@ class ApiService {
   async patchFormData<T = any>(
     url: string,
     formData: FormData,
-    config?: AxiosRequestConfig
+    config?: AxiosRequestConfig,
   ): Promise<T> {
     const response: AxiosResponse<T> = await apiClient.patch(url, formData, {
       ...config,
@@ -267,17 +269,18 @@ class ApiService {
     url: string,
     data?: any,
     filename?: string,
-    config?: AxiosRequestConfig
+    config?: AxiosRequestConfig,
   ): Promise<void> {
     const response: AxiosResponse<Blob> = await apiClient.post(url, data, {
       ...config,
       responseType: "blob",
-      // Default to 180 seconds for downloads if not specified
-      timeout: config?.timeout || 180000,
+      // Default to 600 seconds for downloads if not specified
+      timeout: config?.timeout || 600000,
     });
 
     // Create blob link to download
-    const contentType = response.headers["content-type"] || "application/octet-stream";
+    const contentType =
+      response.headers["content-type"] || "application/octet-stream";
     const blob = new Blob([response.data], { type: contentType });
     const downloadUrl = window.URL.createObjectURL(blob);
     const link = document.createElement("a");
@@ -289,7 +292,9 @@ class ApiService {
 
     if (contentDisposition) {
       // Try to match filename*=UTF-8''filename or filename=filename
-      const filenameStarMatch = contentDisposition.match(/filename\*=UTF-8''([^;]+)/i);
+      const filenameStarMatch = contentDisposition.match(
+        /filename\*=UTF-8''([^;]+)/i,
+      );
       if (filenameStarMatch && filenameStarMatch[1]) {
         extractedFilename = decodeURIComponent(filenameStarMatch[1]);
       } else {
@@ -308,6 +313,23 @@ class ApiService {
   }
 
   /**
+   * Call POST API (no file download)
+   * @param url - API endpoint
+   * @param data - Request body
+   * @param config - Axios request config (can override timeout)
+   */
+  async downloadPosts(
+    url: string,
+    data?: any,
+    config?: AxiosRequestConfig,
+  ): Promise<void> {
+    await apiClient.post(url, data, {
+      ...config,
+      // keep timeout as it was
+      timeout: config?.timeout || 600000,
+    });
+  }
+  /**
    * Download file using GET
    * @param url - API endpoint
    * @param filename - Name for downloaded file
@@ -317,7 +339,7 @@ class ApiService {
   async download(
     url: string,
     filename?: string,
-    config?: AxiosRequestConfig
+    config?: AxiosRequestConfig,
   ): Promise<void> {
     const response: AxiosResponse<Blob> = await apiClient.get(url, {
       ...config,
@@ -336,7 +358,9 @@ class ApiService {
     let extractedFilename = filename || "download";
 
     if (contentDisposition) {
-      const filenameStarMatch = contentDisposition.match(/filename\*=UTF-8''([^;]+)/i);
+      const filenameStarMatch = contentDisposition.match(
+        /filename\*=UTF-8''([^;]+)/i,
+      );
       if (filenameStarMatch && filenameStarMatch[1]) {
         extractedFilename = decodeURIComponent(filenameStarMatch[1]);
       } else {

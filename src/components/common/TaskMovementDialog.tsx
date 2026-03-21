@@ -32,6 +32,7 @@ interface Task {
   dueDate: string;
   siteName?: string;
   remarkFilePath?: string;
+  reportPath?: string[];
   details: details[];
 }
 
@@ -80,6 +81,7 @@ const TaskMovementDialog: React.FC<TaskMovementDialogProps> = ({
           dueDate: result.dueDate || "",
           siteName: result.siteName || undefined,
           remarkFilePath: result.remarkFilePath || undefined,
+          reportPath: result.reportPath || [],
           details: (result.details || []).map((item: any) => ({
             userName: item.userName || "Unknown",
             status: item.status || "Pending",
@@ -104,25 +106,39 @@ const TaskMovementDialog: React.FC<TaskMovementDialogProps> = ({
     fetchTaskDetail();
   }, [open, tblId]);
 
-  const downloadFileDirect = (filePath: string) => {
-    const baseUrl = "https://api.ocmspro.com/RemarkFiles/";
+  const downloadFileDirect = (path: string) => {
+    let fileUrl = path
+      .replace("wwwroot/", "")
+      .replace("wwwroot\\", "")
+      .replaceAll("\\", "/");
 
-    // "~" remove karo agar start me ho
-    const cleanedPath = filePath.startsWith("~")
-      ? filePath.replace("~", "")
-      : filePath;
+    // API base URL add
+    fileUrl = "https://api.ocmspro.com/" + fileUrl;
 
-    const fileUrl = `${baseUrl}${cleanedPath}`;
+    // spaces aur special characters fix
+    fileUrl = encodeURI(fileUrl);
 
-    // direct browser download
     const link = document.createElement("a");
     link.href = fileUrl;
-    link.download = cleanedPath.split("/").pop() || "file";
+    link.target = "_blank"; // new tab me open
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
   };
 
+  const downloadReportFileDirect = (path: string) => {
+    let fileUrl = path.replace("wwwroot\\", "").replaceAll("\\", "/");
+    // API base URL add karo
+    fileUrl = "https://api.ocmspro.com/" + fileUrl;
+    fileUrl = encodeURI(fileUrl);
+
+    const link = document.createElement("a");
+    link.href = fileUrl;
+    link.target = "_blank"; // new tab me open hoga
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
   return (
     <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
       <DialogTitle sx={{ fontWeight: 600, fontSize: "1.3rem", pb: 1 }}>
@@ -222,12 +238,16 @@ const TaskMovementDialog: React.FC<TaskMovementDialogProps> = ({
                     >
                       Remark File Name
                     </Typography>
+
                     {task.remarkFilePath ? (
                       <Box
                         sx={{ display: "flex", alignItems: "center", gap: 1 }}
                       >
                         <Typography variant="body2" fontWeight={500}>
-                          {task.remarkFilePath.split("/").pop()}
+                          {task.remarkFilePath
+                            .replaceAll("\\", "/")
+                            .split("/")
+                            .pop()}
                         </Typography>
 
                         <Button
@@ -243,6 +263,38 @@ const TaskMovementDialog: React.FC<TaskMovementDialogProps> = ({
                     ) : (
                       <Typography variant="body2">-</Typography>
                     )}
+                  </Grid>
+                  <Grid size={{ xs: 12, sm: 6 }}>
+                    <Typography
+                      variant="caption"
+                      color="text.secondary"
+                      display="block"
+                    >
+                      Generated Activity Report
+                    </Typography>
+
+                    <Typography variant="body2" fontWeight={500}>
+                      {task.reportPath && task.reportPath.length > 0 ? (
+                        <>
+                          <Typography variant="body2">
+                            {task.reportPath[0].split("\\").pop()}
+                          </Typography>
+
+                          <Button
+                            size="small"
+                            variant="outlined"
+                            onClick={() =>
+                              downloadReportFileDirect(task.reportPath![0])
+                            }
+                            sx={{ mt: 1 }}
+                          >
+                            Download Report
+                          </Button>
+                        </>
+                      ) : (
+                        "-"
+                      )}
+                    </Typography>
                   </Grid>
                 </Grid>
               </Box>

@@ -37,6 +37,7 @@ import type { StateItem } from "./TemplateFormaterSlice/TemplateFormater.type";
 import { useParams } from "react-router-dom";
 import Checkbox from "@mui/material/Checkbox";
 import ListItemText from "@mui/material/ListItemText";
+import ExcelTemplate from "../../components/ExcelTemplate";
 
 const AddTemplateFormater: React.FC = () => {
   const theme = useTheme();
@@ -51,6 +52,7 @@ const AddTemplateFormater: React.FC = () => {
 
   const states = useSelector((state: any) => state.templateFormater.states);
   const [fileType, setFileType] = useState("");
+  const [formateType, setformateType] = useState("PDF");
   const [slipName, setSlipName] = useState("");
   // 🔹 change 1: stateId as array
   const [stateId, setStateId] = useState<string[]>([]);
@@ -68,6 +70,7 @@ const AddTemplateFormater: React.FC = () => {
     if (name === "stateId") setStateId(value as unknown as string[]);
     if (name === "activity") setActivity(value);
     if (name === "fileType") setFileType(value);
+    if (name === "formateType") setformateType(value);
     if (formErrors[name]) {
       setFormErrors((prev) => ({ ...prev, [name]: "" }));
     }
@@ -85,7 +88,11 @@ const AddTemplateFormater: React.FC = () => {
       dispatch(fetchTemplateById(templateId));
     }
   }, [templateId, dispatch]);
-
+  useEffect(() => {
+    if (templateId) {
+      setHtmlTemplate(""); // reset before loading new template
+    }
+  }, [templateId]);
   useEffect(() => {
     if (!templateId) {
       setSlipName("");
@@ -115,17 +122,19 @@ const AddTemplateFormater: React.FC = () => {
   };
   useEffect(() => {
     if (templateId && templateDetail) {
-      setSlipName(templateDetail.slipName);
-      setFileType(templateDetail.fileTye);
+      setHtmlTemplate("");
+      setSlipName(templateDetail.slipName || "");
+      setFileType(templateDetail.fileTye || "");
+      setformateType(templateDetail.format || "PDF");
       const selectedStates = states
         .filter((s: StateItem) =>
           templateDetail.stateName?.split(", ").includes(s.stateName),
         )
         .map((s: StateItem) => s.stateId);
 
-      setStateId(selectedStates);
-      setActivity(templateDetail.activityId);
-      setHtmlTemplate(templateDetail.htmlTemplate);
+      setStateId(selectedStates || []);
+      setActivity(templateDetail.activityId || "");
+      setHtmlTemplate(templateDetail.htmlTemplate || "");
     }
   }, [templateId, templateDetail, states]);
   const validateForm = () => {
@@ -138,14 +147,16 @@ const AddTemplateFormater: React.FC = () => {
     if (!fileType) {
       errors.fileType = "File Type is required";
     }
-
+    if (!formateType) {
+      errors.formateType = "Formate Type is required";
+    }
     if (stateId.length === 0) {
       errors.stateId = "At least one state is required";
     }
 
-    if (!activity) {
-      errors.activity = "Activity is required";
-    }
+    // if (!activity) {
+    //   errors.activity = "Activity is required";
+    // }
 
     if (!htmlTemplate || htmlTemplate.trim() === "") {
       errors.htmlTemplate = "Template content is required";
@@ -178,6 +189,7 @@ const AddTemplateFormater: React.FC = () => {
           compDomain: companyDomain,
           slipName,
           fileTye: fileType,
+          format: formateType,
           htmlTemplate,
           stateName: stateNames,
           activityId: selectedActivity?.activityId || "",
@@ -197,6 +209,7 @@ const AddTemplateFormater: React.FC = () => {
           htmlTemplate,
           stateName: stateNames,
           fileTye: fileType,
+          format: formateType,
           activityId: selectedActivity?.activityId || "",
           activityActName: selectedActivity
             ? `${selectedActivity.actName} - ${selectedActivity.activityName}`
@@ -268,6 +281,21 @@ const AddTemplateFormater: React.FC = () => {
               </Box>
               <Box sx={{ display: "flex", gap: 3, flexWrap: "wrap" }}>
                 <Box sx={{ flex: "1 1 calc(50% - 12px)", minWidth: 250 }}>
+                  <CustomDropdown
+                    label="Formate Type"
+                    name="formateType"
+                    value={formateType}
+                    onChange={handleChange}
+                    disabled={!!templateId}
+                    options={[
+                      { label: "PDF", value: "PDF" },
+                      { label: "Excel", value: "EXCEL" },
+                    ]}
+                    error={!!formErrors.formateType}
+                    helperText={formErrors.formateType}
+                  />
+                </Box>
+                <Box sx={{ flex: "1 1 calc(50% - 12px)", minWidth: 250 }}>
                   <CustomTextField
                     select
                     label="Applicable State"
@@ -322,13 +350,24 @@ const AddTemplateFormater: React.FC = () => {
               </Box>
               <Box>
                 <Typography variant="subtitle1" fontWeight={600} mb={1}>
-                  Template
+                  Template Formate
                 </Typography>
-                <JoditEditor
-                  ref={editorRef}
-                  value={htmlTemplate}
-                  onBlur={(newContent) => setHtmlTemplate(newContent)}
-                />
+
+                {formateType === "PDF" && (
+                  <JoditEditor
+                    ref={editorRef}
+                    value={htmlTemplate}
+                    onBlur={(newContent) => setHtmlTemplate(newContent)}
+                  />
+                )}
+
+                {formateType === "EXCEL" && (
+                  <ExcelTemplate
+                    key={`excel-${templateId}`}
+                    value={htmlTemplate}
+                    onChange={(data: any) => setHtmlTemplate(data)}
+                  />
+                )}
               </Box>
             </Box>
 

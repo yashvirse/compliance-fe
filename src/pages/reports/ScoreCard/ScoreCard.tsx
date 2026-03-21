@@ -224,12 +224,11 @@ const ScoreCard: React.FC = () => {
       hasError = true;
     }
     if (hasError) return;
-    // Dispatch the API if validation passes
     dispatch(
       fetchScoreCardReport({
         sites: formData.sites,
         departments: formData.departments,
-        monthYear: formattedDate,
+        date: formattedDate,
       }) as any,
     );
 

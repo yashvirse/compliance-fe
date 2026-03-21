@@ -35,7 +35,7 @@ export const addTemplate = createAsyncThunk<
   try {
     const response = await apiService.post<AddTemplateResponse>(
       "SalaryMusterRoll/AddTemplate",
-      templateData
+      templateData,
     );
 
     if (!response.isSuccess) {
@@ -47,7 +47,7 @@ export const addTemplate = createAsyncThunk<
     return rejectWithValue(
       error?.response?.data?.message ||
         error?.message ||
-        "Failed to add template. Please try again."
+        "Failed to add template. Please try again.",
     );
   }
 });
@@ -58,7 +58,7 @@ export const getTemplates = createAsyncThunk<
 >("templateFormater/getTemplates", async (_, { rejectWithValue }) => {
   try {
     const response = await apiService.get<GetTemplatesResponse>(
-      "SalaryMusterRoll/GetTemplates"
+      "SalaryMusterRoll/GetTemplates",
     );
 
     if (!response.isSuccess) {
@@ -70,7 +70,7 @@ export const getTemplates = createAsyncThunk<
     return rejectWithValue(
       error?.response?.data?.message ||
         error?.message ||
-        "Failed to fetch templates. Please try again."
+        "Failed to fetch templates. Please try again.",
     );
   }
 });
@@ -81,7 +81,7 @@ export const getIndiaStates = createAsyncThunk<
 >("templateFormater/getIndiaStates", async (_, { rejectWithValue }) => {
   try {
     const response = await apiService.get<GetCountryStateResponse>(
-      "Master/getCountryState"
+      "Master/getCountryState",
     );
 
     if (!response.isSuccess) {
@@ -93,7 +93,7 @@ export const getIndiaStates = createAsyncThunk<
     return rejectWithValue(
       error?.response?.data?.message ||
         error?.message ||
-        "Failed to fetch India states"
+        "Failed to fetch India states",
     );
   }
 });
@@ -106,11 +106,11 @@ export const getCompanyActivities = createAsyncThunk<
   async (companyId, { rejectWithValue }) => {
     try {
       const response = await apiService.get<GetCompanyActivityResponse>(
-        `CompanyActivityMaster/getCompActivityMasterList/${companyId}`
+        `CompanyActivityMaster/getCompActivityMasterList/${companyId}`,
       );
       if (!response.isSuccess) {
         return rejectWithValue(
-          response.message || "Failed to fetch activities"
+          response.message || "Failed to fetch activities",
         );
       }
       return response.result;
@@ -118,10 +118,10 @@ export const getCompanyActivities = createAsyncThunk<
       return rejectWithValue(
         error?.response?.data?.message ||
           error?.message ||
-          "Failed to fetch activities"
+          "Failed to fetch activities",
       );
     }
-  }
+  },
 );
 // Async thunk for fetching template by ID
 export const fetchTemplateById = createAsyncThunk<
@@ -133,11 +133,11 @@ export const fetchTemplateById = createAsyncThunk<
   async (templateId: string, { rejectWithValue }) => {
     try {
       const response = await apiService.get<GetTemplateByIdResponse>(
-        `SalaryMusterRoll/GetTemplateByID?tempID=${templateId}`
+        `SalaryMusterRoll/GetTemplateByID?tempID=${templateId}`,
       );
       if (!response.isSuccess) {
         return rejectWithValue(
-          response.message || "Failed to fetch Template details"
+          response.message || "Failed to fetch Template details",
         );
       }
       return response;
@@ -148,7 +148,7 @@ export const fetchTemplateById = createAsyncThunk<
         "Failed to fetch Template details. Please try again.";
       return rejectWithValue(errorMessage);
     }
-  }
+  },
 );
 // Async thunk for updating template
 export const updateTemplateMaster = createAsyncThunk<
@@ -161,12 +161,12 @@ export const updateTemplateMaster = createAsyncThunk<
     try {
       const response = await apiService.put<UpdateTemplateResponse>(
         "SalaryMusterRoll/EditTemplate",
-        templateData
+        templateData,
       );
 
       if (!response.isSuccess) {
         return rejectWithValue(
-          response.message || "Failed to update template "
+          response.message || "Failed to update template ",
         );
       }
 
@@ -178,7 +178,7 @@ export const updateTemplateMaster = createAsyncThunk<
         "Failed to update Template . Please try again.";
       return rejectWithValue(errorMessage);
     }
-  }
+  },
 );
 
 const templateFormaterSlice = createSlice({

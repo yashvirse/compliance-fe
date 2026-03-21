@@ -82,7 +82,7 @@ export interface GetPendingTasksResponse {
 export interface ApproveTaskRequest {
   taskID: string;
   remark: string;
-  file: File;
+  file?: File;
 }
 
 export interface ApproveTaskResponse {
@@ -94,7 +94,7 @@ export interface ApproveTaskResponse {
 export interface RejectTaskRequest {
   taskID: string;
   remark: string;
-  file: File;
+  file?: File;
 }
 
 export interface RejectTaskResponse {

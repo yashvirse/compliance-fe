@@ -64,6 +64,7 @@ import TemplateFormatter from "./pages/tools/TemplateFormatter.tsx";
 import AddTemplateFormater from "./pages/tools/AddTemplateFormater.tsx";
 import ScoreCard from "./pages/reports/ScoreCard/ScoreCard.tsx";
 import ApiIntegration from "./pages/tools/ApiIntegration/apiIntegration.tsx";
+import Registers from "./pages/reports/Registers/Registers.tsx";
 
 const theme = createTheme({
   palette: {
@@ -463,10 +464,18 @@ function App() {
                 }
               />
               <Route
-                path="reports/score-card"
+                path="/dashboard/reports/score-card"
                 element={
                   <RoleBasedRoute allowedRoles={[UserRole.CUSTOMER_ADMIN]}>
                     <ScoreCard />
+                  </RoleBasedRoute>
+                }
+              />
+              <Route
+                path="reports/registers"
+                element={
+                  <RoleBasedRoute allowedRoles={[UserRole.CUSTOMER_ADMIN]}>
+                    <Registers />
                   </RoleBasedRoute>
                 }
               />

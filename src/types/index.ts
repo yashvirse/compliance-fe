@@ -1,4 +1,4 @@
-import { UserRole } from '../config/roleConfig';
+import { UserRole } from "../config/roleConfig";
 
 export interface User {
   id: string;
@@ -10,6 +10,7 @@ export interface User {
   domain: string;
   isActive: boolean;
   token: string;
+  apiKey: string;
 }
 
 export interface AuthContextType {

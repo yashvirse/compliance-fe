@@ -31,7 +31,7 @@ import TaskMovementDialog from "../../../components/common/TaskMovementDialog";
 import CommonDataTable from "../../../components/common/CommonDataTable";
 import type { GridColDef, GridRenderCellParams } from "@mui/x-data-grid";
 import { useLocation } from "react-router-dom";
-
+import * as XLSX from "xlsx";
 const Task: React.FC = () => {
   const theme = useTheme();
   const dispatch = useDispatch<AppDispatch>();
@@ -81,6 +81,45 @@ const Task: React.FC = () => {
     setTaskMovementDialogOpen(false);
     setSelectedTask(null);
   };
+  const handleExportExcel = () => {
+    if (!tasks || tasks.length === 0) return;
+
+    const formattedData = tasks.map((row: any, index: number) => ({
+      "S.No.": index + 1,
+      "Site Name": row.siteName,
+      "Activity Name": row.actName
+        ? `${row.actName} - ${row.activityName}`
+        : row.activityName,
+      Department: row.departmentName,
+      Frequency: row.frequency,
+      "Due Date": row.dueDate
+        ? new Date(row.dueDate).toLocaleDateString("en-GB")
+        : "",
+      Status: row.taskCurrentStatus,
+    }));
+
+    const worksheet = XLSX.utils.json_to_sheet(formattedData);
+    const workbook = XLSX.utils.book_new();
+
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Tasks");
+    const excelBuffer = XLSX.write(workbook, {
+      bookType: "xlsx",
+      type: "array",
+    });
+
+    const blob = new Blob([excelBuffer], {
+      type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `Task_List_${dayjs().format("MMM_YYYY")}.xlsx`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    window.URL.revokeObjectURL(url);
+  };
+
   const getFrequencyColor = (frequency: string) => {
     switch (frequency) {
       case "Weekly":
@@ -266,6 +305,14 @@ const Task: React.FC = () => {
               <MenuItem value="Rejected">Rejected</MenuItem>
             </Select>
           </FormControl>
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={handleExportExcel}
+            sx={{ textTransform: "none" }}
+          >
+            Export to Excel
+          </Button>
         </Box>
       </Box>
 

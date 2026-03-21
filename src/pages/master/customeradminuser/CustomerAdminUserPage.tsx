@@ -121,13 +121,13 @@ const CustomerAdminUserPage: React.FC = () => {
     {
       field: "userName",
       headerName: "Name",
-      width: 200,
+      width: 100,
       flex: 1,
     },
     {
       field: "userEmail",
       headerName: "Email",
-      width: 250,
+      width: 350,
       flex: 1,
     },
     {
@@ -151,12 +151,12 @@ const CustomerAdminUserPage: React.FC = () => {
     {
       field: "companyDomain",
       headerName: "Company Domain",
-      width: 180,
+      width: 130,
     },
     {
       field: "isActive",
       headerName: "Status",
-      width: 130,
+      width: 80,
       renderCell: (params: GridRenderCellParams) => (
         <Chip
           label={params.value ? "Active" : "Inactive"}
@@ -168,41 +168,54 @@ const CustomerAdminUserPage: React.FC = () => {
     {
       field: "actions",
       headerName: "Actions",
-      width: 150,
+      width: 120,
       sortable: false,
-      renderCell: (params: GridRenderCellParams) => (
-        <Box
-          sx={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "flex-start",
-            height: "100%", // 🔑 IMPORTANT
-            width: "100%",
-            gap: 1,
-          }}
-        >
-          <IconButton
-            size="small"
-            onClick={() => handleEdit(params.row.userID)}
+      renderCell: (params: GridRenderCellParams) => {
+        const isCustomerAdmin = params.row.userRole === "CustomerAdmin";
+
+        return (
+          <Box
             sx={{
-              color: theme.palette.primary.main,
-              "&:hover": { bgcolor: alpha(theme.palette.primary.main, 0.1) },
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "flex-start",
+              height: "100%",
+              width: "100%",
+              gap: 1,
             }}
           >
-            <EditIcon fontSize="small" />
-          </IconButton>
-          <IconButton
-            size="small"
-            onClick={() => handleDelete(params.row.userID)}
-            sx={{
-              color: theme.palette.error.main,
-              "&:hover": { bgcolor: alpha(theme.palette.error.main, 0.1) },
-            }}
-          >
-            <DeleteIcon fontSize="small" />
-          </IconButton>
-        </Box>
-      ),
+            {!isCustomerAdmin && (
+              <>
+                <IconButton
+                  size="small"
+                  onClick={() => handleEdit(params.row.userID)}
+                  sx={{
+                    color: theme.palette.primary.main,
+                    "&:hover": {
+                      bgcolor: alpha(theme.palette.primary.main, 0.1),
+                    },
+                  }}
+                >
+                  <EditIcon fontSize="small" />
+                </IconButton>
+
+                <IconButton
+                  size="small"
+                  onClick={() => handleDelete(params.row.userID)}
+                  sx={{
+                    color: theme.palette.error.main,
+                    "&:hover": {
+                      bgcolor: alpha(theme.palette.error.main, 0.1),
+                    },
+                  }}
+                >
+                  <DeleteIcon fontSize="small" />
+                </IconButton>
+              </>
+            )}
+          </Box>
+        );
+      },
     },
   ];
 

@@ -92,7 +92,9 @@ export const approveCheckTask = createAsyncThunk<
 >("checkerDashboard/approveCheckTask", async (payload, { rejectWithValue }) => {
   try {
     const formData = new FormData();
-    formData.append("file", payload.file);
+    if (payload.file) {
+      formData.append("file", payload.file);
+    }
     const response = await apiService.post<ApproveCheckTaskResponse>(
       `Dashboard/approveTask?taskID=${payload.taskID}&remark=${encodeURIComponent(
         payload.remark,
@@ -126,7 +128,9 @@ export const rejectCheckTask = createAsyncThunk<
 >("checkerDashboard/rejectCheckTask", async (payload, { rejectWithValue }) => {
   try {
     const formData = new FormData();
-    formData.append("file", payload.file);
+    if (payload.file) {
+      formData.append("file", payload.file);
+    }
     const response = await apiService.post<RejectCheckTaskResponse>(
       `Dashboard/rejectTask?taskID=${payload.taskID}&remark=${encodeURIComponent(
         payload.remark,

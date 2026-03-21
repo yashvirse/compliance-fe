@@ -83,7 +83,7 @@ export interface GetCheckerTaskCountResponse {
 export interface ApproveCheckTaskRequest {
   taskID: string;
   remark: string;
-  file: File;
+  file?: File;
 }
 
 export interface ApproveCheckTaskResponse {
@@ -95,7 +95,7 @@ export interface ApproveCheckTaskResponse {
 export interface RejectCheckTaskRequest {
   taskID: string;
   remark: string;
-  file: File;
+  file?: File;
 }
 
 export interface RejectCheckTaskResponse {

@@ -13,6 +13,7 @@ import ArticleIcon from "@mui/icons-material/Article";
 import ApiIcon from "@mui/icons-material/Api";
 import BarChartIcon from "@mui/icons-material/BarChart";
 import ScoreCardIcon from "@mui/icons-material/Scoreboard";
+import ReceiptIcon from "@mui/icons-material/Receipt";
 
 // User roles
 export const UserRole = {
@@ -210,6 +211,13 @@ export const menuConfig: MenuItem[] = [
     icon: <BarChartIcon />,
     allowedRoles: [UserRole.CUSTOMER_ADMIN],
     children: [
+      {
+        id: "registers",
+        label: "Registers",
+        path: "/dashboard/reports/registers",
+        icon: <ReceiptIcon />,
+        allowedRoles: [UserRole.CUSTOMER_ADMIN],
+      },
       {
         id: "score-card",
         label: "Score Card",

@@ -14,6 +14,10 @@ import {
   LinearProgress,
   IconButton,
   Popover,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
 } from "@mui/material";
 import type { GridColDef, GridRenderCellParams } from "@mui/x-data-grid";
 import {
@@ -60,6 +64,7 @@ import dayjs from "dayjs";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import CalendarMonthIcon from "@mui/icons-material/CalendarMonth";
+import * as XLSX from "xlsx";
 
 const CustomerAdminDashboard: React.FC = () => {
   const theme = useTheme();
@@ -71,10 +76,12 @@ const CustomerAdminDashboard: React.FC = () => {
   const siteWiseTasks = useSelector(selectSiteWiseTasks);
   const isSameOrBefore = (d1: Date, d2: Date) => d1.getTime() <= d2.getTime();
   const assignedTasksResponse = useSelector(selectAssignedTasks);
-
+  const [selectedSiteId, setSelectedSiteId] = useState<string | null>(null);
   // Prevent double API calls in StrictMode (React 18+ development)
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [currentMonth, setCurrentMonth] = useState(new Date());
+  const [siteWiseMonth, setSiteWiseMonth] = useState(new Date());
+
   const open = Boolean(anchorEl);
 
   const [showSiteWiseTable, setShowSiteWiseTable] = useState(false);
@@ -82,8 +89,7 @@ const CustomerAdminDashboard: React.FC = () => {
   const [fetchError, setFetchError] = useState<string | null>(null);
   const [taskMovementDialogOpen, setTaskMovementDialogOpen] = useState(false);
   const [selectedTask, setSelectedTask] = useState<any | null>(null);
-
-  // Rejected tasks are now fetched from API and stored in selector
+  const [statusFilter, setStatusFilter] = useState("Pending"); // Rejected tasks are now fetched from API and stored in selector
   const handleBackToDashboard = () => {
     setShowSiteWiseTable(false);
     setLoading(false);
@@ -96,14 +102,16 @@ const CustomerAdminDashboard: React.FC = () => {
   const complianceTasks = assignedTasks.filter((task) => {
     if (task.taskCurrentStatus !== "Completed") return false;
     if (!task.dueDate) return false;
-    if (!task.details || task.details.length === 0) return false;
+
     const dueDate = new Date(task.dueDate);
-    // last user ki outDate
-    const lastDetail = task.details[task.details.length - 1];
-    if (!lastDetail.outDate) return false;
-    const outDate = new Date(lastDetail.outDate);
-    // outDate dueDate ke din ya pehle ho
-    return isSameOrBefore(outDate, dueDate);
+
+    // taskCompletionDate use karna hai
+    if (!task.taskCompletionDate) return false;
+
+    const completionDate = new Date(task.taskCompletionDate);
+
+    // completionDate dueDate ke din ya pehle ho
+    return isSameOrBefore(completionDate, dueDate);
   });
   const complianceCount = complianceTasks.length;
 
@@ -112,6 +120,7 @@ const CustomerAdminDashboard: React.FC = () => {
     if (task.taskCurrentStatus !== "Pending") return false;
     if (!task.dueDate) return false;
     const dueDate = new Date(task.dueDate);
+
     // dueDate nikal chuki hai
     return today > dueDate;
   });
@@ -129,13 +138,17 @@ const CustomerAdminDashboard: React.FC = () => {
   });
 
   const inProgressCount = inProgressTasks.length;
+
   const total = complianceCount + nonComplianceCount + inProgressCount;
+
   const compliancePercent = total
     ? Math.round((complianceCount / total) * 100)
     : 0;
+
   const nonCompliancePercent = total
     ? Math.round((nonComplianceCount / total) * 100)
     : 0;
+
   const inProgressPercent = total
     ? Math.round((inProgressCount / total) * 100)
     : 0;
@@ -388,9 +401,62 @@ const CustomerAdminDashboard: React.FC = () => {
     ],
     [theme],
   );
+
   useEffect(() => {
     dispatch(fetchCustomerAdminDashboard());
   }, [dispatch]);
+
+  const getFromDateISO = (date: Date) => {
+    const lastDayOfMonth = new Date(date.getFullYear(), date.getMonth() + 1, 0);
+    return lastDayOfMonth.toISOString();
+  };
+
+  useEffect(() => {
+    if (!selectedSiteId) return;
+    const fromDate = getFromDateISO(siteWiseMonth);
+    dispatch(
+      fetchsiteWiseTasks({
+        siteId: selectedSiteId,
+        status: statusFilter,
+        date: fromDate,
+      }),
+    );
+  }, [selectedSiteId, statusFilter, siteWiseMonth, dispatch]);
+
+  const handleExportExcel = () => {
+    if (!siteWiseTasks || siteWiseTasks.length === 0) return;
+    const formattedData = siteWiseTasks.map((row: any, index: number) => ({
+      "S.No.": index + 1,
+      "Site Name": row.siteName,
+      "Activity Name": row.actName
+        ? `${row.actName} - ${row.activityName}`
+        : row.activityName,
+      Department: row.departmentName,
+      Frequency: row.frequency,
+      "Due Date": row.dueDate
+        ? new Date(row.dueDate).toLocaleDateString("en-GB")
+        : "-",
+      Status: row.taskCurrentStatus,
+    }));
+    const worksheet = XLSX.utils.json_to_sheet(formattedData);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Site Wise Tasks");
+    const excelBuffer = XLSX.write(workbook, {
+      bookType: "xlsx",
+      type: "array",
+    });
+    const blob = new Blob([excelBuffer], {
+      type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `SiteWise_Tasks_${dayjs().format("MMM_YYYY")}.xlsx`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    window.URL.revokeObjectURL(url);
+  };
 
   const stats = [
     {
@@ -730,7 +796,7 @@ const CustomerAdminDashboard: React.FC = () => {
                 <SiteMap
                   height={500}
                   onMarkerClick={(siteId) => {
-                    dispatch(fetchsiteWiseTasks(siteId));
+                    setSelectedSiteId(siteId);
                     setShowSiteWiseTable(true);
                   }}
                 />
@@ -922,22 +988,40 @@ const CustomerAdminDashboard: React.FC = () => {
           </Box>
           <Box sx={{ display: "flex", gap: 1, alignItems: "center" }}>
             <LocalizationProvider dateAdapter={AdapterDayjs}>
+              {" "}
               <DatePicker
                 views={["year", "month"]}
                 label="Select Month"
-                value={dayjs()}
-                // onChange={(newValue) => {
-                //   if (newValue) {
-                //     setCurrentMonth(newValue.toDate());
-                //   }
-                // }}
-                slotProps={{
-                  textField: {
-                    size: "small",
-                  },
+                value={dayjs(siteWiseMonth)}
+                onChange={(newValue) => {
+                  if (newValue) {
+                    setSiteWiseMonth(newValue.toDate());
+                  }
                 }}
+                slotProps={{ textField: { size: "small" } }}
               />
             </LocalizationProvider>
+
+            <FormControl size="small" sx={{ minWidth: 140 }}>
+              <InputLabel>Status</InputLabel>
+              <Select
+                label="Status"
+                value={statusFilter}
+                onChange={(e) => setStatusFilter(e.target.value)}
+              >
+                <MenuItem value="Pending">Pending</MenuItem>
+                <MenuItem value="Completed">Completed</MenuItem>
+                <MenuItem value="Rejected">Rejected</MenuItem>
+              </Select>
+            </FormControl>
+            <Button
+              variant="contained"
+              color="primary"
+              onClick={handleExportExcel}
+              sx={{ textTransform: "none" }}
+            >
+              Export to Excel
+            </Button>
             <Button
               variant="contained"
               startIcon={<ArrowBackIcon />}

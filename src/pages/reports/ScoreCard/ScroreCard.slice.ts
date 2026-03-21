@@ -25,7 +25,7 @@ export const fetchScoreCardReport = createAsyncThunk<
   {
     sites: string[];
     departments: string[];
-    monthYear?: string;
+    date?: string;
   },
   { rejectValue: string }
 >("scoreCard/fetchScoreCardReport", async (params, { rejectWithValue }) => {
@@ -33,8 +33,8 @@ export const fetchScoreCardReport = createAsyncThunk<
     const query = new URLSearchParams();
     params.sites?.forEach((id) => query.append("siteID", id));
     params.departments?.forEach((d) => query.append("departmentName", d));
-    if (params.monthYear) {
-      query.append("monthYear", params.monthYear);
+    if (params.date) {
+      query.append("date", params.date);
     }
     const response = await apiService.get<ScoreCardResponse>(
       `ReportMaster/getReport?${query.toString()}`,

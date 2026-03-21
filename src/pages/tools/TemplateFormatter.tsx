@@ -26,7 +26,6 @@ const TemplateFormatter: React.FC = () => {
   const [showSnackbar, setShowSnackbar] = useState(false);
   const [snackbarMessage] = useState("");
   const [snackbarType] = useState<"success" | "error">("success");
-
   useEffect(() => {
     dispatch(getTemplates());
   }, [dispatch]);
@@ -56,25 +55,25 @@ const TemplateFormatter: React.FC = () => {
         return index + 1;
       },
     },
-    { field: "slipName", headerName: "Form Name", flex: 1.5, minWidth: 200 },
-    { field: "fileTye", headerName: "File Type", flex: 1.5, minWidth: 200 },
+    { field: "slipName", headerName: "Form Name", flex: 1.5, minWidth: 600 },
+    { field: "fileTye", headerName: "File Type", flex: 1.5, minWidth: 150 },
     {
       field: "stateName",
       headerName: "Applicable States",
       flex: 1.5,
-      minWidth: 100,
+      minWidth: 150,
     },
     {
       field: "activityActName",
       headerName: "Applicable Activity",
       flex: 1.5,
-      minWidth: 100,
+      minWidth: 300,
     },
     {
       field: "createdOn",
       headerName: "Created On",
       flex: 1,
-      minWidth: 150,
+      minWidth: 100,
       renderCell: (params) => {
         if (!params.value) return "";
         const date = new Date(params.value as string);

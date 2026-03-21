@@ -77,12 +77,12 @@ const FileUploader: React.FC = () => {
       : "Generating Salary Register... ";
 
     const successMsg = isMuster
-      ? "Muster Roll downloaded successfully"
-      : "Salary Register downloaded successfully";
+      ? "Muster Roll generated successfully"
+      : "Salary Register generated successfully";
 
     const errorMsg = isMuster
-      ? "Failed to download Muster Roll"
-      : "Failed to download Salary Register";
+      ? "Failed to generate Muster Roll"
+      : "Failed to generate Salary Register";
 
     try {
       setProcessing(true);
@@ -92,7 +92,7 @@ const FileUploader: React.FC = () => {
       setSnackbarSeverity("success");
       setShowSnackbar(true);
 
-      await apiService.downloadPost(
+      await apiService.downloadPosts(
         `SalaryMusterRoll/Process?fileId=${fileId}`,
         {},
       );
@@ -218,14 +218,7 @@ const FileUploader: React.FC = () => {
         return date.toLocaleDateString("en-GB");
       },
     },
-    {
-      field: "status",
-      headerName: "Status",
-      width: 160,
-      renderCell: () => (
-        <span style={{ color: "#f57c00", fontWeight: 500 }}>Pending</span>
-      ),
-    },
+
     {
       field: "actions",
       headerName: "Actions",

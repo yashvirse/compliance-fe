@@ -81,12 +81,14 @@ export const fetchAssignedTasks = createAsyncThunk<
 // ✅ Site Wise Tasks API
 export const fetchsiteWiseTasks = createAsyncThunk<
   SiteWiseTaskResponse,
-  string,
+  { siteId: string; status: string; date: string },
   { rejectValue: string }
->("customerAdmin/fetchsiteWiseTasks", async (siteId, { rejectWithValue }) => {
+>("customerAdmin/fetchsiteWiseTasks", async (params, { rejectWithValue }) => {
   try {
+    const { siteId, status, date } = params;
+
     const response = await apiService.get<SiteWiseTaskResponse>(
-      `Dashboard/siteWiseData?siteId=${siteId}`,
+      `Dashboard/getAssignedTask?siteID=${siteId}&currentStatus=${status}&fromDate=${date}`,
     );
 
     if (!response.isSuccess) {
@@ -104,7 +106,6 @@ export const fetchsiteWiseTasks = createAsyncThunk<
     );
   }
 });
-
 const customerAdminSlice = createSlice({
   name: "customerAdmin",
   initialState,

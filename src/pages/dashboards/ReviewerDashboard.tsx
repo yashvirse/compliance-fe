@@ -253,9 +253,13 @@ const ReviewerDashboard: React.FC = () => {
 
   // Confirm approve
   const handleConfirmApprove = async () => {
-    if (selectedTaskId && remark.trim() && file) {
+    if (selectedTaskId && remark.trim()) {
       await dispatch(
-        approveReviewTask({ taskID: selectedTaskId, remark, file }),
+        approveReviewTask({
+          taskID: selectedTaskId,
+          remark,
+          file: file || undefined,
+        }),
       );
       setApproveDialogOpen(false);
       setRemark("");
@@ -278,9 +282,13 @@ const ReviewerDashboard: React.FC = () => {
 
   // Confirm reject
   const handleConfirmReject = async () => {
-    if (selectedTaskId && remark.trim() && file) {
+    if (selectedTaskId && remark.trim()) {
       await dispatch(
-        rejectReviewTask({ taskID: selectedTaskId, remark, file }),
+        rejectReviewTask({
+          taskID: selectedTaskId,
+          remark,
+          file: file || undefined,
+        }),
       );
       setRejectDialogOpen(false);
       setRemark("");

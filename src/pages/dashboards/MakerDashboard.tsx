@@ -806,8 +806,14 @@ const MakerDashboard: React.FC = () => {
   };
 
   const handleConfirmApprove = async () => {
-    if (selectedTaskId && remark.trim() && file) {
-      await dispatch(approveTask({ taskID: selectedTaskId, remark, file }));
+    if (selectedTaskId && remark.trim()) {
+      await dispatch(
+        approveTask({
+          taskID: selectedTaskId,
+          remark,
+          file: file || undefined,
+        }),
+      );
       setApproveDialogOpen(false);
       setRemark("");
       setFile(null);
@@ -828,8 +834,10 @@ const MakerDashboard: React.FC = () => {
   };
 
   const handleConfirmReject = async () => {
-    if (selectedTaskId && remark.trim() && file) {
-      await dispatch(rejectTask({ taskID: selectedTaskId, remark, file }));
+    if (selectedTaskId && remark.trim()) {
+      await dispatch(
+        rejectTask({ taskID: selectedTaskId, remark, file: file || undefined }),
+      );
       setRejectDialogOpen(false);
       setRemark("");
       setFile(null);

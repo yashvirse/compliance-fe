@@ -9,6 +9,7 @@ export interface AddTemplateRequest {
   stateName: string;
   createdOn: string;
   fileTye: string;
+  format: string;
 }
 
 export interface AddTemplateResponse {
@@ -36,6 +37,7 @@ export interface Template {
   stateName: string;
   activityActName: string;
   fileTye: string;
+  format: string;
 }
 export interface GetTemplatesResponse {
   isSuccess: boolean;
@@ -95,4 +97,5 @@ export interface UpdateTemplateRequest {
   htmlTemplate: string;
   createdOn: string;
   fileTye: string;
+  format: string;
 }

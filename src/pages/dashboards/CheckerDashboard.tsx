@@ -239,9 +239,13 @@ const CheckerDashboard: React.FC = () => {
   };
 
   const handleConfirmApprove = async () => {
-    if (selectedTaskId && remark.trim() && file) {
+    if (selectedTaskId && remark.trim()) {
       await dispatch(
-        approveCheckTask({ taskID: selectedTaskId, remark, file }),
+        approveCheckTask({
+          taskID: selectedTaskId,
+          remark,
+          file: file || undefined,
+        }),
       );
       setApproveDialogOpen(false);
       setRemark("");
@@ -263,8 +267,14 @@ const CheckerDashboard: React.FC = () => {
   };
 
   const handleConfirmReject = async () => {
-    if (selectedTaskId && remark.trim() && file) {
-      await dispatch(rejectCheckTask({ taskID: selectedTaskId, remark, file }));
+    if (selectedTaskId && remark.trim()) {
+      await dispatch(
+        rejectCheckTask({
+          taskID: selectedTaskId,
+          remark,
+          file: file || undefined,
+        }),
+      );
       setRejectDialogOpen(false);
       setRemark("");
       setFile(null);

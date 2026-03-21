@@ -309,6 +309,17 @@ const FileExplorer: React.FC = () => {
     return () => window.removeEventListener("keydown", handler);
   });
 
+  const downloadFileDirect = (fileName: string) => {
+    let fileUrl = "https://api.ocmspro.com/" + fileName;
+    fileUrl = encodeURI(fileUrl);
+
+    const link = document.createElement("a");
+    link.href = fileUrl;
+    link.target = "_blank"; // new tab me open karega
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
   return (
     <Box>
       <Box
@@ -369,6 +380,7 @@ const FileExplorer: React.FC = () => {
           flexDirection={{ xs: "column", sm: "row" }}
           flex={1}
           overflow="hidden"
+          sx={{ height: "calc(85vh - 70px)" }}
         >
           {" "}
           <Box
@@ -377,6 +389,8 @@ const FileExplorer: React.FC = () => {
               borderRight: { xs: "none", sm: "1px solid #e0e0e0" },
               borderBottom: { xs: "1px solid #e0e0e0", sm: "none" },
               backgroundColor: "#f5f7fa",
+              height: "100%",
+              overflowY: "auto",
             }}
             p={1}
             overflow="auto"
@@ -398,7 +412,12 @@ const FileExplorer: React.FC = () => {
 
             {renderTree("root")}
           </Box>
-          <Box flex={1} overflow="auto" p={1} sx={{ width: "100%" }}>
+          <Box
+            flex={1}
+            overflow="auto"
+            p={1}
+            sx={{ width: "100%", height: "100%", overflowY: "auto" }}
+          >
             {" "}
             <Table size="small">
               <TableHead>
@@ -494,7 +513,11 @@ const FileExplorer: React.FC = () => {
                           Rename
                         </Button>
                       ) : (
-                        <Button size="small" startIcon={<DownloadIcon />}>
+                        <Button
+                          size="small"
+                          startIcon={<DownloadIcon />}
+                          onClick={() => downloadFileDirect(f.name)}
+                        >
                           Download
                         </Button>
                       )}

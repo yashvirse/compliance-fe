@@ -26,7 +26,7 @@ export interface CustomerAdminState {
   rejectedTasks: AssignedTask[];
   pendingTasks: AssignedTask[];
   asignedTasks: AssignedTask[];
-  siteWiseTasks: SiteWiseTask[];
+  siteWiseTasks: AssignedTask[];
 }
 // ---- Completed Task Detail ----
 export interface CompletedTaskUserDetail {
@@ -99,7 +99,7 @@ export interface AssignedTask {
   currentUserID: string | null;
   currentUserName: string | null;
   currentUserInDate: string;
-
+  taskCompletionDate: string;
   taskCurrentStatus: string;
 
   maker: string;
@@ -129,49 +129,10 @@ export interface GetAssignedTaskResponse {
   result: AssignedTask[];
 }
 
-export interface SiteWiseTask {
-  tblId: string;
-  activityId: string;
-  actName: string;
-  departmentName: string;
-  activityName: string;
-  description: string;
-
-  dueDate: string; // ISO Date
-  gracePeriodDate: string; // ISO Date
-  reminderDate: string; // ISO Date
-
-  currentUserID: string | null;
-  currentUserName: string | null;
-  currentUserInDate: string;
-
-  maker: string;
-  makerID: string;
-
-  checker: string;
-  checkerID: string;
-
-  reviewer: string;
-  reviewerID: string;
-
-  auditer: string;
-  auditerID: string;
-
-  taskCreationDate: string;
-  taskCurrentStatus: string;
-
-  details: TaskDetail[];
-
-  companyId: string;
-  siteID: string;
-  siteName: string;
-  companyDomain: string;
-  frequency: string;
-}
 export interface SiteWiseTaskResponse {
   isSuccess: boolean;
   message: string;
-  result: SiteWiseTask[];
+  result: AssignedTask[];
 }
 export interface TaskDetail {
   userId: string;
