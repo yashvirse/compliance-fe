@@ -412,6 +412,18 @@ const ReviewerDashboard: React.FC = () => {
         ),
       },
       {
+        field: "taskReport",
+        headerName: "Task Report",
+        width: 100,
+        renderCell: (params) => {
+          const value = params.value;
+          if (Array.isArray(value) && value.length > 0 && value[0]) {
+            return "Yes";
+          }
+          return "No";
+        },
+      },
+      {
         field: "frequency",
         headerName: "Frequency",
         flex: 1,
@@ -575,6 +587,18 @@ const ReviewerDashboard: React.FC = () => {
         ),
       },
       {
+        field: "taskReport",
+        headerName: "Task Report",
+        width: 100,
+        renderCell: (params) => {
+          const value = params.value;
+          if (Array.isArray(value) && value.length > 0 && value[0]) {
+            return "Yes";
+          }
+          return "No";
+        },
+      },
+      {
         field: "frequency",
         headerName: "Frequency",
         flex: 1,
@@ -732,6 +756,18 @@ const ReviewerDashboard: React.FC = () => {
         ),
       },
       {
+        field: "taskReport",
+        headerName: "Task Report",
+        width: 100,
+        renderCell: (params) => {
+          const value = params.value;
+          if (Array.isArray(value) && value.length > 0 && value[0]) {
+            return "Yes";
+          }
+          return "No";
+        },
+      },
+      {
         field: "frequency",
         headerName: "Frequency",
         flex: 1,
@@ -845,6 +881,18 @@ const ReviewerDashboard: React.FC = () => {
             }}
           />
         ),
+      },
+      {
+        field: "taskReport",
+        headerName: "Task Report",
+        width: 100,
+        renderCell: (params) => {
+          const value = params.value;
+          if (Array.isArray(value) && value.length > 0 && value[0]) {
+            return "Yes";
+          }
+          return "No";
+        },
       },
       {
         field: "frequency",

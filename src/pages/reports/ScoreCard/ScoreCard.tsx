@@ -61,6 +61,7 @@ const ScoreCard: React.FC = () => {
   });
 
   const columns = [
+    { key: "srNo", label: "S.No", width: "10%" },
     { key: "site", label: "Site", width: "20%" },
     { key: "act", label: "Act", width: "20%" },
     { key: "activity", label: "Activity", width: "200%" },
@@ -127,25 +128,64 @@ const ScoreCard: React.FC = () => {
   const handleExportExcel = () => {
     if (!report?.sites?.length) return;
     const rows: any[] = [];
+
     // 🔹 Header row
     rows.push(["", "", "", "Site", "Act", "Activity", "PE", "%", "Due Date"]);
+
     // 🔹 Company row
     rows.push([
       `${report.companyName} : (Average : ${report.average.toFixed(2)}%)`,
     ]);
+
     report.sites.forEach((site: any) => {
-      // 🔹 Site row (1 column right)
+      // ✅ Site level counts
+      const siteTotalActivities = site.acts?.reduce(
+        (acc: number, act: any) => acc + (act.activities?.length || 0),
+        0,
+      );
+
+      const siteCompleted = site.acts?.reduce(
+        (acc: number, act: any) =>
+          acc +
+          (act.activities?.filter((a: any) => a.percentage === 100).length ||
+            0),
+        0,
+      );
+
+      const sitePending = site.acts?.reduce(
+        (acc: number, act: any) =>
+          acc +
+          (act.activities?.filter((a: any) => a.percentage === 0).length || 0),
+        0,
+      );
+
+      // 🔹 Site row (UPDATED)
       rows.push([
         "",
-        `${site.siteName} : (Average : ${site.average.toFixed(2)}%)`,
+        `${site.siteName} : (Average : ${site.average.toFixed(
+          2,
+        )}%) | Total: ${siteTotalActivities} | Completed: ${siteCompleted} | Pending: ${sitePending}`,
       ]);
+
       site.acts?.forEach((act: any) => {
-        // 🔹 Act row (2 columns right)
+        // ✅ Act level counts
+        const actTotal = act.activities?.length || 0;
+
+        const actCompleted =
+          act.activities?.filter((a: any) => a.percentage === 100).length || 0;
+
+        const actPending =
+          act.activities?.filter((a: any) => a.percentage === 0).length || 0;
+
+        // 🔹 Act row (UPDATED)
         rows.push([
           "",
           "",
-          `${act.actName} : (Average : ${act.average.toFixed(2)}%)`,
+          `${act.actName} : (Average : ${act.average.toFixed(
+            2,
+          )}%) | Total: ${actTotal} | Completed: ${actCompleted} | Pending: ${actPending}`,
         ]);
+
         act.activities?.forEach((activity: any) => {
           // 🔹 Activity data row
           rows.push([
@@ -162,38 +202,41 @@ const ScoreCard: React.FC = () => {
         });
       });
     });
+
     const worksheet = XLSX.utils.aoa_to_sheet(rows);
-    /* 🔹 FIXED MERGES */
+
+    /* 🔹 FIXED MERGES (same as before) */
     const merges: any[] = [];
-    // Company row → text column A me hai
+
     merges.push({
       s: { r: 1, c: 0 },
       e: { r: 1, c: 8 },
     });
+
     let rowIndex = 2;
+
     report.sites.forEach((site: any) => {
-      // Site row → text column B me hai
       merges.push({
         s: { r: rowIndex, c: 1 },
         e: { r: rowIndex, c: 8 },
       });
       rowIndex++;
+
       site.acts?.forEach((act: any) => {
-        // Act row → text column C me hai
         merges.push({
           s: { r: rowIndex, c: 2 },
           e: { r: rowIndex, c: 8 },
         });
         rowIndex++;
-        // skip activity rows
+
         rowIndex += act.activities?.length || 0;
       });
     });
 
     worksheet["!merges"] = merges;
 
-    /* existing filter */
     worksheet["!autofilter"] = { ref: "D1:I1" };
+
     const workbook = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(workbook, worksheet, "Score Card");
     XLSX.writeFile(workbook, "Score_Card_Report.xlsx");
@@ -248,6 +291,7 @@ const ScoreCard: React.FC = () => {
       [actKey]: !prev[actKey],
     }));
   };
+
   return (
     <Box>
       {/* HEADER */}
@@ -261,8 +305,9 @@ const ScoreCard: React.FC = () => {
       <Paper sx={{ p: 4, borderRadius: 2 }}>
         <form onSubmit={handleSubmit}>
           <Grid container spacing={3}>
-            <Grid size={{ xs: 12, md: 3 }}>
+            <Grid size={{ xs: 12, md: 4 }}>
               <Box sx={{ display: "flex", gap: 1 }}>
+                {/* 🔹 SITE DROPDOWN */}
                 <TextField
                   fullWidth
                   label="Site"
@@ -296,7 +341,26 @@ const ScoreCard: React.FC = () => {
                     </MenuItem>
                   ))}
                 </TextField>
+
+                {/* 🔥 ALL BUTTON */}
+                <Button
+                  variant="outlined"
+                  onClick={() => {
+                    const allSiteIds = sites.map((s) => s.siteId);
+
+                    const isAllSelected =
+                      formData.sites.length === allSiteIds.length;
+
+                    setFormData((prev) => ({
+                      ...prev,
+                      sites: isAllSelected ? [] : allSiteIds, // toggle
+                    }));
+                  }}
+                >
+                  All
+                </Button>
               </Box>
+
               {errors.sites && (
                 <Typography variant="caption" color="error">
                   {errors.sites}
@@ -367,7 +431,7 @@ const ScoreCard: React.FC = () => {
 
             <Grid
               sx={{ display: "flex", alignItems: "center" }}
-              size={{ xs: 12, md: 3 }}
+              size={{ xs: 12, md: 2 }}
             >
               <Button type="submit" variant="contained">
                 Apply Filter
@@ -445,7 +509,13 @@ const ScoreCard: React.FC = () => {
 
               {/* COMPANY */}
               <Box sx={{ background: "#ececec", p: 1, fontWeight: 500 }}>
-                {report.companyName} : (Average : {report.average.toFixed(2)}%)
+                <Box sx={{ display: "flex", justifyContent: "space-between" }}>
+                  <span>
+                    {report.companyName} : (Average :{" "}
+                    {report.average.toFixed(2)}%)
+                  </span>
+                  <span>Total Sites: {report.sites?.length || 0}</span>
+                </Box>
               </Box>
 
               {report.sites?.length === 0 && (
@@ -471,8 +541,47 @@ const ScoreCard: React.FC = () => {
                         "&:hover": { background: "#e8e8e8" },
                       }}
                     >
-                      {expandedSites[siteKey] ? "▼" : "▶"} {site.siteName} :
-                      (Average : {site.average.toFixed(2)}%)
+                      <Box
+                        sx={{
+                          display: "flex",
+                          justifyContent: "space-between",
+                        }}
+                      >
+                        <span>
+                          {expandedSites[siteKey] ? "▼" : "▶"} {site.siteName} :
+                          (Average : {site.average.toFixed(2)}%)
+                        </span>
+                        <span>
+                          Total Acts: {site.acts?.length || 0}
+                          {" | "}
+                          Total Activities:{" "}
+                          {site.acts?.reduce(
+                            (acc: number, act: any) =>
+                              acc + (act.activities?.length || 0),
+                            0,
+                          )}
+                          {" | "}
+                          Completed:{" "}
+                          {site.acts?.reduce(
+                            (acc: number, act: any) =>
+                              acc +
+                              (act.activities?.filter(
+                                (a: any) => a.percentage === 100,
+                              ).length || 0),
+                            0,
+                          )}
+                          {" | "}
+                          Pending:{" "}
+                          {site.acts?.reduce(
+                            (acc: number, act: any) =>
+                              acc +
+                              (act.activities?.filter(
+                                (a: any) => a.percentage === 0,
+                              ).length || 0),
+                            0,
+                          )}
+                        </span>
+                      </Box>
                     </Box>
 
                     {/* ACTS */}
@@ -494,8 +603,32 @@ const ScoreCard: React.FC = () => {
                                 "&:hover": { background: "#f0f0f0" },
                               }}
                             >
-                              {expandedActs[actKey] ? "▼" : "▶"} {act.actName} :
-                              (Average : {act.average.toFixed(2)}%)
+                              <Box
+                                sx={{
+                                  display: "flex",
+                                  justifyContent: "space-between",
+                                }}
+                              >
+                                <span>
+                                  {expandedActs[actKey] ? "▼" : "▶"}{" "}
+                                  {act.actName} : (Average :{" "}
+                                  {act.average.toFixed(2)}%)
+                                </span>
+                                <span>
+                                  Total Activities:{" "}
+                                  {act.activities?.length || 0}
+                                  {" | "}
+                                  Completed:{" "}
+                                  {act.activities?.filter(
+                                    (a: any) => a.percentage === 100,
+                                  ).length || 0}
+                                  {" | "}
+                                  Pending:{" "}
+                                  {act.activities?.filter(
+                                    (a: any) => a.percentage === 0,
+                                  ).length || 0}
+                                </span>
+                              </Box>
                             </Box>
 
                             {/* TABLE */}
@@ -503,16 +636,19 @@ const ScoreCard: React.FC = () => {
                               <Box sx={{ mt: 1 }}>
                                 <ReportDataTable
                                   columns={columns}
-                                  data={act.activities?.map((a: any) => ({
-                                    tblId: a.tblId,
-                                    site: a.siteName,
-                                    act: a.actName,
-                                    activity: a.activityName,
-                                    percent: a.percentage,
-                                    dueDate: new Date(
-                                      a.dueDate,
-                                    ).toLocaleDateString("en-GB"),
-                                  }))}
+                                  data={act.activities?.map(
+                                    (a: any, index: number) => ({
+                                      srNo: index + 1,
+                                      tblId: a.tblId,
+                                      site: a.siteName,
+                                      act: a.actName,
+                                      activity: a.activityName,
+                                      percent: a.percentage,
+                                      dueDate: new Date(
+                                        a.dueDate,
+                                      ).toLocaleDateString("en-GB"),
+                                    }),
+                                  )}
                                 />
                               </Box>
                             )}

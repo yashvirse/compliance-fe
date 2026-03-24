@@ -10,6 +10,7 @@ export interface AssignedTask {
   taskCurrentStatus: string;
   userStatus: string;
   frequency: string;
+  taskReport?: string[];
 }
 
 export interface GetAssignedTasksResponse {

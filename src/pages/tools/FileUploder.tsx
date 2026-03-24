@@ -18,6 +18,7 @@ import {
   DialogActions,
   Backdrop,
   CircularProgress,
+  Tooltip,
 } from "@mui/material";
 import {
   DataGrid,
@@ -218,7 +219,6 @@ const FileUploader: React.FC = () => {
         return date.toLocaleDateString("en-GB");
       },
     },
-
     {
       field: "actions",
       headerName: "Actions",
@@ -226,30 +226,37 @@ const FileUploader: React.FC = () => {
       sortable: false,
       renderCell: (params: GridRenderCellParams) => (
         <Box sx={{ display: "flex", alignItems: "center", height: "100%" }}>
-          <IconButton
-            size="small"
-            color="primary"
-            onClick={() =>
-              handleProcessClick(params.row.fileId, params.row.fileType)
-            }
-            disabled={processing}
-          >
-            {processing ? (
-              <CircularProgress size={18} />
-            ) : (
-              <PlayArrowIcon fontSize="small" />
-            )}
-          </IconButton>
+          <Tooltip title="Process">
+            <span>
+              <IconButton
+                size="small"
+                color="primary"
+                onClick={() =>
+                  handleProcessClick(params.row.fileId, params.row.fileType)
+                }
+                disabled={processing}
+              >
+                {processing ? (
+                  <CircularProgress size={18} />
+                ) : (
+                  <PlayArrowIcon fontSize="small" />
+                )}
+              </IconButton>
+            </span>
+          </Tooltip>
 
-          <IconButton
-            size="small"
-            color="error"
-            onClick={() =>
-              handleDeleteClick(params.row.fileId, params.row.fileName)
-            }
-          >
-            <DeleteIcon fontSize="small" />
-          </IconButton>
+          {/* 🗑 DELETE BUTTON */}
+          <Tooltip title="Delete">
+            <IconButton
+              size="small"
+              color="error"
+              onClick={() =>
+                handleDeleteClick(params.row.fileId, params.row.fileName)
+              }
+            >
+              <DeleteIcon fontSize="small" />
+            </IconButton>
+          </Tooltip>
         </Box>
       ),
     },

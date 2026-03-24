@@ -175,14 +175,14 @@ const CheckerDashboard: React.FC = () => {
 
     setAllTasksLoading(true);
     setAllTasksError(null);
-    setTasksOpen(true); // डायलॉग ओपन
+    setTasksOpen(true);
 
     try {
       const res = await dispatch(
         fetchAssignedTasks({
           userID: user.id,
           fromDate,
-          userStatus: statusFilter, // Pending / Approved / Rejected / All
+          userStatus: statusFilter,
         }),
       ).unwrap();
 
@@ -423,6 +423,18 @@ const CheckerDashboard: React.FC = () => {
         ),
       },
       {
+        field: "taskReport",
+        headerName: "Task Report",
+        width: 100,
+        renderCell: (params) => {
+          const value = params.value;
+          if (Array.isArray(value) && value.length > 0 && value[0]) {
+            return "Yes";
+          }
+          return "No";
+        },
+      },
+      {
         field: "frequency",
         headerName: "Frequency",
         flex: 1,
@@ -587,6 +599,18 @@ const CheckerDashboard: React.FC = () => {
         ),
       },
       {
+        field: "taskReport",
+        headerName: "Task Report",
+        width: 100,
+        renderCell: (params) => {
+          const value = params.value;
+          if (Array.isArray(value) && value.length > 0 && value[0]) {
+            return "Yes";
+          }
+          return "No";
+        },
+      },
+      {
         field: "frequency",
         headerName: "Frequency",
         flex: 1,
@@ -744,6 +768,18 @@ const CheckerDashboard: React.FC = () => {
         ),
       },
       {
+        field: "taskReport",
+        headerName: "Task Report",
+        width: 100,
+        renderCell: (params) => {
+          const value = params.value;
+          if (Array.isArray(value) && value.length > 0 && value[0]) {
+            return "Yes";
+          }
+          return "No";
+        },
+      },
+      {
         field: "frequency",
         headerName: "Frequency",
         flex: 1,
@@ -857,6 +893,18 @@ const CheckerDashboard: React.FC = () => {
             }}
           />
         ),
+      },
+      {
+        field: "taskReport",
+        headerName: "Task Report",
+        width: 100,
+        renderCell: (params) => {
+          const value = params.value;
+          if (Array.isArray(value) && value.length > 0 && value[0]) {
+            return "Yes";
+          }
+          return "No";
+        },
       },
       {
         field: "frequency",

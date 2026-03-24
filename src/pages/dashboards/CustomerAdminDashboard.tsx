@@ -81,20 +81,26 @@ const CustomerAdminDashboard: React.FC = () => {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [siteWiseMonth, setSiteWiseMonth] = useState(new Date());
-
+  const [filterType, setFilterType] = useState<string | null>(null);
+  const [filteredTasks, setFilteredTasks] = useState<any[]>([]);
   const open = Boolean(anchorEl);
-
+  const [selectedAct, setSelectedAct] = useState<string | null>(null);
+  const [selectedStatus, setSelectedStatus] = useState<string | null>(null);
   const [showSiteWiseTable, setShowSiteWiseTable] = useState(false);
   const [loading, setLoading] = useState(false);
   const [fetchError, setFetchError] = useState<string | null>(null);
   const [taskMovementDialogOpen, setTaskMovementDialogOpen] = useState(false);
   const [selectedTask, setSelectedTask] = useState<any | null>(null);
-  const [statusFilter, setStatusFilter] = useState("Pending"); // Rejected tasks are now fetched from API and stored in selector
+  const [statusFilter, setStatusFilter] = useState("Pending");
   const handleBackToDashboard = () => {
     setShowSiteWiseTable(false);
+    setFilterType(null);
+    setSelectedAct(null);
+    setSelectedStatus(null);
+    setFilteredTasks([]);
     setLoading(false);
     setFetchError(null);
-    dispatch(fetchCustomerAdminDashboard()); // optional: refresh counts
+    dispatch(fetchCustomerAdminDashboard());
   };
 
   // compliance Calculation
@@ -153,6 +159,27 @@ const CustomerAdminDashboard: React.FC = () => {
     ? Math.round((inProgressCount / total) * 100)
     : 0;
 
+  const handleComplianceClick = (type: string) => {
+    setFilterType(type);
+    setSelectedSiteId(null); // site reset
+    setShowSiteWiseTable(true);
+
+    if (type === "compliance") setFilteredTasks(complianceTasks);
+    if (type === "nonCompliance") setFilteredTasks(nonComplianceTasks);
+    if (type === "inProgress") setFilteredTasks(inProgressTasks);
+  };
+
+  const handleBarClick = (data: any, status: string) => {
+    setSelectedAct(data.actName);
+    setSelectedStatus(status);
+    setShowSiteWiseTable(true);
+
+    const filtered = tasks.filter((task: any) => {
+      return task.actName === data.actName && task.taskCurrentStatus === status;
+    });
+
+    setFilteredTasks(filtered);
+  };
   // Piller chart calculation
   // IMPORTANT: Actual tasks array nikaalo
   const tasks = assignedTasksResponse || [];
@@ -337,6 +364,18 @@ const CustomerAdminDashboard: React.FC = () => {
         ),
       },
       {
+        field: "taskReport",
+        headerName: "Task Report",
+        width: 100,
+        renderCell: (params) => {
+          const value = params.value;
+          if (Array.isArray(value) && value.length > 0 && value[0]) {
+            return "Yes";
+          }
+          return "No";
+        },
+      },
+      {
         field: "frequency",
         headerName: "Frequency",
         flex: 1,
@@ -424,8 +463,30 @@ const CustomerAdminDashboard: React.FC = () => {
   }, [selectedSiteId, statusFilter, siteWiseMonth, dispatch]);
 
   const handleExportExcel = () => {
-    if (!siteWiseTasks || siteWiseTasks.length === 0) return;
-    const formattedData = siteWiseTasks.map((row: any, index: number) => ({
+    let exportData: any[] = [];
+    let fileName = "Report";
+
+    if (selectedAct && selectedStatus) {
+      // ✅ Act-wise case (MOST IMPORTANT FIX)
+      exportData = filteredTasks;
+      fileName = `${selectedAct}_${selectedStatus}_Report`;
+    } else if (filterType === "compliance") {
+      exportData = complianceTasks;
+      fileName = "Compliance_Report";
+    } else if (filterType === "nonCompliance") {
+      exportData = nonComplianceTasks;
+      fileName = "Non_Compliance_Report";
+    } else if (filterType === "inProgress") {
+      exportData = inProgressTasks;
+      fileName = "In_Progress_Report";
+    } else if (selectedSiteId) {
+      exportData = siteWiseTasks;
+      fileName = "Site_Wise_Report";
+    }
+
+    if (!exportData || exportData.length === 0) return;
+
+    const formattedData = exportData.map((row: any, index: number) => ({
       "S.No.": index + 1,
       "Site Name": row.siteName,
       "Activity Name": row.actName
@@ -438,20 +499,27 @@ const CustomerAdminDashboard: React.FC = () => {
         : "-",
       Status: row.taskCurrentStatus,
     }));
+
     const worksheet = XLSX.utils.json_to_sheet(formattedData);
     const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, "Site Wise Tasks");
+
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Report");
+
     const excelBuffer = XLSX.write(workbook, {
       bookType: "xlsx",
       type: "array",
     });
+
     const blob = new Blob([excelBuffer], {
       type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
     });
+
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement("a");
+
     a.href = url;
-    a.download = `SiteWise_Tasks_${dayjs().format("MMM_YYYY")}.xlsx`;
+    a.download = `${fileName}_${dayjs().format("MMM_YYYY")}.xlsx`;
+
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
@@ -478,7 +546,7 @@ const CustomerAdminDashboard: React.FC = () => {
       value: dashboardData?.totalAct ?? 0,
       icon: <Gavel />,
       color: theme.palette.info.main,
-      path: "/dashboard/master/task",
+      path: "/dashboard/master/customeradminactivity",
     },
     {
       label: "Total Activity",
@@ -685,7 +753,10 @@ const CustomerAdminDashboard: React.FC = () => {
                 <Typography variant="body2" fontWeight={600} gutterBottom>
                   Compliance
                 </Typography>
-                <Box sx={{ position: "relative", mb: 2 }}>
+                <Box
+                  sx={{ position: "relative", mb: 2, cursor: "pointer" }}
+                  onClick={() => handleComplianceClick("compliance")}
+                >
                   <LinearProgress
                     variant="determinate"
                     value={compliancePercent}
@@ -706,7 +777,7 @@ const CustomerAdminDashboard: React.FC = () => {
                       transform: "translateY(-50%)",
                       fontSize: 12,
                       fontWeight: 700,
-                      color: "#fff",
+                      color: "#000000",
                     }}
                   >
                     {compliancePercent}%
@@ -717,7 +788,10 @@ const CustomerAdminDashboard: React.FC = () => {
                 <Typography variant="body2" fontWeight={600} gutterBottom>
                   Non Compliance
                 </Typography>
-                <Box sx={{ position: "relative", mb: 2 }}>
+                <Box
+                  sx={{ position: "relative", mb: 2, cursor: "pointer" }}
+                  onClick={() => handleComplianceClick("nonCompliance")}
+                >
                   <LinearProgress
                     variant="determinate"
                     value={nonCompliancePercent}
@@ -738,7 +812,7 @@ const CustomerAdminDashboard: React.FC = () => {
                       transform: "translateY(-50%)",
                       fontSize: 12,
                       fontWeight: 700,
-                      color: "#fff",
+                      color: "#000000",
                     }}
                   >
                     {nonCompliancePercent}%
@@ -749,7 +823,10 @@ const CustomerAdminDashboard: React.FC = () => {
                 <Typography variant="body2" fontWeight={600} gutterBottom>
                   In Progress
                 </Typography>
-                <Box sx={{ position: "relative" }}>
+                <Box
+                  sx={{ position: "relative", cursor: "pointer" }}
+                  onClick={() => handleComplianceClick("inProgress")}
+                >
                   <LinearProgress
                     variant="determinate"
                     value={inProgressPercent}
@@ -770,7 +847,7 @@ const CustomerAdminDashboard: React.FC = () => {
                       transform: "translateY(-50%)",
                       fontSize: 12,
                       fontWeight: 700,
-                      color: "#fff",
+                      color: "#000000",
                     }}
                   >
                     {inProgressPercent}%
@@ -948,9 +1025,24 @@ const CustomerAdminDashboard: React.FC = () => {
                           props.payload.actName,
                         ]}
                       />
-                      <Bar dataKey="pending" stackId="a" fill="#ff9800" />
-                      <Bar dataKey="completed" stackId="a" fill="#4caf50" />
-                      <Bar dataKey="rejected" stackId="a" fill="#f44336">
+                      <Bar
+                        dataKey="pending"
+                        stackId="a"
+                        fill="#ff9800"
+                        onClick={(data) => handleBarClick(data, "Pending")}
+                      />
+                      <Bar
+                        dataKey="completed"
+                        stackId="a"
+                        fill="#4caf50"
+                        onClick={(data) => handleBarClick(data, "Completed")}
+                      />
+                      <Bar
+                        dataKey="rejected"
+                        stackId="a"
+                        fill="#f44336"
+                        onClick={(data) => handleBarClick(data, "Rejected")}
+                      >
                         <LabelList
                           dataKey="total"
                           position="top"
@@ -983,37 +1075,48 @@ const CustomerAdminDashboard: React.FC = () => {
         >
           <Box>
             <Typography variant="h4" fontWeight={700} gutterBottom>
-              Site Wise Tasks
+              {selectedAct && selectedStatus
+                ? `${selectedAct} Tasks`
+                : filterType === "compliance"
+                  ? "Compliance Tasks"
+                  : filterType === "nonCompliance"
+                    ? "Non-Compliance Tasks"
+                    : filterType === "inProgress"
+                      ? "In-Progress Tasks"
+                      : "Site Wise Tasks"}
             </Typography>
           </Box>
           <Box sx={{ display: "flex", gap: 1, alignItems: "center" }}>
-            <LocalizationProvider dateAdapter={AdapterDayjs}>
-              {" "}
-              <DatePicker
-                views={["year", "month"]}
-                label="Select Month"
-                value={dayjs(siteWiseMonth)}
-                onChange={(newValue) => {
-                  if (newValue) {
-                    setSiteWiseMonth(newValue.toDate());
-                  }
-                }}
-                slotProps={{ textField: { size: "small" } }}
-              />
-            </LocalizationProvider>
+            {selectedSiteId && (
+              <>
+                <LocalizationProvider dateAdapter={AdapterDayjs}>
+                  <DatePicker
+                    views={["year", "month"]}
+                    label="Select Month"
+                    value={dayjs(siteWiseMonth)}
+                    onChange={(newValue) => {
+                      if (newValue) {
+                        setSiteWiseMonth(newValue.toDate());
+                      }
+                    }}
+                    slotProps={{ textField: { size: "small" } }}
+                  />
+                </LocalizationProvider>
 
-            <FormControl size="small" sx={{ minWidth: 140 }}>
-              <InputLabel>Status</InputLabel>
-              <Select
-                label="Status"
-                value={statusFilter}
-                onChange={(e) => setStatusFilter(e.target.value)}
-              >
-                <MenuItem value="Pending">Pending</MenuItem>
-                <MenuItem value="Completed">Completed</MenuItem>
-                <MenuItem value="Rejected">Rejected</MenuItem>
-              </Select>
-            </FormControl>
+                <FormControl size="small" sx={{ minWidth: 140 }}>
+                  <InputLabel>Status</InputLabel>
+                  <Select
+                    label="Status"
+                    value={statusFilter}
+                    onChange={(e) => setStatusFilter(e.target.value)}
+                  >
+                    <MenuItem value="Pending">Pending</MenuItem>
+                    <MenuItem value="Completed">Completed</MenuItem>
+                    <MenuItem value="Rejected">Rejected</MenuItem>
+                  </Select>
+                </FormControl>
+              </>
+            )}
             <Button
               variant="contained"
               color="primary"
@@ -1066,7 +1169,7 @@ const CustomerAdminDashboard: React.FC = () => {
             </Box>
           ) : (
             <CommonDataTable
-              rows={siteWiseTasks}
+              rows={filteredTasks.length ? filteredTasks : siteWiseTasks}
               columns={siteWiseTasksColumns}
               loading={loading}
               getRowId={(row) => row.tblId}

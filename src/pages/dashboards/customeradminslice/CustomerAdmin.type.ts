@@ -121,6 +121,7 @@ export interface AssignedTask {
   siteName: string | null;
 
   details: AssignedTaskUserDetail[];
+  taskReport?: string[];
 }
 
 export interface GetAssignedTaskResponse {

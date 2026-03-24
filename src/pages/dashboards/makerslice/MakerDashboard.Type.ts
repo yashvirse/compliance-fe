@@ -23,6 +23,7 @@ export interface AssignedTask {
   dueDate: string;
   taskCurrentStatus: string;
   userStatus: string;
+  taskReport?: string[];
 }
 
 export interface GetAssignedTasksResponse {

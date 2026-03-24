@@ -9,6 +9,7 @@ import {
   alpha,
   Alert,
   Snackbar,
+  Tooltip,
 } from "@mui/material";
 import { DataGrid } from "@mui/x-data-grid";
 import type { GridColDef, GridRenderCellParams } from "@mui/x-data-grid";
@@ -99,18 +100,20 @@ const TemplateFormatter: React.FC = () => {
             gap: 1,
           }}
         >
-          <Button
-            size="small"
-            onClick={() => handleEdit(params.row.slipID)}
-            sx={{
-              minWidth: "auto",
-              p: 0.5,
-              color: theme.palette.primary.main,
-              "&:hover": { bgcolor: alpha(theme.palette.primary.main, 0.1) },
-            }}
-          >
-            <EditIcon fontSize="small" />
-          </Button>
+          <Tooltip title="Edit">
+            <Button
+              size="small"
+              onClick={() => handleEdit(params.row.slipID)}
+              sx={{
+                minWidth: "auto",
+                p: 0.5,
+                color: theme.palette.primary.main,
+                "&:hover": { bgcolor: alpha(theme.palette.primary.main, 0.1) },
+              }}
+            >
+              <EditIcon fontSize="small" />
+            </Button>
+          </Tooltip>
         </Box>
       ),
     },
