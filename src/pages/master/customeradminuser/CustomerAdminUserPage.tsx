@@ -36,7 +36,7 @@ import {
   selectUserLoading,
   selectUserError,
 } from "./slice/CustomerAdminUser.Selector";
-
+import * as XLSX from "xlsx";
 const CustomerAdminUserPage: React.FC = () => {
   const theme = useTheme();
   const dispatch = useDispatch<AppDispatch>();
@@ -83,7 +83,23 @@ const CustomerAdminUserPage: React.FC = () => {
     setSelectedUserId(id);
     setDeleteDialogOpen(true);
   };
+  const handleExport = () => {
+    const exportData = users.map((user, index) => ({
+      "S.No.": index + 1,
+      Name: user.userName,
+      Email: user.userEmail,
+      Mobile: user.userMobile,
+      Role: user.userRole,
+      "Company Domain": user.companyDomain,
+      Status: user.isActive ? "Active" : "Inactive",
+    }));
 
+    const worksheet = XLSX.utils.json_to_sheet(exportData);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Users");
+
+    XLSX.writeFile(workbook, "User_List.xlsx");
+  };
   const handleDeleteConfirm = async () => {
     try {
       await dispatch(deleteUser(selectedUserId)).unwrap();
@@ -234,24 +250,45 @@ const CustomerAdminUserPage: React.FC = () => {
             User Management
           </Typography>
         </Box>
-        <Button
-          variant="contained"
-          startIcon={<AddIcon />}
-          onClick={handleAdd}
+        <Box
           sx={{
-            borderRadius: 2,
-            textTransform: "none",
-            px: 3,
-            py: 1.5,
-            fontWeight: 600,
-            boxShadow: `0 4px 15px ${alpha(theme.palette.primary.main, 0.4)}`,
-            "&:hover": {
-              boxShadow: `0 6px 20px ${alpha(theme.palette.primary.main, 0.5)}`,
-            },
+            display: "flex",
+            gap: 2,
           }}
         >
-          Add User
-        </Button>
+          <Button
+            variant="contained"
+            startIcon={<AddIcon />}
+            onClick={handleAdd}
+            sx={{
+              borderRadius: 2,
+              textTransform: "none",
+              px: 2,
+              py: 1,
+              fontWeight: 600,
+              boxShadow: `0 4px 15px ${alpha(theme.palette.primary.main, 0.4)}`,
+              "&:hover": {
+                boxShadow: `0 6px 20px ${alpha(theme.palette.primary.main, 0.5)}`,
+              },
+            }}
+          >
+            Add User
+          </Button>
+
+          <Button
+            variant="outlined"
+            onClick={handleExport}
+            sx={{
+              borderRadius: 2,
+              textTransform: "none",
+              px: 2,
+              py: 1,
+              fontWeight: 600,
+            }}
+          >
+            Export to Excel
+          </Button>
+        </Box>
       </Box>
 
       <Paper

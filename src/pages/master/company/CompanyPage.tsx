@@ -45,7 +45,7 @@ import {
   selectGenerateApiSuccess,
   selectGenerateApiError,
 } from "./slice/Company.Selector";
-
+import * as XLSX from "xlsx";
 const CompanyPage: React.FC = () => {
   const theme = useTheme();
   const navigate = useNavigate();
@@ -265,7 +265,23 @@ const CompanyPage: React.FC = () => {
       ),
     },
   ];
+  const handleExport = () => {
+    const exportData = companies.map((company, index) => ({
+      "Sr. No.": index + 1,
+      "Company Name": company.companyName,
+      "Company Type": company.companyType,
+      Currency: company.companyCurrency,
+      "PAN No": company.paN_No,
+      "Plan Type": company.plan_type,
+      Status: company.companyIsActive ? "Active" : "Inactive",
+    }));
 
+    const worksheet = XLSX.utils.json_to_sheet(exportData);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Companies");
+
+    XLSX.writeFile(workbook, "Company_List.xlsx");
+  };
   return (
     <Box>
       <Box
@@ -281,24 +297,41 @@ const CompanyPage: React.FC = () => {
             Company Management
           </Typography>
         </Box>
-        <Button
-          variant="contained"
-          startIcon={<AddIcon />}
-          onClick={handleAdd}
+        <Box
           sx={{
-            borderRadius: 2,
-            textTransform: "none",
-            px: 3,
-            py: 1.5,
-            fontWeight: 600,
-            boxShadow: `0 4px 15px ${alpha(theme.palette.primary.main, 0.4)}`,
-            "&:hover": {
-              boxShadow: `0 6px 20px ${alpha(theme.palette.primary.main, 0.5)}`,
-            },
+            display: "flex",
+            gap: 2,
           }}
         >
-          Add Company
-        </Button>
+          <Button
+            variant="contained"
+            startIcon={<AddIcon />}
+            onClick={handleAdd}
+            sx={{
+              borderRadius: 2,
+              textTransform: "none",
+              px: 2,
+              py: 1,
+              fontWeight: 600,
+            }}
+          >
+            Add Company
+          </Button>
+
+          <Button
+            variant="outlined"
+            onClick={handleExport}
+            sx={{
+              borderRadius: 2,
+              textTransform: "none",
+              px: 2,
+              py: 1,
+              fontWeight: 600,
+            }}
+          >
+            Export to Excel
+          </Button>
+        </Box>
       </Box>
 
       <Paper

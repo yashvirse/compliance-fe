@@ -36,8 +36,6 @@ import {
   ThumbUp as ApproveIcon,
   ThumbDown as RejectIcon,
 } from "@mui/icons-material";
-
-// Redux
 import {
   fetchTaskCount,
   clearError,
@@ -50,8 +48,6 @@ import {
   selectAssignedTasks,
 } from "./auditorslice/AuditorDashboard.Selector";
 import { selectUser } from "../login/slice/Login.selector";
-
-// Components & Common
 import CommonDataTable from "../../components/common/CommonDataTable";
 import {
   LoadingState,
@@ -59,17 +55,14 @@ import {
   ErrorState,
   TaskMovementDialog,
 } from "../../components/common";
-
-// ✨ Utilities & Hooks
 import { useDashboardTasks } from "../../hooks/useDashboardTasks";
 import { createDepartmentChipColumn } from "../../utils/gridColumns.utils.tsx";
-
-// Date Picker
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import dayjs from "dayjs";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
+import * as XLSX from "xlsx";
 
 const AuditorDashboard: React.FC = () => {
   const theme = useTheme();
@@ -920,7 +913,33 @@ const AuditorDashboard: React.FC = () => {
     ],
     [theme],
   );
+  const handleExport = (data: any[], fileName: string) => {
+    const exportData = data.map((row, index) => ({
+      "S.No.": index + 1,
+      "Site Name": row.siteName,
+      "Activity Name": row.actName
+        ? `${row.actName} - ${row.activityName}`
+        : row.activityName,
+      Department: row.departmentName,
+      "Task Report":
+        Array.isArray(row.taskReport) &&
+        row.taskReport.length > 0 &&
+        row.taskReport[0]
+          ? "Yes"
+          : "No",
+      Frequency: row.frequency,
+      "Due Date": row.dueDate
+        ? new Date(row.dueDate).toLocaleDateString()
+        : "-",
+      Status: row.userStatus,
+    }));
 
+    const worksheet = XLSX.utils.json_to_sheet(exportData);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Tasks");
+
+    XLSX.writeFile(workbook, `${fileName}.xlsx`);
+  };
   return (
     <Box>
       {!tasksOpen &&
@@ -1075,6 +1094,13 @@ const AuditorDashboard: React.FC = () => {
                 </Select>
               </FormControl>
               <Button
+                variant="outlined"
+                onClick={() => handleExport(allTasks, "All_Tasks")}
+                sx={{ textTransform: "none", borderRadius: 2 }}
+              >
+                Export to Excel
+              </Button>
+              <Button
                 variant="contained"
                 startIcon={<ArrowBackIcon />}
                 onClick={handleCloseDialog}
@@ -1158,6 +1184,13 @@ const AuditorDashboard: React.FC = () => {
                   slotProps={{ textField: { size: "small" } }}
                 />{" "}
               </LocalizationProvider>
+              <Button
+                variant="outlined"
+                onClick={() => handleExport(pendingTasks, "Pending_Tasks")}
+                sx={{ textTransform: "none", borderRadius: 2 }}
+              >
+                Export to Excel
+              </Button>
               <Button
                 variant="contained"
                 startIcon={<ArrowBackIcon />}
@@ -1256,6 +1289,13 @@ const AuditorDashboard: React.FC = () => {
                 />{" "}
               </LocalizationProvider>
               <Button
+                variant="outlined"
+                onClick={() => handleExport(approvedTasks, "Approved_Tasks")}
+                sx={{ textTransform: "none", borderRadius: 2 }}
+              >
+                Export to Excel
+              </Button>
+              <Button
                 variant="contained"
                 startIcon={<ArrowBackIcon />}
                 onClick={handleCloseApproved}
@@ -1351,6 +1391,13 @@ const AuditorDashboard: React.FC = () => {
                   slotProps={{ textField: { size: "small" } }}
                 />{" "}
               </LocalizationProvider>
+              <Button
+                variant="outlined"
+                onClick={() => handleExport(rejectedTasks, "Rejected_Tasks")}
+                sx={{ textTransform: "none", borderRadius: 2 }}
+              >
+                Export to Excel
+              </Button>
               <Button
                 variant="contained"
                 startIcon={<ArrowBackIcon />}

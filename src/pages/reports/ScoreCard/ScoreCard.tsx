@@ -310,6 +310,7 @@ const ScoreCard: React.FC = () => {
                 {/* 🔹 SITE DROPDOWN */}
                 <TextField
                   fullWidth
+                  size="small"
                   label="Site"
                   select
                   SelectProps={{
@@ -345,6 +346,7 @@ const ScoreCard: React.FC = () => {
                 {/* 🔥 ALL BUTTON */}
                 <Button
                   variant="outlined"
+                  size="small"
                   onClick={() => {
                     const allSiteIds = sites.map((s) => s.siteId);
 
@@ -372,6 +374,7 @@ const ScoreCard: React.FC = () => {
               <Box sx={{ display: "flex", gap: 1 }}>
                 <TextField
                   fullWidth
+                  size="small"
                   select
                   label="Department"
                   SelectProps={{
@@ -418,7 +421,7 @@ const ScoreCard: React.FC = () => {
                     setCurrentMonth(newValue);
                   }}
                   slotProps={{
-                    textField: { size: "medium", error: !!errors.monthYear },
+                    textField: { size: "small", error: !!errors.monthYear },
                   }}
                 />
                 {errors.monthYear && (

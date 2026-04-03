@@ -31,7 +31,7 @@ import {
   selectSiteLoading,
   selectSiteError,
 } from "./slice/Site.Selector";
-
+import * as XLSX from "xlsx";
 const SitePage: React.FC = () => {
   const theme = useTheme();
   const dispatch = useDispatch<AppDispatch>();
@@ -106,7 +106,22 @@ const SitePage: React.FC = () => {
       }
     }
   };
+  const handleExport = () => {
+    const exportData = sites.map((site, index) => ({
+      "S.No.": index + 1,
+      "Site Name": site.siteName,
+      Address: site.siteLocation,
+      State: site.state,
+      Country: site.country,
+      Description: site.description,
+    }));
 
+    const worksheet = XLSX.utils.json_to_sheet(exportData);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Sites");
+
+    XLSX.writeFile(workbook, "Site_List.xlsx");
+  };
   const columns: GridColDef[] = [
     {
       field: "sno",
@@ -124,37 +139,37 @@ const SitePage: React.FC = () => {
       field: "siteName",
       headerName: "Site Name",
       flex: 1,
-      minWidth: 150,
+      minWidth: 250,
     },
     {
       field: "siteLocation",
       headerName: "Address",
       flex: 1,
-      minWidth: 150,
+      minWidth: 250,
     },
     {
       field: "state",
       headerName: "State",
       flex: 0.8,
-      minWidth: 100,
+      minWidth: 150,
     },
     {
       field: "country",
       headerName: "Country",
       flex: 0.8,
-      minWidth: 100,
+      minWidth: 80,
     },
     {
       field: "description",
       headerName: "Description",
       flex: 1,
-      minWidth: 150,
+      minWidth: 130,
     },
     {
       field: "actions",
       headerName: "Actions",
       flex: 1,
-      minWidth: 150,
+      minWidth: 100,
       sortable: false,
       renderCell: (params: GridRenderCellParams) => (
         <Box
@@ -203,14 +218,29 @@ const SitePage: React.FC = () => {
             Site Master
           </Typography>
         </Box>
-        <Button
-          variant="contained"
-          startIcon={<AddIcon />}
-          onClick={handleAdd}
-          sx={{ textTransform: "none", borderRadius: 2 }}
+        <Box
+          sx={{
+            display: "flex",
+            gap: 2,
+          }}
         >
-          Add Site
-        </Button>
+          <Button
+            variant="contained"
+            startIcon={<AddIcon />}
+            onClick={handleAdd}
+            sx={{ textTransform: "none", borderRadius: 2 }}
+          >
+            Add Site
+          </Button>
+
+          <Button
+            variant="outlined"
+            onClick={handleExport}
+            sx={{ textTransform: "none", borderRadius: 2 }}
+          >
+            Export to Excel
+          </Button>
+        </Box>
       </Box>
 
       <Paper sx={{ borderRadius: 2, overflow: "hidden" }}>

@@ -28,20 +28,31 @@ const ExcelTemplate: React.FC<Props> = ({ value, onChange }) => {
       allowEdit: true,
 
       data: value
-        ? JSON.parse(value)
+        ? JSON.parse(value).map((sheet: any, index: number) => ({
+            name: sheet.name,
+            index: index,
+            status: 1,
+            data: sheet.data,
+          }))
         : [
             {
               name: "Template",
               index: 0,
               status: 1,
-              column: 200,
+              data: [],
             },
           ],
 
       hook: {
         updated: () => {
-          const data = window.luckysheet.getAllSheets();
-          onChange(JSON.stringify(data));
+          const sheets = window.luckysheet.getAllSheets();
+
+          const formatted = sheets.map((sheet: any) => ({
+            name: sheet.name || "Template",
+            data: sheet.data ? sheet.data : [],
+          }));
+
+          onChange(JSON.stringify(formatted, null, 2));
         },
       },
     });

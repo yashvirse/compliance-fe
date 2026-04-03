@@ -14,7 +14,7 @@ import ApiIcon from "@mui/icons-material/Api";
 import BarChartIcon from "@mui/icons-material/BarChart";
 import ScoreCardIcon from "@mui/icons-material/Scoreboard";
 import ReceiptIcon from "@mui/icons-material/Receipt";
-
+import NatureIcon from "@mui/icons-material/Nature";
 // User roles
 export const UserRole = {
   SUPER_ADMIN: "SuperAdmin",
@@ -223,6 +223,13 @@ export const menuConfig: MenuItem[] = [
         label: "Score Card",
         path: "/dashboard/reports/score-card",
         icon: <ScoreCardIcon />,
+        allowedRoles: [UserRole.CUSTOMER_ADMIN],
+      },
+      {
+        id: "nature-wise-report",
+        label: "Compliance Nature Wise Report",
+        path: "/dashboard/reports/nature-wise-report",
+        icon: <NatureIcon />,
         allowedRoles: [UserRole.CUSTOMER_ADMIN],
       },
     ],

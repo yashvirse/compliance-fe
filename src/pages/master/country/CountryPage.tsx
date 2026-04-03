@@ -1,11 +1,11 @@
 import React, { useEffect } from "react";
-import { Box, Typography, Paper, useTheme, alpha } from "@mui/material";
+import { Box, Typography, Paper, useTheme, alpha, Button } from "@mui/material";
 import { DataGrid } from "@mui/x-data-grid";
 import type { GridColDef, GridRenderCellParams } from "@mui/x-data-grid";
 
 import { fetchCountryList } from "./CountryPage.slice";
 import { useAppDispatch, useAppSelector } from "../../../app/hooks";
-
+import * as XLSX from "xlsx";
 interface CountryRow {
   id: string;
   countryId: string;
@@ -26,7 +26,19 @@ const CountryPage: React.FC = () => {
     countryId: country.countryId,
     countryName: country.countryName,
   }));
+  const handleExport = () => {
+    const exportData = countries.map((country, index) => ({
+      "Sr. No.": index + 1,
+      "Country Code": country.countryId,
+      "Country Name": country.countryName,
+    }));
 
+    const worksheet = XLSX.utils.json_to_sheet(exportData);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Countries");
+
+    XLSX.writeFile(workbook, "Country_List.xlsx");
+  };
   const columns: GridColDef[] = [
     {
       field: "serialNumber",
@@ -59,6 +71,19 @@ const CountryPage: React.FC = () => {
             Country Management
           </Typography>
         </Box>
+
+        <Button
+          variant="outlined"
+          onClick={handleExport}
+          sx={{
+            borderRadius: 2,
+            textTransform: "none",
+            px: 3,
+            fontWeight: 600,
+          }}
+        >
+          Export to Excel
+        </Button>
       </Box>
 
       <Paper
@@ -77,7 +102,6 @@ const CountryPage: React.FC = () => {
             },
           }}
           pageSizeOptions={[5, 10, 25]}
-          checkboxSelection
           disableRowSelectionOnClick
           sx={{
             border: "none",

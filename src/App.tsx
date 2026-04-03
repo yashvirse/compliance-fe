@@ -65,6 +65,7 @@ import AddTemplateFormater from "./pages/tools/AddTemplateFormater.tsx";
 import ScoreCard from "./pages/reports/ScoreCard/ScoreCard.tsx";
 import ApiIntegration from "./pages/tools/ApiIntegration/apiIntegration.tsx";
 import Registers from "./pages/reports/Registers/Registers.tsx";
+import NatureWiseReport from "./pages/reports/NatureWiseReport/NatureWiseReport.tsx";
 
 const theme = createTheme({
   palette: {
@@ -468,6 +469,14 @@ function App() {
                 element={
                   <RoleBasedRoute allowedRoles={[UserRole.CUSTOMER_ADMIN]}>
                     <ScoreCard />
+                  </RoleBasedRoute>
+                }
+              />
+              <Route
+                path="reports/nature-wise-report"
+                element={
+                  <RoleBasedRoute allowedRoles={[UserRole.CUSTOMER_ADMIN]}>
+                    <NatureWiseReport />
                   </RoleBasedRoute>
                 }
               />

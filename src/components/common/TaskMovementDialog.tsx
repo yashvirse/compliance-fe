@@ -41,7 +41,11 @@ interface TaskMovementDialogProps {
   onClose: () => void;
   tblId: string | null;
 }
-
+const wrapTextStyle = {
+  wordBreak: "break-word",
+  overflowWrap: "break-word",
+  whiteSpace: "normal",
+};
 const TaskMovementDialog: React.FC<TaskMovementDialogProps> = ({
   open,
   onClose,
@@ -108,19 +112,20 @@ const TaskMovementDialog: React.FC<TaskMovementDialogProps> = ({
 
   const downloadFileDirect = (path: string) => {
     let fileUrl = path
-      .replace("wwwroot/", "")
-      .replace("wwwroot\\", "")
-      .replaceAll("\\", "/");
+      .replaceAll("\\", "/") // पहले slash fix
+      .replace("wwwroot/RemarkFiles/wwwroot/", "") // duplicate हटाओ
+      .replace("wwwroot\\RemarkFiles\\wwwroot\\", "") // safety (windows path)
+      .replace("wwwroot/", ""); // extra wwwroot हटाओ
 
-    // API base URL add
+    // API base URL
     fileUrl = "https://api.ocmspro.com/" + fileUrl;
 
-    // spaces aur special characters fix
     fileUrl = encodeURI(fileUrl);
 
     const link = document.createElement("a");
     link.href = fileUrl;
-    link.target = "_blank"; // new tab me open
+    link.target = "_blank";
+
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -241,9 +246,18 @@ const TaskMovementDialog: React.FC<TaskMovementDialogProps> = ({
 
                     {task.remarkFilePath ? (
                       <Box
-                        sx={{ display: "flex", alignItems: "center", gap: 1 }}
+                        sx={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: 1,
+                          flexDirection: "column",
+                        }}
                       >
-                        <Typography variant="body2" fontWeight={500}>
+                        <Typography
+                          variant="body2"
+                          fontWeight={500}
+                          sx={wrapTextStyle}
+                        >
                           {task.remarkFilePath
                             .replaceAll("\\", "/")
                             .split("/")

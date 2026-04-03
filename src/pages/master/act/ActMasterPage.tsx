@@ -40,7 +40,7 @@ import {
   selectActMasterDeleteSuccess,
   selectActMasterDeleteError,
 } from "./slice/Act.Selector";
-
+import * as XLSX from "xlsx";
 const ActMasterPage: React.FC = () => {
   const theme = useTheme();
   const navigate = useNavigate();
@@ -116,7 +116,20 @@ const ActMasterPage: React.FC = () => {
     setDeleteDialogOpen(false);
     setSelectedActMaster(null);
   };
+  const handleExport = () => {
+    const exportData = actMasters.map((act, index) => ({
+      "Sr. No.": index + 1,
+      "Act Name": act.actName,
+      Department: act.depaermentName,
+      Description: act.description,
+    }));
 
+    const worksheet = XLSX.utils.json_to_sheet(exportData);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Act Masters");
+
+    XLSX.writeFile(workbook, "Act_Master_List.xlsx");
+  };
   const columns: GridColDef[] = [
     {
       field: "serialNumber",
@@ -216,22 +229,37 @@ const ActMasterPage: React.FC = () => {
             Act Master
           </Typography>
         </Box>
-        <Button
-          variant="contained"
-          startIcon={<AddIcon />}
-          onClick={handleAdd}
-          sx={{
-            borderRadius: 2,
-            textTransform: "none",
-            px: 3,
-            boxShadow: `0 4px 15px ${alpha(theme.palette.primary.main, 0.3)}`,
-            "&:hover": {
-              boxShadow: `0 6px 20px ${alpha(theme.palette.primary.main, 0.4)}`,
-            },
-          }}
-        >
-          Add Act Master
-        </Button>
+
+        <Box sx={{ display: "flex", gap: 2 }}>
+          <Button
+            variant="contained"
+            startIcon={<AddIcon />}
+            onClick={handleAdd}
+            sx={{
+              borderRadius: 2,
+              textTransform: "none",
+              px: 3,
+              boxShadow: `0 4px 15px ${alpha(theme.palette.primary.main, 0.3)}`,
+              "&:hover": {
+                boxShadow: `0 6px 20px ${alpha(theme.palette.primary.main, 0.4)}`,
+              },
+            }}
+          >
+            Add Act Master
+          </Button>
+
+          <Button
+            variant="outlined"
+            onClick={handleExport}
+            sx={{
+              borderRadius: 2,
+              textTransform: "none",
+              px: 3,
+            }}
+          >
+            Export to Excel
+          </Button>
+        </Box>
       </Box>
 
       {/* Data Grid */}

@@ -18,7 +18,7 @@ L.Icon.Default.mergeOptions({
   iconRetinaUrl:
     "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png",
   iconUrl:
-    "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png",
+    "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-red.png",
   shadowUrl:
     "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png",
 });
@@ -67,7 +67,7 @@ const SiteMap: React.FC<SiteMapProps> = ({
             Authorization: `Bearer ${token}`,
             Accept: "*/*",
           },
-        }
+        },
       );
 
       if (!response.ok) {
@@ -77,7 +77,7 @@ const SiteMap: React.FC<SiteMapProps> = ({
       const data = await response.json();
       if (data.isSuccess && data.result) {
         const validSites = data.result.filter(
-          (site: Site) => site.latitude && site.longtitude
+          (site: Site) => site.latitude && site.longtitude,
         );
         setSiteList(validSites);
       }
@@ -90,14 +90,14 @@ const SiteMap: React.FC<SiteMapProps> = ({
 
   const parseCoordinates = (
     lat: string,
-    lng: string
+    lng: string,
   ): [number, number] | null => {
     try {
       const latitude = parseFloat(
-        lat.replace("°", "").replace("N", "").replace("S", "").trim()
+        lat.replace("°", "").replace("N", "").replace("S", "").trim(),
       );
       const longitude = parseFloat(
-        lng.replace("°", "").replace("E", "").replace("W", "").trim()
+        lng.replace("°", "").replace("E", "").replace("W", "").trim(),
       );
 
       if (isNaN(latitude) || isNaN(longitude)) return null;
@@ -111,7 +111,7 @@ const SiteMap: React.FC<SiteMapProps> = ({
     (site) =>
       site.latitude &&
       site.longtitude &&
-      parseCoordinates(site.latitude, site.longtitude)
+      parseCoordinates(site.latitude, site.longtitude),
   );
 
   // Default center (India)

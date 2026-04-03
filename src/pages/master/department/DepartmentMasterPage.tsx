@@ -39,7 +39,7 @@ import {
   selectDepartmentMasterDeleteSuccess,
   selectDepartmentMasterDeleteError,
 } from "./slice/Department.Selector";
-
+import * as XLSX from "xlsx";
 const DepartmentMasterPage: React.FC = () => {
   const theme = useTheme();
   const navigate = useNavigate();
@@ -114,7 +114,18 @@ const DepartmentMasterPage: React.FC = () => {
     setDeleteDialogOpen(false);
     setSelectedDepartmentMaster(null);
   };
+  const handleExport = () => {
+    const exportData = departmentMasters.map((dept, index) => ({
+      "Sr. No.": index + 1,
+      "Department Name": dept.departmentName,
+    }));
 
+    const worksheet = XLSX.utils.json_to_sheet(exportData);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Departments");
+
+    XLSX.writeFile(workbook, "Department_List.xlsx");
+  };
   const columns: GridColDef[] = [
     {
       field: "serialNumber",
@@ -204,22 +215,37 @@ const DepartmentMasterPage: React.FC = () => {
             Department Master
           </Typography>
         </Box>
-        <Button
-          variant="contained"
-          startIcon={<AddIcon />}
-          onClick={handleAdd}
+        <Box
           sx={{
-            borderRadius: 2,
-            textTransform: "none",
-            px: 3,
-            boxShadow: `0 4px 15px ${alpha(theme.palette.primary.main, 0.3)}`,
-            "&:hover": {
-              boxShadow: `0 6px 20px ${alpha(theme.palette.primary.main, 0.4)}`,
-            },
+            display: "flex",
+            gap: 2,
           }}
         >
-          Add Department Master
-        </Button>
+          <Button
+            variant="contained"
+            startIcon={<AddIcon />}
+            onClick={handleAdd}
+            sx={{
+              borderRadius: 2,
+              textTransform: "none",
+              px: 3,
+            }}
+          >
+            Add Department
+          </Button>
+
+          <Button
+            variant="outlined"
+            onClick={handleExport}
+            sx={{
+              borderRadius: 2,
+              textTransform: "none",
+              px: 3,
+            }}
+          >
+            Export to Excel
+          </Button>
+        </Box>
       </Box>
 
       {/* Data Grid */}

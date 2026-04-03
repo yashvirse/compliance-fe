@@ -74,7 +74,7 @@ const CustomerAdminDashboard: React.FC = () => {
   const dashboardData = useSelector(selectCustomerAdminDashboardData);
   const assignedTasks = useSelector(selectAssignedTasks);
   const siteWiseTasks = useSelector(selectSiteWiseTasks);
-  const isSameOrBefore = (d1: Date, d2: Date) => d1.getTime() <= d2.getTime();
+  // const isSameOrBefore = (d1: Date, d2: Date) => d1.getTime() <= d2.getTime();
   const assignedTasksResponse = useSelector(selectAssignedTasks);
   const [selectedSiteId, setSelectedSiteId] = useState<string | null>(null);
   // Prevent double API calls in StrictMode (React 18+ development)
@@ -105,41 +105,49 @@ const CustomerAdminDashboard: React.FC = () => {
 
   // compliance Calculation
   const today = new Date();
+
+  // ✅ COMPLIANCE
   const complianceTasks = assignedTasks.filter((task) => {
     if (task.taskCurrentStatus !== "Completed") return false;
-    if (!task.dueDate) return false;
+    if (!task.dueDate || !task.taskCompletionDate) return false;
 
     const dueDate = new Date(task.dueDate);
-
-    // taskCompletionDate use karna hai
-    if (!task.taskCompletionDate) return false;
-
     const completionDate = new Date(task.taskCompletionDate);
 
-    // completionDate dueDate ke din ya pehle ho
-    return isSameOrBefore(completionDate, dueDate);
+    return completionDate <= dueDate;
   });
+
   const complianceCount = complianceTasks.length;
 
-  // NON-COMPLIANCE COUNT
+  // ❌ NON-COMPLIANCE (UPDATED 🔥)
   const nonComplianceTasks = assignedTasks.filter((task) => {
-    if (task.taskCurrentStatus !== "Pending") return false;
     if (!task.dueDate) return false;
+
     const dueDate = new Date(task.dueDate);
 
-    // dueDate nikal chuki hai
-    return today > dueDate;
+    // Case 1: Pending + overdue
+    if (task.taskCurrentStatus === "Pending") {
+      return today > dueDate;
+    }
+
+    // Case 2: Completed but late
+    if (task.taskCurrentStatus === "Completed" && task.taskCompletionDate) {
+      const completionDate = new Date(task.taskCompletionDate);
+      return completionDate > dueDate;
+    }
+
+    return false;
   });
+
   const nonComplianceCount = nonComplianceTasks.length;
 
-  // IN-PROGRESS
+  // ⚠️ IN PROGRESS
   const inProgressTasks = assignedTasks.filter((task) => {
     if (task.taskCurrentStatus !== "Pending") return false;
     if (!task.dueDate) return false;
 
     const dueDate = new Date(task.dueDate);
 
-    // dueDate abhi aani baaki hai
     return today <= dueDate;
   });
 
@@ -158,7 +166,14 @@ const CustomerAdminDashboard: React.FC = () => {
   const inProgressPercent = total
     ? Math.round((inProgressCount / total) * 100)
     : 0;
+  const completedCount = assignedTasks.filter(
+    (t) => t.taskCurrentStatus?.toLowerCase() === "completed",
+  ).length;
 
+  const pendingCount = assignedTasks.filter(
+    (t) => t.taskCurrentStatus?.toLowerCase() === "pending",
+  ).length;
+  const totalTaskCount = completedCount + pendingCount;
   const handleComplianceClick = (type: string) => {
     setFilterType(type);
     setSelectedSiteId(null); // site reset
@@ -687,7 +702,7 @@ const CustomerAdminDashboard: React.FC = () => {
                 )}`,
               }}
             >
-              <CardContent sx={{ p: 4 }}>
+              <CardContent sx={{ p: 2 }}>
                 <Box
                   sx={{
                     display: "flex",
@@ -854,6 +869,102 @@ const CustomerAdminDashboard: React.FC = () => {
                   </Typography>
                 </Box>
               </CardContent>
+              <Box
+                sx={{
+                  mt: 1,
+                  p: 2,
+                  borderRadius: 2,
+                  backgroundColor: alpha(theme.palette.grey[100], 0.7),
+                }}
+              >
+                <Typography
+                  variant="subtitle2"
+                  fontWeight={600}
+                  sx={{ mb: 1.5 }}
+                >
+                  Summary of {dayjs(currentMonth).format("MMM YYYY")}
+                </Typography>
+
+                <Box
+                  sx={{
+                    display: "grid",
+                    gridTemplateColumns: "repeat(3, 1fr)", // 🔥 FIX: always 3 per row
+                    gap: 1.5,
+                  }}
+                >
+                  {[
+                    {
+                      label: "Total Tasks",
+                      value: totalTaskCount,
+                      color: "primary.main",
+                    },
+                    {
+                      label: "Completed",
+                      value: completedCount,
+                      color: "success.main",
+                    },
+                    {
+                      label: "Pending",
+                      value: pendingCount,
+                      color: "warning.main",
+                    },
+                    {
+                      label: "Compliance",
+                      value: complianceCount,
+                      color: "success.main",
+                    },
+                    {
+                      label: "Non Compliance",
+                      value: nonComplianceCount,
+                      color: "error.main",
+                    },
+                    {
+                      label: "In Progress",
+                      value: inProgressCount,
+                      color: "warning.main",
+                    },
+                  ].map((item, i) => (
+                    <Box
+                      key={i}
+                      sx={{
+                        p: 1.5,
+                        borderRadius: 2,
+                        backgroundColor: "#fff",
+                        border: "1px dashed #dcdcdc",
+                        textAlign: "center",
+                        height: 80, // 🔥 equal height
+                        display: "flex",
+                        flexDirection: "column",
+                        justifyContent: "center",
+                        transition: "0.2s",
+
+                        "&:hover": {
+                          backgroundColor: "#f5f5f5",
+                        },
+                      }}
+                    >
+                      <Typography
+                        variant="caption"
+                        color="text.secondary"
+                        sx={{ lineHeight: 1.2 }}
+                      >
+                        {item.label}
+                      </Typography>
+
+                      <Typography
+                        fontWeight={700}
+                        sx={{
+                          color: item.color,
+                          fontSize: 16,
+                          mt: 0.3,
+                        }}
+                      >
+                        {item.value}
+                      </Typography>
+                    </Box>
+                  ))}
+                </Box>
+              </Box>
             </Card>
           </Grid>
           {/* Site Map */}

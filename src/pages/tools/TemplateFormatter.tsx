@@ -18,7 +18,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { getTemplates } from "./TemplateFormaterSlice/TemplateFormater.slice";
 import { selectTemplateFormaterTemplates } from "./TemplateFormaterSlice/TemaplateFormater.selector";
 import type { AppDispatch } from "../../app/store";
-
+import * as XLSX from "xlsx";
 const TemplateFormatter: React.FC = () => {
   const theme = useTheme();
   const navigate = useNavigate();
@@ -42,7 +42,27 @@ const TemplateFormatter: React.FC = () => {
   const handleCloseSnackbar = () => {
     setShowSnackbar(false);
   };
+  const handleExport = () => {
+    if (!templates || templates.length === 0) return;
 
+    const data = templates.map((item: any, index: number) => ({
+      "Sr. No.": index + 1,
+      "Form Name": item.slipName,
+      "Formate Type": item.format,
+      "File Type": item.fileTye,
+      "Applicable States": item.stateName,
+      "Applicable Activity": item.activityActName,
+      "Created On": item.createdOn
+        ? new Date(item.createdOn).toLocaleDateString("en-GB")
+        : "",
+    }));
+
+    const worksheet = XLSX.utils.json_to_sheet(data);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Templates");
+
+    XLSX.writeFile(workbook, "Template_List.xlsx");
+  };
   const columns: GridColDef[] = [
     {
       field: "serialNumber",
@@ -57,7 +77,8 @@ const TemplateFormatter: React.FC = () => {
       },
     },
     { field: "slipName", headerName: "Form Name", flex: 1.5, minWidth: 600 },
-    { field: "fileTye", headerName: "File Type", flex: 1.5, minWidth: 150 },
+    { field: "format", headerName: "Formate Type", flex: 1.5, minWidth: 120 },
+    { field: "fileTye", headerName: "File Type", flex: 1.5, minWidth: 120 },
     {
       field: "stateName",
       headerName: "Applicable States",
@@ -136,22 +157,36 @@ const TemplateFormatter: React.FC = () => {
           </Typography>
         </Box>
 
-        <Button
-          variant="contained"
-          startIcon={<AddIcon />}
-          onClick={handleAdd}
-          sx={{
-            borderRadius: 2,
-            textTransform: "none",
-            px: 3,
-            boxShadow: `0 4px 15px ${alpha(theme.palette.primary.main, 0.3)}`,
-            "&:hover": {
-              boxShadow: `0 6px 20px ${alpha(theme.palette.primary.main, 0.4)}`,
-            },
-          }}
-        >
-          Add Template
-        </Button>
+        <Box sx={{ display: "flex", gap: 2 }}>
+          <Button
+            variant="contained"
+            startIcon={<AddIcon />}
+            onClick={handleAdd}
+            sx={{
+              borderRadius: 2,
+              textTransform: "none",
+              px: 3,
+              boxShadow: `0 4px 15px ${alpha(theme.palette.primary.main, 0.3)}`,
+              "&:hover": {
+                boxShadow: `0 6px 20px ${alpha(theme.palette.primary.main, 0.4)}`,
+              },
+            }}
+          >
+            Add Template
+          </Button>
+
+          <Button
+            variant="outlined"
+            onClick={handleExport}
+            sx={{
+              borderRadius: 2,
+              textTransform: "none",
+              px: 3,
+            }}
+          >
+            Export to Excel
+          </Button>
+        </Box>
       </Box>
 
       {/* Data Grid */}

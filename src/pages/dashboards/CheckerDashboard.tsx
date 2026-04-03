@@ -63,7 +63,7 @@ import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import dayjs from "dayjs";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
-
+import * as XLSX from "xlsx";
 const CheckerDashboard: React.FC = () => {
   const theme = useTheme();
   const dispatch = useDispatch<AppDispatch>();
@@ -322,6 +322,7 @@ const CheckerDashboard: React.FC = () => {
       dispatch(fetchCheckerTaskCount(user.id));
     }
   };
+
   const pendingCheckCount = counts?.pendingCount ?? 0;
   const approvedCount = counts?.approvedCount ?? 0;
   const rejectedCount = counts?.rejectedCount ?? 0;
@@ -974,7 +975,33 @@ const CheckerDashboard: React.FC = () => {
     ],
     [theme],
   );
+  const handleExport = (data: any[], fileName: string) => {
+    const exportData = data.map((row, index) => ({
+      "S.No.": index + 1,
+      "Site Name": row.siteName,
+      "Activity Name": row.actName
+        ? `${row.actName} - ${row.activityName}`
+        : row.activityName,
+      Department: row.departmentName,
+      "Task Report":
+        Array.isArray(row.taskReport) &&
+        row.taskReport.length > 0 &&
+        row.taskReport[0]
+          ? "Yes"
+          : "No",
+      Frequency: row.frequency,
+      "Due Date": row.dueDate
+        ? new Date(row.dueDate).toLocaleDateString()
+        : "-",
+      Status: row.userStatus,
+    }));
 
+    const worksheet = XLSX.utils.json_to_sheet(exportData);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Tasks");
+
+    XLSX.writeFile(workbook, `${fileName}.xlsx`);
+  };
   return (
     <Box>
       {!tasksOpen &&
@@ -1109,6 +1136,13 @@ const CheckerDashboard: React.FC = () => {
                 </Select>
               </FormControl>
               <Button
+                variant="outlined"
+                onClick={() => handleExport(allTasks, "All_Tasks")}
+                sx={{ textTransform: "none", borderRadius: 2 }}
+              >
+                Export to Excel
+              </Button>
+              <Button
                 variant="contained"
                 startIcon={<ArrowBackIcon />}
                 onClick={handleCloseDialog}
@@ -1208,6 +1242,13 @@ const CheckerDashboard: React.FC = () => {
                   slotProps={{ textField: { size: "small" } }}
                 />{" "}
               </LocalizationProvider>
+              <Button
+                variant="outlined"
+                onClick={() => handleExport(pendingCheckTasks, "Pending_Tasks")}
+                sx={{ textTransform: "none", borderRadius: 2 }}
+              >
+                Export to Excel
+              </Button>
               <Button
                 variant="contained"
                 startIcon={<ArrowBackIcon />}
@@ -1312,6 +1353,15 @@ const CheckerDashboard: React.FC = () => {
                 />{" "}
               </LocalizationProvider>
               <Button
+                variant="outlined"
+                onClick={() =>
+                  handleExport(approvedCheckTasks, "Approved_Tasks")
+                }
+                sx={{ textTransform: "none", borderRadius: 2 }}
+              >
+                Export to Excel
+              </Button>
+              <Button
                 variant="contained"
                 startIcon={<ArrowBackIcon />}
                 onClick={handleCloseApprovedCheckTasksDialog}
@@ -1414,6 +1464,15 @@ const CheckerDashboard: React.FC = () => {
                   slotProps={{ textField: { size: "small" } }}
                 />{" "}
               </LocalizationProvider>
+              <Button
+                variant="outlined"
+                onClick={() =>
+                  handleExport(rejectedCheckTasks, "Rejected_Tasks")
+                }
+                sx={{ textTransform: "none", borderRadius: 2 }}
+              >
+                Export to Excel
+              </Button>
               <Button
                 variant="contained"
                 startIcon={<ArrowBackIcon />}

@@ -81,7 +81,6 @@ export const approveTask = createAsyncThunk<
     }
     return response;
   } catch (error: any) {
-    console.error("❌ Approve task error:", error);
     return rejectWithValue(
       error?.response?.data?.message || "Error approving task",
     );

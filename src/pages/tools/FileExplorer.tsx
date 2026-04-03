@@ -309,17 +309,34 @@ const FileExplorer: React.FC = () => {
     return () => window.removeEventListener("keydown", handler);
   });
 
-  const downloadFileDirect = (fileName: string) => {
-    let fileUrl = "https://api.ocmspro.com/" + fileName;
-    fileUrl = encodeURI(fileUrl);
+  const buildFilePath = (fileId: number) => {
+    let pathParts: string[] = [];
+    let currentId: number | undefined = fileId;
+    while (currentId) {
+      const item = files.find((f) => f.id === currentId);
+      if (!item) break;
+      pathParts.unshift(item.name); // name add karo (reverse me)
+      if (item.parent === "root") break;
+      currentId = item.parent as number;
+    }
+    return pathParts.join("/");
+  };
 
+  const downloadFileDirect = (fileId: number) => {
+    let path = buildFilePath(fileId);
+    // 🔥 space ko "_" me convert karo
+    path = path.replace(/\s+/g, "_");
+    let fileUrl = "https://api.ocmspro.com/" + path;
+    // encode safe URL
+    fileUrl = encodeURI(fileUrl);
     const link = document.createElement("a");
     link.href = fileUrl;
-    link.target = "_blank"; // new tab me open karega
+    link.target = "_blank";
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
   };
+
   return (
     <Box>
       <Box
@@ -516,7 +533,7 @@ const FileExplorer: React.FC = () => {
                         <Button
                           size="small"
                           startIcon={<DownloadIcon />}
-                          onClick={() => downloadFileDirect(f.name)}
+                          onClick={() => downloadFileDirect(f.id)}
                         >
                           Download
                         </Button>

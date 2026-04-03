@@ -40,7 +40,7 @@ import {
   selectActivityMasterDeleteSuccess,
   selectActivityMasterDeleteError,
 } from "./slice/Activity.Selector";
-
+import * as XLSX from "xlsx";
 const ActivityMasterPage: React.FC = () => {
   const theme = useTheme();
   const navigate = useNavigate();
@@ -133,7 +133,25 @@ const ActivityMasterPage: React.FC = () => {
         return "default";
     }
   };
+  const handleExport = () => {
+    const exportData = activityMasters.map((item, index) => ({
+      "Sr. No.": index + 1,
+      "Activity Name": item.activityName,
+      "Act Name": item.actName,
+      Department: item.departmentName,
+      Frequency: item.frequency,
+      "Due Days": item.dueDay,
+      "Grace Days": item.gracePeriodDay,
+      "Reminder Days": item.reminderDay,
+      Description: item.description,
+    }));
 
+    const worksheet = XLSX.utils.json_to_sheet(exportData);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Activity Masters");
+
+    XLSX.writeFile(workbook, "Activity_Master_List.xlsx");
+  };
   const columns: GridColDef[] = [
     {
       field: "serialNumber",
@@ -286,22 +304,37 @@ const ActivityMasterPage: React.FC = () => {
             Activity Master
           </Typography>
         </Box>
-        <Button
-          variant="contained"
-          startIcon={<AddIcon />}
-          onClick={handleAdd}
-          sx={{
-            borderRadius: 2,
-            textTransform: "none",
-            px: 3,
-            boxShadow: `0 4px 15px ${alpha(theme.palette.primary.main, 0.3)}`,
-            "&:hover": {
-              boxShadow: `0 6px 20px ${alpha(theme.palette.primary.main, 0.4)}`,
-            },
-          }}
-        >
-          Add Activity
-        </Button>
+
+        <Box sx={{ display: "flex", gap: 2 }}>
+          <Button
+            variant="contained"
+            startIcon={<AddIcon />}
+            onClick={handleAdd}
+            sx={{
+              borderRadius: 2,
+              textTransform: "none",
+              px: 3,
+              boxShadow: `0 4px 15px ${alpha(theme.palette.primary.main, 0.3)}`,
+              "&:hover": {
+                boxShadow: `0 6px 20px ${alpha(theme.palette.primary.main, 0.4)}`,
+              },
+            }}
+          >
+            Add Activity
+          </Button>
+
+          <Button
+            variant="outlined"
+            onClick={handleExport}
+            sx={{
+              borderRadius: 2,
+              textTransform: "none",
+              px: 3,
+            }}
+          >
+            Export to Excel
+          </Button>
+        </Box>
       </Box>
 
       <Paper

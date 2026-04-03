@@ -323,7 +323,7 @@ const AddSitePage: React.FC = () => {
     try {
       await apiService.download(
         "Master/siteMasterExcelTemplate",
-        "SiteMasterTemplate.csv",
+        "SiteMasterTemplate.xlsx",
       );
     } catch (err) {
       console.error("Template download error:", err);
@@ -336,10 +336,10 @@ const AddSitePage: React.FC = () => {
   const handleBulkFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];
-      if (file.name.endsWith(".csv")) {
+      if (file.name.endsWith(".xlsx")) {
         setBulkFile(file);
       } else {
-        setSnackbarMessage("Please select a CSV file");
+        setSnackbarMessage("Please select an Excel file");
         setSnackbarSeverity("error");
         setShowSnackbar(true);
       }
@@ -348,7 +348,7 @@ const AddSitePage: React.FC = () => {
 
   const handleBulkUpload = async () => {
     if (!bulkFile) {
-      setSnackbarMessage("Please select a CSV file first");
+      setSnackbarMessage("Please select an Excel file first");
       setSnackbarSeverity("error");
       setShowSnackbar(true);
       return;
@@ -438,7 +438,7 @@ const AddSitePage: React.FC = () => {
             <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
               <input
                 type="file"
-                accept=".csv"
+                accept=".xlsx"
                 id="bulk-site-upload"
                 style={{ display: "none" }}
                 onChange={handleBulkFileChange}
@@ -450,7 +450,7 @@ const AddSitePage: React.FC = () => {
                 startIcon={<CloudUploadIcon />}
                 sx={{ textTransform: "none" }}
               >
-                {bulkFile ? bulkFile.name : "Select CSV File"}
+                {bulkFile ? bulkFile.name : "Select Excel File"}
               </Button>
 
               <Button
