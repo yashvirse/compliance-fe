@@ -409,6 +409,30 @@ function App() {
                 }
               />
               <Route
+                path="template-formatter"
+                element={
+                  <RoleBasedRoute allowedRoles={[UserRole.SUPER_ADMIN]}>
+                    <TemplateFormatter />
+                  </RoleBasedRoute>
+                }
+              />
+              <Route
+                path="add-template"
+                element={
+                  <RoleBasedRoute allowedRoles={[UserRole.SUPER_ADMIN]}>
+                    <AddTemplateFormater />
+                  </RoleBasedRoute>
+                }
+              />
+              <Route
+                path="template/edit/:id"
+                element={
+                  <RoleBasedRoute allowedRoles={[UserRole.SUPER_ADMIN]}>
+                    <AddTemplateFormater />
+                  </RoleBasedRoute>
+                }
+              />
+              <Route
                 path="tools/file-explorer"
                 element={
                   <RoleBasedRoute allowedRoles={[UserRole.CUSTOMER_ADMIN]}>
@@ -432,30 +456,7 @@ function App() {
                   </RoleBasedRoute>
                 }
               />
-              <Route
-                path="tools/template-formatter"
-                element={
-                  <RoleBasedRoute allowedRoles={[UserRole.CUSTOMER_ADMIN]}>
-                    <TemplateFormatter />
-                  </RoleBasedRoute>
-                }
-              />
-              <Route
-                path="tools/add-template"
-                element={
-                  <RoleBasedRoute allowedRoles={[UserRole.CUSTOMER_ADMIN]}>
-                    <AddTemplateFormater />
-                  </RoleBasedRoute>
-                }
-              />
-              <Route
-                path="tools/template/edit/:id"
-                element={
-                  <RoleBasedRoute allowedRoles={[UserRole.CUSTOMER_ADMIN]}>
-                    <AddTemplateFormater />
-                  </RoleBasedRoute>
-                }
-              />
+
               <Route
                 path="tools/api-integration"
                 element={
@@ -465,7 +466,7 @@ function App() {
                 }
               />
               <Route
-                path="/dashboard/reports/score-card"
+                path="reports/score-card"
                 element={
                   <RoleBasedRoute allowedRoles={[UserRole.CUSTOMER_ADMIN]}>
                     <ScoreCard />

@@ -194,6 +194,12 @@ const ActivityMasterPage: React.FC = () => {
       ),
     },
     {
+      field: "natureOfActivity",
+      headerName: "Nature of Activity",
+      flex: 2,
+      minWidth: 150,
+    },
+    {
       field: "dueDay",
       headerName: "Due Days",
       flex: 0.7,

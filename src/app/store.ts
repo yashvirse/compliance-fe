@@ -22,6 +22,7 @@ import templateFormaterReducer from "../pages/tools/TemplateFormaterSlice/Templa
 import scoreCardReducer from "../pages/reports/ScoreCard/ScroreCard.slice";
 import apiIntegrationReducer from "../pages/tools/ApiIntegration/apiIntegration.slice";
 import registersReducer from "../pages/reports/Registers/Register.slice";
+import natureWiseReportReducer from "../pages/reports/NatureWiseReport/NatureWiseReport.slice";
 export const store = configureStore({
   reducer: {
     login: loginReducer,
@@ -47,6 +48,7 @@ export const store = configureStore({
     scoreCard: scoreCardReducer,
     apiIntegration: apiIntegrationReducer,
     registers: registersReducer,
+    natureWiseReport: natureWiseReportReducer,
   },
 });
 

@@ -176,13 +176,6 @@ export const menuConfig: MenuItem[] = [
     allowedRoles: [UserRole.CUSTOMER_ADMIN],
     children: [
       {
-        id: "template_formatter",
-        label: "Template Formatter",
-        path: "/dashboard/tools/template-formatter",
-        icon: <ArticleIcon />,
-        allowedRoles: [UserRole.CUSTOMER_ADMIN],
-      },
-      {
         id: "file-uploader",
         label: "File Uploader",
         path: "/dashboard/tools/file-uploader",
@@ -246,6 +239,13 @@ export const menuConfig: MenuItem[] = [
     label: "Util",
     path: "/dashboard/util",
     icon: <CloudUploadIcon />,
+    allowedRoles: [UserRole.SUPER_ADMIN],
+  },
+  {
+    id: "template_formatter",
+    label: "Template Formatter",
+    path: "/dashboard/template-formatter",
+    icon: <ArticleIcon />,
     allowedRoles: [UserRole.SUPER_ADMIN],
   },
 ];

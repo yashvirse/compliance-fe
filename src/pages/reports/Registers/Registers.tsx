@@ -9,15 +9,18 @@ import {
   TableContainer,
   TableHead,
   TableRow,
-  IconButton,
   Collapse,
   Chip,
+  Tooltip,
+  Button,
 } from "@mui/material";
-import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
+import DownloadIcon from "@mui/icons-material/Download";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchGeneratedReports } from "./Register.slice";
 import { selectSalaryLoading, selectSalaryReports } from "./Registers.selector";
 import { CircularProgress } from "@mui/material";
+import * as XLSX from "xlsx";
+
 const monthNames = [
   "",
   "January",
@@ -55,6 +58,35 @@ const Registers = () => {
     return newSet;
   };
 
+  const handleExportAll = () => {
+    const rows: any[] = [];
+
+    // Header
+    rows.push(["Year", "Month", "State", "S.No", "Register Name", "Activity"]);
+
+    Object.keys(groupedData).forEach((year) => {
+      Object.keys(groupedData[year]).forEach((month) => {
+        Object.keys(groupedData[year][month]).forEach((state) => {
+          groupedData[year][month][state].forEach((reg: any, index: number) => {
+            rows.push([
+              year,
+              month,
+              state,
+              index + 1,
+              reg.reportName,
+              reg.reportRelatedActivityName,
+            ]);
+          });
+        });
+      });
+    });
+
+    const worksheet = XLSX.utils.aoa_to_sheet(rows);
+    const workbook = XLSX.utils.book_new();
+
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Registers");
+    XLSX.writeFile(workbook, "SalaryRegisters_MusterRolls.xlsx");
+  };
   /* ==========================
      GROUP DATA
   ========================== */
@@ -77,14 +109,35 @@ const Registers = () => {
   return (
     <Box>
       {/* Header */}
-      <Box sx={{ mb: 3 }}>
+      <Box
+        sx={{
+          mb: 3,
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+        }}
+      >
         <Typography variant="h4" fontWeight={700}>
           Salary and Muster Roll Registers
         </Typography>
+
+        <Button
+          variant="outlined"
+          onClick={handleExportAll}
+          sx={{
+            borderRadius: 2,
+            textTransform: "none",
+            px: 2,
+            py: 1,
+            fontWeight: 600,
+          }}
+        >
+          Export To Excel
+        </Button>
       </Box>
 
       {/* Main Table */}
-      <Paper sx={{ borderRadius: 3 }}>
+      <Paper sx={{ borderRadius: "18px 18px 0 0" }}>
         {loading ? (
           <Box
             sx={{
@@ -100,8 +153,8 @@ const Registers = () => {
           <TableContainer sx={{ overflowX: "auto" }}>
             <Table>
               <TableHead>
-                <TableRow sx={{ backgroundColor: "#f5f5f5" }}>
-                  <TableCell width={50} sx={{ borderTopLeftRadius: "20px" }} />
+                <TableRow sx={{ backgroundColor: "#b5d6fd" }}>
+                  <TableCell sx={{ borderTopLeftRadius: "20px" }} />
 
                   <TableCell>Name</TableCell>
 
@@ -135,18 +188,37 @@ const Registers = () => {
                           }
                           sx={{ cursor: "pointer" }}
                         >
-                          <TableCell>
-                            <IconButton size="small">
-                              <KeyboardArrowDownIcon />
-                            </IconButton>
-                          </TableCell>
+                          <TableCell colSpan={3} sx={{ p: 1 }}>
+                            <Box
+                              sx={{
+                                p: 2,
+                                borderRadius: 2,
+                                background:
+                                  "linear-gradient(90deg, #f5f7fa, #e4ecf7)",
+                                border: "1px solid #dbe3ec",
+                                transition: "0.2s",
+                                "&:hover": {
+                                  background: "#eaf2ff",
+                                },
+                              }}
+                            >
+                              <Box
+                                sx={{
+                                  display: "flex",
+                                  justifyContent: "space-between",
+                                }}
+                              >
+                                <span style={{ fontWeight: 700 }}>
+                                  {yearOpen ? "▼" : "▶"} {year}
+                                </span>
 
-                          <TableCell>
-                            <Typography fontWeight={700}>{year}</Typography>
-                          </TableCell>
-
-                          <TableCell>
-                            <Chip label="Year" size="small" color="success" />
+                                <Chip
+                                  label="Year"
+                                  size="small"
+                                  color="success"
+                                />
+                              </Box>
+                            </Box>
                           </TableCell>
                         </TableRow>
 
@@ -177,24 +249,51 @@ const Registers = () => {
                                             }
                                             sx={{ cursor: "pointer" }}
                                           >
-                                            <TableCell width={50}>
-                                              <IconButton size="small">
-                                                <KeyboardArrowDownIcon />
-                                              </IconButton>
-                                            </TableCell>
+                                            <TableCell
+                                              colSpan={3}
+                                              sx={{ p: 1 }}
+                                            >
+                                              <Box
+                                                sx={{
+                                                  p: 2,
+                                                  pl: 4, // 👈 indentation
+                                                  borderRadius: 2,
+                                                  background: "#f9fafc",
+                                                  borderLeft:
+                                                    "4px solid #1976d2", // 👈 hierarchy line
+                                                  borderTop:
+                                                    "1px solid #e6eaf0",
+                                                  borderRight:
+                                                    "1px solid #e6eaf0",
+                                                  borderBottom:
+                                                    "1px solid #e6eaf0",
+                                                  transition: "0.2s",
+                                                  "&:hover": {
+                                                    background: "#eef4ff",
+                                                  },
+                                                }}
+                                              >
+                                                <Box
+                                                  sx={{
+                                                    display: "flex",
+                                                    justifyContent:
+                                                      "space-between",
+                                                  }}
+                                                >
+                                                  <span
+                                                    style={{ fontWeight: 600 }}
+                                                  >
+                                                    {monthOpen ? "▼" : "▶"}{" "}
+                                                    {month}
+                                                  </span>
 
-                                            <TableCell>
-                                              <Typography fontWeight={600}>
-                                                {month}
-                                              </Typography>
-                                            </TableCell>
-
-                                            <TableCell>
-                                              <Chip
-                                                label="Month"
-                                                size="small"
-                                                color="primary"
-                                              />
+                                                  <Chip
+                                                    label="Month"
+                                                    size="small"
+                                                    color="primary"
+                                                  />
+                                                </Box>
+                                              </Box>
                                             </TableCell>
                                           </TableRow>
 
@@ -205,7 +304,14 @@ const Registers = () => {
                                               sx={{ p: 0 }}
                                             >
                                               <Collapse in={monthOpen}>
-                                                <Table size="small">
+                                                <Table
+                                                  size="small"
+                                                  sx={{
+                                                    width: "100%",
+                                                    tableLayout: "fixed",
+                                                  }}
+                                                >
+                                                  {" "}
                                                   <TableBody>
                                                     {Object.keys(
                                                       groupedData[year][month],
@@ -236,25 +342,58 @@ const Registers = () => {
                                                             }}
                                                           >
                                                             <TableCell
-                                                              width={50}
+                                                              colSpan={3}
+                                                              sx={{ p: 1 }}
                                                             >
-                                                              <IconButton size="small">
-                                                                <KeyboardArrowDownIcon />
-                                                              </IconButton>
-                                                            </TableCell>
+                                                              <Box
+                                                                sx={{
+                                                                  p: 2,
+                                                                  pl: 6, // 👈 deeper indentation
+                                                                  borderRadius: 2,
+                                                                  background:
+                                                                    "#ffffff",
+                                                                  borderLeft:
+                                                                    "4px solid #d32f2f", // 👈 hierarchy line
+                                                                  borderTop:
+                                                                    "1px solid #eee",
+                                                                  borderRight:
+                                                                    "1px solid #eee",
+                                                                  borderBottom:
+                                                                    "1px solid #eee",
+                                                                  transition:
+                                                                    "0.2s",
+                                                                  "&:hover": {
+                                                                    background:
+                                                                      "#f5faff",
+                                                                  },
+                                                                }}
+                                                              >
+                                                                <Box
+                                                                  sx={{
+                                                                    display:
+                                                                      "flex",
+                                                                    justifyContent:
+                                                                      "space-between",
+                                                                  }}
+                                                                >
+                                                                  <span
+                                                                    style={{
+                                                                      fontWeight: 500,
+                                                                    }}
+                                                                  >
+                                                                    {stateOpen
+                                                                      ? "▼"
+                                                                      : "▶"}{" "}
+                                                                    {state}
+                                                                  </span>
 
-                                                            <TableCell>
-                                                              <Typography>
-                                                                {state}
-                                                              </Typography>
-                                                            </TableCell>
-
-                                                            <TableCell>
-                                                              <Chip
-                                                                label="State"
-                                                                size="small"
-                                                                color="error"
-                                                              />
+                                                                  <Chip
+                                                                    label="State"
+                                                                    size="small"
+                                                                    color="error"
+                                                                  />
+                                                                </Box>
+                                                              </Box>
                                                             </TableCell>
                                                           </TableRow>
 
@@ -282,7 +421,7 @@ const Registers = () => {
 
                                                                       "& th": {
                                                                         backgroundColor:
-                                                                          "#f5f5f5",
+                                                                          "#cbe2fd",
                                                                         fontWeight: 600,
                                                                         borderBottom:
                                                                           "1px solid #e0e0e0",
@@ -301,6 +440,9 @@ const Registers = () => {
                                                                     <TableHead>
                                                                       <TableRow>
                                                                         <TableCell>
+                                                                          S.No
+                                                                        </TableCell>
+                                                                        <TableCell>
                                                                           Register
                                                                           Name
                                                                         </TableCell>
@@ -308,7 +450,7 @@ const Registers = () => {
                                                                           Activity
                                                                         </TableCell>
                                                                         <TableCell>
-                                                                          Download
+                                                                          Action
                                                                         </TableCell>
                                                                       </TableRow>
                                                                     </TableHead>
@@ -321,12 +463,17 @@ const Registers = () => {
                                                                       ].map(
                                                                         (
                                                                           reg: any,
+                                                                          index: number,
                                                                         ) => (
                                                                           <TableRow
                                                                             key={
                                                                               reg.reportId
                                                                             }
                                                                           >
+                                                                            <TableCell>
+                                                                              {index +
+                                                                                1}
+                                                                            </TableCell>
                                                                             <TableCell
                                                                               sx={{
                                                                                 wordBreak:
@@ -345,28 +492,37 @@ const Registers = () => {
                                                                             </TableCell>
 
                                                                             <TableCell>
-                                                                              <a
-                                                                                href={`https://api.ocmspro.com/${reg.reportPath
-                                                                                  .replace(
-                                                                                    "wwwroot\\",
-                                                                                    "",
-                                                                                  )
-                                                                                  .replaceAll(
-                                                                                    "\\",
-                                                                                    "/",
-                                                                                  )}`}
-                                                                                target="_blank"
-                                                                                rel="noreferrer"
-                                                                                style={{
-                                                                                  textDecoration:
-                                                                                    "none",
-                                                                                  color:
-                                                                                    "#1976d2",
-                                                                                  fontWeight: 500,
-                                                                                }}
-                                                                              >
-                                                                                Download
-                                                                              </a>
+                                                                              <Tooltip title="Download">
+                                                                                <a
+                                                                                  href={`https://api.ocmspro.com/${reg.reportPath
+                                                                                    .replace(
+                                                                                      "wwwroot\\",
+                                                                                      "",
+                                                                                    )
+                                                                                    .replaceAll(
+                                                                                      "\\",
+                                                                                      "/",
+                                                                                    )}`}
+                                                                                  target="_blank"
+                                                                                  rel="noreferrer"
+                                                                                  style={{
+                                                                                    textDecoration:
+                                                                                      "none",
+                                                                                    color:
+                                                                                      "#1976d2",
+                                                                                    fontWeight: 500,
+                                                                                  }}
+                                                                                >
+                                                                                  <DownloadIcon
+                                                                                    sx={{
+                                                                                      color:
+                                                                                        "#1976d2",
+                                                                                      cursor:
+                                                                                        "pointer",
+                                                                                    }}
+                                                                                  />
+                                                                                </a>
+                                                                              </Tooltip>
                                                                             </TableCell>
                                                                           </TableRow>
                                                                         ),

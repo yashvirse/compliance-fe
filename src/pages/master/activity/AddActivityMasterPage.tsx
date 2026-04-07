@@ -67,6 +67,7 @@ const AddActivityMasterPage: React.FC = () => {
     dueDay: "",
     gracePeriodDay: "",
     reminderDay: "",
+    natureOfActivity: "",
   });
 
   const [dueDayError, setDueDayError] = useState("");
@@ -84,14 +85,20 @@ const AddActivityMasterPage: React.FC = () => {
       dispatch(fetchActivityMasterById(id));
     }
   }, [dispatch, id, isEditMode]);
-
+  const natureOptions = [
+    { label: "Display", value: "Display" },
+    { label: "Register", value: "Register" },
+    { label: "Remittance", value: "Remittance" },
+    { label: "Return", value: "Return" },
+    { label: "Registration", value: "Registration" },
+  ];
   useEffect(() => {
     if (isEditMode && currentActivityMaster) {
       // Pehle actID find karo actName se (agar match kare to)
       let matchedActID = "";
       if (currentActivityMaster.actName && actMasters.length > 0) {
         const matchedAct = actMasters.find(
-          (act) => act.actName === currentActivityMaster.actName
+          (act) => act.actName === currentActivityMaster.actName,
           // agar department bhi match karna ho to add kar sakte ho:
           // && act.depaermentName === currentActivityMaster.departmentName
         );
@@ -108,6 +115,7 @@ const AddActivityMasterPage: React.FC = () => {
         dueDay: currentActivityMaster.dueDay?.toString() || "",
         gracePeriodDay: currentActivityMaster.gracePeriodDay?.toString() || "",
         reminderDay: currentActivityMaster.reminderDay?.toString() || "",
+        natureOfActivity: currentActivityMaster.natureOfActivity || "",
       });
     }
   }, [isEditMode, currentActivityMaster, actMasters]);
@@ -156,7 +164,7 @@ const AddActivityMasterPage: React.FC = () => {
         name === "frequency"
           ? (value as FrequencyTypeValue)
           : formData.frequency,
-        name === "dueDay" ? value : formData.dueDay
+        name === "dueDay" ? value : formData.dueDay,
       );
     }
 
@@ -164,7 +172,7 @@ const AddActivityMasterPage: React.FC = () => {
     if (name === "gracePeriodDay" || name === "frequency") {
       validateGracePeriod(
         formData.frequency,
-        name === "gracePeriodDay" ? value : formData.gracePeriodDay
+        name === "gracePeriodDay" ? value : formData.gracePeriodDay,
       );
     }
 
@@ -172,14 +180,14 @@ const AddActivityMasterPage: React.FC = () => {
     if (name === "reminderDay" || name === "frequency") {
       validateReminderDays(
         formData.frequency,
-        name === "reminderDay" ? value : formData.reminderDay
+        name === "reminderDay" ? value : formData.reminderDay,
       );
     }
   };
 
   const validateDueDay = (
     frequency: FrequencyTypeValue | "",
-    dueDay: string
+    dueDay: string,
   ) => {
     if (!frequency || !dueDay) {
       setDueDayError("");
@@ -188,7 +196,7 @@ const AddActivityMasterPage: React.FC = () => {
 
     const dueDayNum = parseInt(dueDay);
     const frequencyOption = FREQUENCY_OPTIONS.find(
-      (opt) => opt.value === frequency
+      (opt) => opt.value === frequency,
     );
 
     if (!frequencyOption) {
@@ -204,7 +212,7 @@ const AddActivityMasterPage: React.FC = () => {
 
     if (dueDayNum < 1 || dueDayNum > frequencyOption.maxDueDay) {
       setDueDayError(
-        `Due day must be between 1 and ${frequencyOption.maxDueDay} for ${frequency}`
+        `Due day must be between 1 and ${frequencyOption.maxDueDay} for ${frequency}`,
       );
       return false;
     }
@@ -215,7 +223,7 @@ const AddActivityMasterPage: React.FC = () => {
 
   const validateGracePeriod = (
     frequency: FrequencyTypeValue | "",
-    gracePeriod: string
+    gracePeriod: string,
   ) => {
     if (!frequency || !gracePeriod) {
       setGracePeriodError("");
@@ -230,7 +238,7 @@ const AddActivityMasterPage: React.FC = () => {
 
     const gracePeriodNum = parseInt(gracePeriod);
     const frequencyOption = FREQUENCY_OPTIONS.find(
-      (opt) => opt.value === frequency
+      (opt) => opt.value === frequency,
     );
 
     if (!frequencyOption || gracePeriodNum < 0) {
@@ -241,7 +249,7 @@ const AddActivityMasterPage: React.FC = () => {
     const maxAllowed = frequencyOption.maxDueDay;
     if (gracePeriodNum > maxAllowed) {
       setGracePeriodError(
-        `Grace period cannot exceed ${maxAllowed} days for ${frequency}`
+        `Grace period cannot exceed ${maxAllowed} days for ${frequency}`,
       );
       return false;
     }
@@ -252,7 +260,7 @@ const AddActivityMasterPage: React.FC = () => {
 
   const validateReminderDays = (
     frequency: FrequencyTypeValue | "",
-    reminderDays: string
+    reminderDays: string,
   ) => {
     if (!frequency || !reminderDays) {
       setReminderDayError("");
@@ -267,7 +275,7 @@ const AddActivityMasterPage: React.FC = () => {
 
     const reminderDaysNum = parseInt(reminderDays);
     const frequencyOption = FREQUENCY_OPTIONS.find(
-      (opt) => opt.value === frequency
+      (opt) => opt.value === frequency,
     );
 
     if (!frequencyOption || reminderDaysNum < 0) {
@@ -278,7 +286,7 @@ const AddActivityMasterPage: React.FC = () => {
     const maxAllowed = frequencyOption.maxDueDay;
     if (reminderDaysNum > maxAllowed) {
       setReminderDayError(
-        `Reminder days cannot exceed ${maxAllowed} days for ${frequency}`
+        `Reminder days cannot exceed ${maxAllowed} days for ${frequency}`,
       );
       return false;
     }
@@ -315,7 +323,7 @@ const AddActivityMasterPage: React.FC = () => {
               day: "2-digit",
               month: "short",
               year: "numeric",
-            })
+            }),
           );
         }
         break;
@@ -339,13 +347,13 @@ const AddActivityMasterPage: React.FC = () => {
                 nextDate = new Date(
                   currentYear,
                   currentMonth,
-                  16 + (dueDay - 1)
+                  16 + (dueDay - 1),
                 );
               } else {
                 nextDate = new Date(
                   currentYear,
                   currentMonth,
-                  16 + (dueDay - 1)
+                  16 + (dueDay - 1),
                 );
               }
             } else {
@@ -355,7 +363,7 @@ const AddActivityMasterPage: React.FC = () => {
           } else {
             // Subsequent dates: alternate between 1st half and 2nd half
             const previousDate = new Date(
-              dates[i - 1].split(" ").reverse().join("-")
+              dates[i - 1].split(" ").reverse().join("-"),
             );
             const prevDate = previousDate.getDate();
 
@@ -364,14 +372,14 @@ const AddActivityMasterPage: React.FC = () => {
               nextDate = new Date(
                 previousDate.getFullYear(),
                 previousDate.getMonth(),
-                16 + (dueDay - 1)
+                16 + (dueDay - 1),
               );
             } else {
               // Previous was in second fortnight, this should be in first fortnight of next month
               nextDate = new Date(
                 previousDate.getFullYear(),
                 previousDate.getMonth() + 1,
-                dueDay
+                dueDay,
               );
             }
           }
@@ -381,7 +389,7 @@ const AddActivityMasterPage: React.FC = () => {
               day: "2-digit",
               month: "short",
               year: "numeric",
-            })
+            }),
           );
         }
         break;
@@ -394,7 +402,7 @@ const AddActivityMasterPage: React.FC = () => {
           const nextDate = new Date(
             today.getFullYear(),
             today.getMonth() + i + 1,
-            1
+            1,
           );
           nextDate.setDate(
             Math.min(
@@ -402,16 +410,16 @@ const AddActivityMasterPage: React.FC = () => {
               new Date(
                 nextDate.getFullYear(),
                 nextDate.getMonth() + 1,
-                0
-              ).getDate()
-            )
+                0,
+              ).getDate(),
+            ),
           );
           dates.push(
             nextDate.toLocaleDateString("en-GB", {
               day: "2-digit",
               month: "short",
               year: "numeric",
-            })
+            }),
           );
         }
         break;
@@ -425,7 +433,7 @@ const AddActivityMasterPage: React.FC = () => {
 
         // Find current quarter index
         let currentQuarterIndex = quarterStarts.findIndex(
-          (m) => currentMonth < m
+          (m) => currentMonth < m,
         );
         if (currentQuarterIndex === -1) currentQuarterIndex = 4; // if in Oct-Dec
 
@@ -442,7 +450,7 @@ const AddActivityMasterPage: React.FC = () => {
               day: "2-digit",
               month: "short",
               year: "numeric",
-            })
+            }),
           );
         }
         break;
@@ -473,7 +481,7 @@ const AddActivityMasterPage: React.FC = () => {
           } else {
             // Subsequent dates: alternate between first half and second half
             const previousDate = new Date(
-              dates[i - 1].split(" ").reverse().join("-")
+              dates[i - 1].split(" ").reverse().join("-"),
             );
             const prevMonth = previousDate.getMonth();
 
@@ -495,7 +503,7 @@ const AddActivityMasterPage: React.FC = () => {
               day: "2-digit",
               month: "short",
               year: "numeric",
-            })
+            }),
           );
         }
         break;
@@ -512,7 +520,7 @@ const AddActivityMasterPage: React.FC = () => {
               day: "2-digit",
               month: "short",
               year: "numeric",
-            })
+            }),
           );
         }
         break;
@@ -548,7 +556,7 @@ const AddActivityMasterPage: React.FC = () => {
     if (isEditMode && currentActivityMaster) {
       // Find the selected act master and get actName and departmentName separately
       const selectedAct = actMasters.find(
-        (act) => act.actId === formData.actID
+        (act) => act.actId === formData.actID,
       );
       const actName = selectedAct ? selectedAct.actName : "";
       const departmentName = selectedAct ? selectedAct.depaermentName : "";
@@ -563,13 +571,14 @@ const AddActivityMasterPage: React.FC = () => {
         dueDay: parseInt(formData.dueDay),
         gracePeriodDay: parseInt(formData.gracePeriodDay),
         reminderDay: parseInt(formData.reminderDay),
+        natureOfActivity: formData.natureOfActivity,
       };
 
       await dispatch(updateActivityMaster(updateData));
     } else {
       // Find the selected act master and get actName and departmentName separately
       const selectedAct = actMasters.find(
-        (act) => act.actId === formData.actID
+        (act) => act.actId === formData.actID,
       );
       const actName = selectedAct ? selectedAct.actName : "";
       const departmentName = selectedAct ? selectedAct.depaermentName : "";
@@ -584,6 +593,7 @@ const AddActivityMasterPage: React.FC = () => {
         dueDay: parseInt(formData.dueDay),
         gracePeriodDay: parseInt(formData.gracePeriodDay),
         reminderDay: parseInt(formData.reminderDay),
+        natureOfActivity: formData.natureOfActivity,
       };
 
       await dispatch(addActivityMaster(requestData));
@@ -641,7 +651,7 @@ const AddActivityMasterPage: React.FC = () => {
   }));
 
   const selectedFrequency = FREQUENCY_OPTIONS.find(
-    (opt) => opt.value === formData.frequency
+    (opt) => opt.value === formData.frequency,
   );
 
   return (
@@ -748,21 +758,26 @@ const AddActivityMasterPage: React.FC = () => {
                         formData.frequency === FrequencyType.WEEKLY
                           ? "1=Mon, 2=Tue, 3=Wed..."
                           : formData.frequency === FrequencyType.MONTHLY
-                          ? "Enter 1-31"
-                          : formData.frequency === FrequencyType.FORTNIGHTLY
-                          ? "Enter 1-15"
-                          : formData.frequency === FrequencyType.ANNUALLY
-                          ? "Enter 1-365"
-                          : formData.frequency === FrequencyType.HALF_YEARLY
-                          ? "Enter 1-183"
-                          : formData.frequency === FrequencyType.AS_NEEDED
-                          ? "Enter any value"
-                          : "Enter due day"
+                            ? "Enter 1-31"
+                            : formData.frequency === FrequencyType.FORTNIGHTLY
+                              ? "Enter 1-15"
+                              : formData.frequency === FrequencyType.ANNUALLY
+                                ? "Enter 1-365"
+                                : formData.frequency ===
+                                    FrequencyType.HALF_YEARLY
+                                  ? "Enter 1-183"
+                                  : formData.frequency ===
+                                      FrequencyType.AS_NEEDED
+                                    ? "Enter any value"
+                                    : "Enter due day"
                       }
                       error={!!dueDayError}
                       helperText={dueDayError}
                       inputProps={{
-                        min: 1,
+                        min:
+                          formData.frequency === FrequencyType.AS_NEEDED
+                            ? 0
+                            : 1,
                         max:
                           formData.frequency === FrequencyType.AS_NEEDED
                             ? undefined
@@ -836,7 +851,7 @@ const AddActivityMasterPage: React.FC = () => {
               <Box
                 sx={{
                   display: "grid",
-                  gridTemplateColumns: { xs: "1fr", md: "1fr 1fr" },
+                  gridTemplateColumns: { xs: "1fr", md: "1fr 1fr 1fr" },
                   gap: 3,
                 }}
               >
@@ -876,6 +891,15 @@ const AddActivityMasterPage: React.FC = () => {
                         ? undefined
                         : selectedFrequency?.maxDueDay || 365,
                   }}
+                />
+                <CustomDropdown
+                  label="Nature Of Activity"
+                  name="natureOfActivity"
+                  value={formData.natureOfActivity}
+                  onChange={handleChange}
+                  options={natureOptions}
+                  required
+                  placeholder="Select Nature"
                 />
               </Box>
 
@@ -930,14 +954,14 @@ const AddActivityMasterPage: React.FC = () => {
                   px: 4,
                   boxShadow: `0 4px 15px ${alpha(
                     theme.palette.success.main,
-                    0.4
+                    0.4,
                   )}`,
                   bgcolor: theme.palette.success.main,
                   "&:hover": {
                     bgcolor: theme.palette.success.dark,
                     boxShadow: `0 6px 20px ${alpha(
                       theme.palette.success.main,
-                      0.5
+                      0.5,
                     )}`,
                   },
                 }}
@@ -945,8 +969,8 @@ const AddActivityMasterPage: React.FC = () => {
                 {loading
                   ? "Saving..."
                   : isEditMode
-                  ? "Update Activity"
-                  : "Submit & Save"}
+                    ? "Update Activity"
+                    : "Submit & Save"}
               </Button>
             </Box>
           </Box>

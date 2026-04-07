@@ -33,7 +33,7 @@ import dayjs from "dayjs";
 import Checkbox from "@mui/material/Checkbox";
 import ListItemText from "@mui/material/ListItemText";
 
-const ScoreCard: React.FC = () => {
+const ScoreCard = () => {
   const dispatch = useDispatch();
   const departments = useSelector(selectDepartments);
   const sites = useSelector(selectSites);
@@ -82,6 +82,7 @@ const ScoreCard: React.FC = () => {
       },
     },
   ];
+
   const formattedDate = currentMonth
     ? currentMonth.startOf("month").format("YYYY-MM-DD")
     : "";
@@ -467,55 +468,67 @@ const ScoreCard: React.FC = () => {
           )}
 
           {/* SUCCESS STATE */}
+          {/* SUCCESS STATE */}
           {!loading && !error && report && (
-            <Paper sx={{ mt: 2, p: 2 }}>
-              {/* TABLE HEADER */}
+            <Paper
+              sx={{
+                mt: 3,
+                p: 3,
+                borderRadius: 3,
+                boxShadow: "0 4px 16px rgba(0,0,0,0.08)",
+              }}
+            >
+              {/* HEADER */}
               <Box
                 sx={{
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "space-between",
-                  mb: 2,
+                  mb: 3,
                 }}
               >
-                {/* LEFT */}
-                <Typography variant="h6" fontWeight={700}>
+                <Typography variant="h5" fontWeight={700}>
                   Score Card Report
                 </Typography>
 
-                {/* RIGHT */}
                 <Box sx={{ display: "flex", gap: 1 }}>
                   <Button
-                    variant="outlined"
                     size="small"
+                    variant="outlined"
                     onClick={handleCollapseAll}
                   >
-                    Collapse All
+                    Collapse
                   </Button>
-
                   <Button
-                    variant="outlined"
                     size="small"
+                    variant="outlined"
                     onClick={handleExpandAll}
                   >
-                    Expand All
+                    Expand
                   </Button>
                   <Button
-                    variant="outlined"
                     size="small"
+                    variant="contained"
                     onClick={handleExportExcel}
                   >
-                    Export to Excel
+                    Export
                   </Button>
                 </Box>
               </Box>
 
-              {/* COMPANY */}
-              <Box sx={{ background: "#ececec", p: 1, fontWeight: 500 }}>
+              {/* COMPANY CARD */}
+              <Box
+                sx={{
+                  p: 2,
+                  mb: 2,
+                  borderRadius: 2,
+                  background: "linear-gradient(90deg, #f5f7fa, #e4ecf7)",
+                  fontWeight: 600,
+                }}
+              >
                 <Box sx={{ display: "flex", justifyContent: "space-between" }}>
                   <span>
-                    {report.companyName} : (Average :{" "}
-                    {report.average.toFixed(2)}%)
+                    {report.companyName} (Avg: {report.average.toFixed(2)}%)
                   </span>
                   <span>Total Sites: {report.sites?.length || 0}</span>
                 </Box>
@@ -527,21 +540,25 @@ const ScoreCard: React.FC = () => {
                 </Typography>
               )}
 
+              {/* SITES */}
               {report.sites?.map((site: any) => {
                 const siteKey = site.siteId || site.siteName;
 
                 return (
-                  <Box key={siteKey} sx={{ ml: 2, mt: 1 }}>
-                    {/* SITE ROW */}
+                  <Box key={siteKey} sx={{ mb: 2 }}>
+                    {/* SITE CARD */}
                     <Box
                       onClick={() => toggleSite(siteKey)}
                       sx={{
-                        background: "#f5f5f5",
-                        p: 1,
-                        fontWeight: 400,
+                        p: 2,
+                        borderRadius: 2,
+                        background: "#f9fafc",
+                        border: "1px solid #e6eaf0",
                         cursor: "pointer",
-                        userSelect: "none",
-                        "&:hover": { background: "#e8e8e8" },
+                        transition: "0.2s",
+                        "&:hover": {
+                          background: "#eef4ff",
+                        },
                       }}
                     >
                       <Box
@@ -550,21 +567,19 @@ const ScoreCard: React.FC = () => {
                           justifyContent: "space-between",
                         }}
                       >
-                        <span>
-                          {expandedSites[siteKey] ? "▼" : "▶"} {site.siteName} :
-                          (Average : {site.average.toFixed(2)}%)
+                        <span style={{ fontWeight: 600 }}>
+                          {expandedSites[siteKey] ? "▼" : "▶"} {site.siteName}{" "}
+                          (Avg: {site.average.toFixed(2)}%)
                         </span>
-                        <span>
-                          Total Acts: {site.acts?.length || 0}
-                          {" | "}
-                          Total Activities:{" "}
+
+                        <span style={{ fontSize: "13px", color: "#555" }}>
+                          Acts: {site.acts?.length || 0} | Activities:{" "}
                           {site.acts?.reduce(
                             (acc: number, act: any) =>
                               acc + (act.activities?.length || 0),
                             0,
-                          )}
-                          {" | "}
-                          Completed:{" "}
+                          )}{" "}
+                          | Completed:{" "}
                           {site.acts?.reduce(
                             (acc: number, act: any) =>
                               acc +
@@ -572,9 +587,8 @@ const ScoreCard: React.FC = () => {
                                 (a: any) => a.percentage === 100,
                               ).length || 0),
                             0,
-                          )}
-                          {" | "}
-                          Pending:{" "}
+                          )}{" "}
+                          | Pending:{" "}
                           {site.acts?.reduce(
                             (acc: number, act: any) =>
                               acc +
@@ -594,16 +608,19 @@ const ScoreCard: React.FC = () => {
 
                         return (
                           <Box key={actKey} sx={{ ml: 3, mt: 1 }}>
-                            {/* ACT ROW */}
+                            {/* ACT CARD */}
                             <Box
                               onClick={() => toggleAct(actKey)}
                               sx={{
-                                background: "#fafafa",
-                                p: 1,
-                                fontWeight: 400,
+                                p: 1.5,
+                                borderRadius: 2,
+                                background: "#ffffff",
+                                border: "1px solid #eee",
                                 cursor: "pointer",
-                                userSelect: "none",
-                                "&:hover": { background: "#f0f0f0" },
+                                transition: "0.2s",
+                                "&:hover": {
+                                  background: "#f5faff",
+                                },
                               }}
                             >
                               <Box
@@ -612,21 +629,20 @@ const ScoreCard: React.FC = () => {
                                   justifyContent: "space-between",
                                 }}
                               >
-                                <span>
+                                <span style={{ fontWeight: 500 }}>
                                   {expandedActs[actKey] ? "▼" : "▶"}{" "}
-                                  {act.actName} : (Average :{" "}
-                                  {act.average.toFixed(2)}%)
+                                  {act.actName} (Avg: {act.average.toFixed(2)}%)
                                 </span>
-                                <span>
-                                  Total Activities:{" "}
-                                  {act.activities?.length || 0}
-                                  {" | "}
+
+                                <span
+                                  style={{ fontSize: "12px", color: "#666" }}
+                                >
+                                  Total: {act.activities?.length || 0} |
                                   Completed:{" "}
                                   {act.activities?.filter(
                                     (a: any) => a.percentage === 100,
-                                  ).length || 0}
-                                  {" | "}
-                                  Pending:{" "}
+                                  ).length || 0}{" "}
+                                  | Pending:{" "}
                                   {act.activities?.filter(
                                     (a: any) => a.percentage === 0,
                                   ).length || 0}

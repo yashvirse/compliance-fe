@@ -248,7 +248,7 @@ const TaskMovementDialog: React.FC<TaskMovementDialogProps> = ({
                       <Box
                         sx={{
                           display: "flex",
-                          alignItems: "center",
+                          alignItems: "flex-start",
                           gap: 1,
                           flexDirection: "column",
                         }}

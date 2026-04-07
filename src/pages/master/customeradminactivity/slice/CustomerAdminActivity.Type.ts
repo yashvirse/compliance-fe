@@ -11,6 +11,7 @@ export interface ActivityMasterItem {
   dueDay?: number;
   gracePeriodDay?: number;
   reminderDay?: string;
+  natureOfActivity?: string;
 }
 
 export interface GroupedActivityMaster {
@@ -60,7 +61,8 @@ export interface ActivityDetail {
   companyId: string;
   companyDomain: string;
   selectedSites?: string[];
-  sites?: Array<{siteId: string, siteName: string}>;
+  natureOfActivity: string;
+  sites?: Array<{ siteId: string; siteName: string }>;
 }
 
 export interface GetActivityByIdResponse {
@@ -79,6 +81,7 @@ export interface UpdateActivityRequest {
   dueDay?: number;
   gracePeriodDay?: number;
   reminderDay?: number;
+  natureOfActivity: string;
 }
 
 export interface EditCompAdminActivityRequest {
@@ -101,7 +104,8 @@ export interface EditCompAdminActivityRequest {
   auditerID: string;
   companyId: string;
   companyDomain: string;
-  sites?: Array<{siteId: string, siteName: string}>;
+  natureOfActivity: string;
+  sites?: Array<{ siteId: string; siteName: string }>;
 }
 
 export interface UpdateActivityResponse {

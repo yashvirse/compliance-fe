@@ -28,6 +28,7 @@ export interface ActivityMaster {
   createdBy?: string;
   createdDate?: string;
   updatedAt?: string;
+  natureOfActivity?: string;
 }
 
 export interface FrequencyOption {
@@ -93,6 +94,7 @@ export interface AddActivityMasterRequest {
   dueDay: number;
   gracePeriodDay: number;
   reminderDay: number;
+  natureOfActivity: string;
 }
 
 export interface AddActivityMasterResponse {
@@ -111,6 +113,7 @@ export interface UpdateActivityMasterRequest {
   dueDay: number;
   gracePeriodDay: number;
   reminderDay: number;
+  natureOfActivity: string;
 }
 
 export interface UpdateActivityMasterResponse {

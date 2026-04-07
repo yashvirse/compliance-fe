@@ -32,11 +32,11 @@ const TemplateFormatter: React.FC = () => {
   }, [dispatch]);
 
   const handleAdd = () => {
-    navigate("/dashboard/tools/add-template");
+    navigate("/dashboard/add-template");
   };
 
   const handleEdit = (id: string) => {
-    navigate(`/dashboard/tools/template/edit/${id}`);
+    navigate(`/dashboard/template/edit/${id}`);
   };
 
   const handleCloseSnackbar = () => {

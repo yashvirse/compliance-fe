@@ -51,10 +51,10 @@ const ImportActivityList: React.FC = () => {
   const [showSnackbar, setShowSnackbar] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState("");
   const [snackbarSeverity, setSnackbarSeverity] = useState<"success" | "error">(
-    "success"
+    "success",
   );
   const [selectedActivities, setSelectedActivities] = useState<Set<string>>(
-    new Set()
+    new Set(),
   );
 
   useEffect(() => {
@@ -118,7 +118,7 @@ const ImportActivityList: React.FC = () => {
       const activityIdsArray = Array.from(selectedActivities);
       await dispatch(importActivities(activityIdsArray)).unwrap();
       setSnackbarMessage(
-        `Successfully imported ${activityIdsArray.length} activities`
+        `Successfully imported ${activityIdsArray.length} activities`,
       );
       setSnackbarSeverity("success");
       setShowSnackbar(true);
@@ -307,7 +307,7 @@ const ImportActivityList: React.FC = () => {
                                 borderRadius: 2,
                                 border: `1px solid ${alpha(
                                   theme.palette.divider,
-                                  0.1
+                                  0.1,
                                 )}`,
                                 overflow: "hidden",
                               }}
@@ -319,7 +319,7 @@ const ImportActivityList: React.FC = () => {
                                   py: 1.5,
                                   borderBottom: `1px solid ${alpha(
                                     theme.palette.divider,
-                                    0.1
+                                    0.1,
                                   )}`,
                                   display: "flex",
                                   justifyContent: "space-between",
@@ -341,7 +341,7 @@ const ImportActivityList: React.FC = () => {
                                   sx={{ textTransform: "none" }}
                                 >
                                   {group.activities.every((a) =>
-                                    selectedActivities.has(a.activityId)
+                                    selectedActivities.has(a.activityId),
                                   )
                                     ? "Deselect All"
                                     : "Select All"}
@@ -353,7 +353,7 @@ const ImportActivityList: React.FC = () => {
                                     sx={{
                                       bgcolor: alpha(
                                         theme.palette.grey[500],
-                                        0.02
+                                        0.02,
                                       ),
                                     }}
                                   >
@@ -389,6 +389,14 @@ const ImportActivityList: React.FC = () => {
                                         Frequency
                                       </Typography>
                                     </TableCell>
+                                    <TableCell>
+                                      <Typography
+                                        variant="caption"
+                                        fontWeight={600}
+                                      >
+                                        Nature
+                                      </Typography>
+                                    </TableCell>
                                     <TableCell align="center">
                                       <Typography
                                         variant="caption"
@@ -421,7 +429,7 @@ const ImportActivityList: React.FC = () => {
                                       key={activity.activityId}
                                       hover
                                       selected={selectedActivities.has(
-                                        activity.activityId
+                                        activity.activityId,
                                       )}
                                       sx={{
                                         "&:last-child td": { borderBottom: 0 },
@@ -429,18 +437,18 @@ const ImportActivityList: React.FC = () => {
                                       }}
                                       onClick={() =>
                                         handleSelectActivity(
-                                          activity.activityId
+                                          activity.activityId,
                                         )
                                       }
                                     >
                                       <TableCell>
                                         <Checkbox
                                           checked={selectedActivities.has(
-                                            activity.activityId
+                                            activity.activityId,
                                           )}
                                           onChange={() =>
                                             handleSelectActivity(
-                                              activity.activityId
+                                              activity.activityId,
                                             )
                                           }
                                           onClick={(e) => e.stopPropagation()}
@@ -466,6 +474,11 @@ const ImportActivityList: React.FC = () => {
                                           color="primary"
                                           variant="outlined"
                                         />
+                                      </TableCell>
+                                      <TableCell>
+                                        <Typography variant="body2">
+                                          {activity.natureOfActivity || "-"}
+                                        </Typography>
                                       </TableCell>
                                       <TableCell align="center">
                                         <Typography variant="body2">

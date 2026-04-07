@@ -107,7 +107,7 @@ const AddTemplateFormater: React.FC = () => {
       setShowSnackbar(true);
       setTimeout(() => {
         dispatch(clearTemplateSuccess());
-        navigate("/dashboard/tools/template-formatter");
+        navigate("/dashboard/template-formatter");
       }, 1500);
     }
   }, [success, dispatch, navigate]);

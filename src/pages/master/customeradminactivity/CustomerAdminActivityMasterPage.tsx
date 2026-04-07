@@ -100,6 +100,7 @@ const CustomerAdminActivityMasterPage: React.FC = () => {
     gracePeriodDay: 0,
     reminderDay: 0,
     selectedSites: [] as string[],
+    natureOfActivity: "",
   });
 
   useEffect(() => {
@@ -212,6 +213,7 @@ const CustomerAdminActivityMasterPage: React.FC = () => {
         gracePeriodDay: activity.gracePeriodDay || 0,
         reminderDay: activity.reminderDay || 0,
         selectedSites: siteIds,
+        natureOfActivity: activity.natureOfActivity || "",
       });
       setEditDialogOpen(true);
     } catch (err) {
@@ -238,6 +240,7 @@ const CustomerAdminActivityMasterPage: React.FC = () => {
       gracePeriodDay: 0,
       reminderDay: 0,
       selectedSites: [],
+      natureOfActivity: "",
     });
   };
 
@@ -294,6 +297,7 @@ const CustomerAdminActivityMasterPage: React.FC = () => {
           companyId: selectedActivity.companyId,
           companyDomain: selectedActivity.companyDomain,
           sites: sitesData as Array<{ siteId: string; siteName: string }>,
+          natureOfActivity: editFormData.natureOfActivity,
         }),
       ).unwrap();
 
@@ -842,6 +846,22 @@ const CustomerAdminActivityMasterPage: React.FC = () => {
                       <MenuItem value="Quarterly">Quarterly</MenuItem>
                       <MenuItem value="Annually">Annually</MenuItem>
                       <MenuItem value="As Needed">As Needed</MenuItem>
+                    </Select>
+                  </FormControl>
+                </Grid>
+                <Grid size={{ xs: 12, md: 6 }}>
+                  <FormControl fullWidth>
+                    <InputLabel>Nature Of Activity</InputLabel>
+                    <Select
+                      value={editFormData.natureOfActivity}
+                      onChange={handleEditFormChange("natureOfActivity")}
+                      label="Nature Of Activity"
+                    >
+                      <MenuItem value="Display">Display</MenuItem>
+                      <MenuItem value="Register">Register</MenuItem>
+                      <MenuItem value="Remittance">Remittance</MenuItem>
+                      <MenuItem value="Return">Return</MenuItem>
+                      <MenuItem value="Registration">Registration</MenuItem>
                     </Select>
                   </FormControl>
                 </Grid>
